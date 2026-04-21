@@ -90,7 +90,7 @@
     },
     {
       "id": "headbutt",
-      "name": "Head Butt",
+      "name": "Headbutt",
       "category": "melee",
       "subcategory": "unarmed",
       "skill": "Fighting (Brawl)",
