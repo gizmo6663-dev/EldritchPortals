@@ -1,0 +1,779 @@
+{
+  "version": "1.0",
+  "system": "CoC 7e / Pulp Cthulhu",
+  "language": "en-US",
+  "updated": "2026-04-21",
+  "categories": {
+    "melee": "Melee",
+    "firearms": "Firearms",
+    "heavy": "Heavy Weapons",
+    "archaic": "Archaic Weapons",
+    "pulp": "Pulp / Weird Science"
+  },
+  "subcategories": {
+    "unarmed": "Unarmed",
+    "blunt": "Blunt",
+    "edged": "Edged",
+    "handgun": "Handgun",
+    "rifle": "Rifle",
+    "shotgun": "Shotgun",
+    "smg": "SMG",
+    "mg": "Machine Gun",
+    "explosive": "Explosive",
+    "incendiary": "Incendiary",
+    "bow": "Bow",
+    "weird_science": "Weird Science"
+  },
+  "field_labels": {
+    "skill": "Skill",
+    "damage": "Damage",
+    "range": "Range",
+    "attacks": "Attacks / round",
+    "ammo": "Ammo",
+    "malfunction": "Malfunction",
+    "cost_1920s": "Cost (1920s)",
+    "availability": "Availability",
+    "era": "Era",
+    "uses_db": "Uses DB",
+    "can_impale": "Can Impale",
+    "description": "Description",
+    "pulp_notes": "Pulp Notes"
+  },
+  "weapons": [
+    {
+      "id": "fist",
+      "name": "Fist",
+      "category": "melee",
+      "subcategory": "unarmed",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D3",
+      "uses_db": true,
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": null,
+      "availability": "always",
+      "description": "Basic unarmed strike.",
+      "pulp_notes": "Pulp heroes with the “Tough Guy” talent can deal extra melee damage.",
+      "tags": [
+        "unarmed"
+      ]
+    },
+    {
+      "id": "kick",
+      "name": "Kick",
+      "category": "melee",
+      "subcategory": "unarmed",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D6",
+      "uses_db": true,
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": null,
+      "availability": "always",
+      "description": "Stronger than a fist, but harder to land.",
+      "pulp_notes": null,
+      "tags": [
+        "unarmed"
+      ]
+    },
+    {
+      "id": "headbutt",
+      "name": "Head Butt",
+      "category": "melee",
+      "subcategory": "unarmed",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D4",
+      "uses_db": true,
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": null,
+      "availability": "always",
+      "description": "Requires close combat. Also works against opponents who have grabbed you.",
+      "pulp_notes": null,
+      "tags": [
+        "unarmed"
+      ]
+    },
+    {
+      "id": "club_small",
+      "name": "Club (small)",
+      "category": "melee",
+      "subcategory": "blunt",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D6",
+      "uses_db": true,
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$1",
+      "availability": "common",
+      "description": "Baton, wooden stick, or similar blunt tool.",
+      "pulp_notes": "Standard police baton in the 1920s.",
+      "tags": [
+        "blunt",
+        "improvised"
+      ]
+    },
+    {
+      "id": "club_large",
+      "name": "Club (large)",
+      "category": "melee",
+      "subcategory": "blunt",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D8",
+      "uses_db": true,
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$2",
+      "availability": "common",
+      "description": "Baseball bat, crowbar, or large wooden club.",
+      "pulp_notes": null,
+      "tags": [
+        "blunt",
+        "improvised"
+      ]
+    },
+    {
+      "id": "sap",
+      "name": "Sap",
+      "category": "melee",
+      "subcategory": "blunt",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D8",
+      "uses_db": "half",
+      "can_impale": false,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$3",
+      "availability": "uncommon",
+      "description": "Small lead-weighted pouch or leather bag filled with sand. Concealable and useful for surprise attacks.",
+      "pulp_notes": "A classic private eye and criminal tool. Useful for concealed attacks to the neck or head.",
+      "tags": [
+        "blunt",
+        "concealed"
+      ]
+    },
+    {
+      "id": "knife_small",
+      "name": "Knife (small)",
+      "category": "melee",
+      "subcategory": "edged",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D4",
+      "uses_db": true,
+      "can_impale": true,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$1",
+      "availability": "common",
+      "description": "Pocketknife, stiletto, or bread knife.",
+      "pulp_notes": null,
+      "tags": [
+        "sharp",
+        "concealed"
+      ]
+    },
+    {
+      "id": "knife_large",
+      "name": "Knife (large) / Bowie",
+      "category": "melee",
+      "subcategory": "edged",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D8",
+      "uses_db": "half",
+      "can_impale": true,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$5",
+      "availability": "common",
+      "description": "Hunting knife, Bowie knife, or military combat knife.",
+      "pulp_notes": "The standard pulp adventure knife — pure Indiana Jones energy.",
+      "tags": [
+        "sharp",
+        "military"
+      ]
+    },
+    {
+      "id": "sword",
+      "name": "Sword",
+      "category": "melee",
+      "subcategory": "edged",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D8",
+      "uses_db": true,
+      "can_impale": true,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$15",
+      "availability": "rare",
+      "description": "Saber, rapier, or another traditional sword.",
+      "pulp_notes": "Officer sabers were still used ceremonially. Also found in archaeological discoveries and collections.",
+      "tags": [
+        "sharp",
+        "archaic"
+      ]
+    },
+    {
+      "id": "hand_axe",
+      "name": "Hand Axe",
+      "category": "melee",
+      "subcategory": "edged",
+      "skill": "Fighting (Brawl)",
+      "damage": "1D6+1",
+      "uses_db": true,
+      "can_impale": true,
+      "range": "touch",
+      "attacks": "1",
+      "ammo": null,
+      "malfunction": null,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$2",
+      "availability": "common",
+      "description": "Wood axe or work axe used as an improvised weapon.",
+      "pulp_notes": null,
+      "tags": [
+        "sharp"
+      ]
+    },
+    {
+      "id": "colt_1911",
+      "name": "Colt M1911 .45",
+      "category": "firearms",
+      "subcategory": "handgun",
+      "skill": "Firearms (Handgun)",
+      "damage": "1D10+2",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "15 meters",
+      "attacks": "3",
+      "ammo": 7,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$40",
+      "availability": "common",
+      "description": "Semi-automatic .45 caliber pistol. Reliable and hard-hitting.",
+      "pulp_notes": "The classic American pulp handgun. Used by officers and private investigators.",
+      "tags": [
+        "pistol",
+        "semi-automatic",
+        "american"
+      ]
+    },
+    {
+      "id": "webley_mk6",
+      "name": "Webley Mk VI .455",
+      "category": "firearms",
+      "subcategory": "handgun",
+      "skill": "Firearms (Handgun)",
+      "damage": "1D10+2",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "20 meters",
+      "attacks": "2",
+      "ammo": 6,
+      "malfunction": 100,
+      "era": [
+        "gaslight",
+        "1920s"
+      ],
+      "cost_1920s": "$30",
+      "availability": "common",
+      "description": "British top-break revolver, the standard officer sidearm in WW1.",
+      "pulp_notes": "Common in colonial settings and among British officers. Perfect for globetrotting adventures.",
+      "tags": [
+        "revolver",
+        "british",
+        "military"
+      ]
+    },
+    {
+      "id": "colt_detective",
+      "name": "Colt Detective Special .38",
+      "category": "firearms",
+      "subcategory": "handgun",
+      "skill": "Firearms (Handgun)",
+      "damage": "1D10",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "15 meters",
+      "attacks": "3",
+      "ammo": 6,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$25",
+      "availability": "common",
+      "description": "Snub-nosed revolver with a short barrel, suitable for concealed carry.",
+      "pulp_notes": "A favorite among private investigators and plainclothes police.",
+      "tags": [
+        "revolver",
+        "concealed",
+        "american"
+      ]
+    },
+    {
+      "id": "luger_p08",
+      "name": "Luger P08 9mm",
+      "category": "firearms",
+      "subcategory": "handgun",
+      "skill": "Firearms (Handgun)",
+      "damage": "1D10",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "15 meters",
+      "attacks": "3",
+      "ammo": 8,
+      "malfunction": 98,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$35",
+      "availability": "uncommon",
+      "description": "German semi-automatic pistol with the iconic toggle-lock mechanism.",
+      "pulp_notes": "Often carried by Nazi villains, German agents, and European criminals. Less reliable than the Colt 1911.",
+      "tags": [
+        "pistol",
+        "semi-automatic",
+        "german"
+      ]
+    },
+    {
+      "id": "derringer",
+      "name": "Derringer .41",
+      "category": "firearms",
+      "subcategory": "handgun",
+      "skill": "Firearms (Handgun)",
+      "damage": "1D6+1",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "3 meters",
+      "attacks": "1",
+      "ammo": 2,
+      "malfunction": 100,
+      "era": [
+        "gaslight",
+        "1920s"
+      ],
+      "cost_1920s": "$12",
+      "availability": "uncommon",
+      "description": "Tiny two-barreled pocket pistol. Very concealable, but with extremely short range.",
+      "pulp_notes": "Classic “lady’s pistol” or last-resort weapon. Easy to hide in a boot, sleeve, or handbag.",
+      "tags": [
+        "pistol",
+        "concealed",
+        "emergency"
+      ]
+    },
+    {
+      "id": "winchester_1894",
+      "name": "Winchester Model 1894 .30-30",
+      "category": "firearms",
+      "subcategory": "rifle",
+      "skill": "Firearms (Rifle)",
+      "damage": "2D6+1",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "80 meters",
+      "attacks": "1",
+      "ammo": 6,
+      "malfunction": 98,
+      "era": [
+        "gaslight",
+        "1920s"
+      ],
+      "cost_1920s": "$40",
+      "availability": "common",
+      "description": "Lever-action rifle. An American hunting classic.",
+      "pulp_notes": "A cowboy and frontier weapon. Perfect for Down Darker Trails and western pulp.",
+      "tags": [
+        "rifle",
+        "lever-action",
+        "american"
+      ]
+    },
+    {
+      "id": "lee_enfield",
+      "name": "Lee-Enfield SMLE .303",
+      "category": "firearms",
+      "subcategory": "rifle",
+      "skill": "Firearms (Rifle)",
+      "damage": "2D6+4",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "110 meters",
+      "attacks": "1",
+      "ammo": 10,
+      "malfunction": 100,
+      "era": [
+        "gaslight",
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$60",
+      "availability": "uncommon",
+      "description": "British bolt-action military rifle. Large magazine capacity and high rate of fire.",
+      "pulp_notes": "Standard British military weapon. Appears in colonial settings, jungle adventures, and safaris.",
+      "tags": [
+        "rifle",
+        "bolt-action",
+        "british",
+        "military"
+      ]
+    },
+    {
+      "id": "springfield_1903",
+      "name": "Springfield M1903 .30-06",
+      "category": "firearms",
+      "subcategory": "rifle",
+      "skill": "Firearms (Rifle)",
+      "damage": "2D6+4",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "110 meters",
+      "attacks": "1",
+      "ammo": 5,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$50",
+      "availability": "uncommon",
+      "description": "American bolt-action military rifle, also used as a hunting rifle.",
+      "pulp_notes": "A beloved big-game rifle. Great for hunting expeditions and arctic adventures.",
+      "tags": [
+        "rifle",
+        "bolt-action",
+        "american",
+        "military"
+      ]
+    },
+    {
+      "id": "shotgun_double",
+      "name": "Double-Barreled Shotgun 12ga",
+      "category": "firearms",
+      "subcategory": "shotgun",
+      "skill": "Firearms (Shotgun)",
+      "damage": "4D6 / 2D6 / 1D6",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "10 / 20 / 50 meters",
+      "attacks": "1 (or both barrels)",
+      "ammo": 2,
+      "malfunction": 100,
+      "era": [
+        "gaslight",
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$40",
+      "availability": "common",
+      "description": "Classic hunting shotgun. Damage drops quickly with distance.",
+      "pulp_notes": "A standard country weapon in the 1920s. Found on almost any farm or in any rural village.",
+      "tags": [
+        "shotgun",
+        "break-action"
+      ]
+    },
+    {
+      "id": "shotgun_pump",
+      "name": "Winchester 1897 Pump Shotgun 12ga",
+      "category": "firearms",
+      "subcategory": "shotgun",
+      "skill": "Firearms (Shotgun)",
+      "damage": "4D6 / 2D6 / 1D6",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "10 / 20 / 50 meters",
+      "attacks": "1",
+      "ammo": 5,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$45",
+      "availability": "common",
+      "description": "Pump-action shotgun. Greater capacity and faster follow-up shots than a double-barreled shotgun.",
+      "pulp_notes": "The “trench gun” version was a WW1 military weapon. Popular with police and guards.",
+      "tags": [
+        "shotgun",
+        "pump",
+        "american"
+      ]
+    },
+    {
+      "id": "shotgun_sawed_off",
+      "name": "Sawed-Off Shotgun 12ga",
+      "category": "firearms",
+      "subcategory": "shotgun",
+      "skill": "Firearms (Shotgun)",
+      "damage": "4D6 / 2D6",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "5 / 10 meters",
+      "attacks": "1 (or both barrels)",
+      "ammo": 2,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$30",
+      "availability": "illegal",
+      "description": "Double-barreled shotgun with shortened barrel and stock. Can be hidden under a coat.",
+      "pulp_notes": "A Prohibition-era gangster weapon. Illegal in most countries and immediately suspicious if police spot it.",
+      "tags": [
+        "shotgun",
+        "concealed",
+        "illegal",
+        "gangster"
+      ]
+    },
+    {
+      "id": "thompson_smg",
+      "name": "Thompson M1921 .45 (“Tommy Gun”)",
+      "category": "firearms",
+      "subcategory": "smg",
+      "skill": "Firearms (SMG)",
+      "damage": "1D10+2",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "20 meters",
+      "attacks": "1 or burst (3 shots)",
+      "ammo": "20 / 30 / 50 / 100 (drum)",
+      "malfunction": 96,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$200",
+      "availability": "rare",
+      "description": "American submachine gun. Heavy and expensive, but extremely effective at short range.",
+      "pulp_notes": "The quintessential pulp and gangster weapon. Al Capone, the FBI, private investigators. The drum magazine gives it an iconic silhouette.",
+      "tags": [
+        "smg",
+        "automatic",
+        "gangster",
+        "iconic"
+      ]
+    },
+    {
+      "id": "bar_m1918",
+      "name": "Browning BAR M1918 .30-06",
+      "category": "firearms",
+      "subcategory": "mg",
+      "skill": "Firearms (Machine Gun)",
+      "damage": "2D6+4",
+      "uses_db": false,
+      "can_impale": true,
+      "range": "90 meters",
+      "attacks": "1 or burst (3 shots)",
+      "ammo": 20,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$350",
+      "availability": "military",
+      "description": "Browning Automatic Rifle. Light machine gun / automatic rifle used as a support weapon.",
+      "pulp_notes": "Used by the FBI against organized bandits. Famously used to gun down Bonnie & Clyde.",
+      "tags": [
+        "mg",
+        "automatic",
+        "military"
+      ]
+    },
+    {
+      "id": "grenade_mk2",
+      "name": "Mk II Hand Grenade (“Pineapple”)",
+      "category": "heavy",
+      "subcategory": "explosive",
+      "skill": "Throw",
+      "damage": "4D10 (within blast radius)",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "STR × 1 meter",
+      "attacks": "1",
+      "ammo": 1,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$10 (black market)",
+      "availability": "military",
+      "description": "Egg-shaped fragmentation grenade. Explodes 4-5 seconds after the pin is released.",
+      "pulp_notes": "Blast radius is about 4 meters. Everything inside takes full damage; fragments can reach up to 20 m (1D10). Standard WW1 grenade.",
+      "tags": [
+        "grenade",
+        "explosive",
+        "military"
+      ]
+    },
+    {
+      "id": "dynamite_stick",
+      "name": "Stick of Dynamite",
+      "category": "heavy",
+      "subcategory": "explosive",
+      "skill": "Throw or Demolitions",
+      "damage": "4D10+2 (within blast radius)",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "STR × 1 meter",
+      "attacks": "1",
+      "ammo": 1,
+      "malfunction": 100,
+      "era": [
+        "gaslight",
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "$2 per stick",
+      "availability": "uncommon",
+      "description": "Standard stick of dynamite. Requires a fuse or detonator.",
+      "pulp_notes": "Blast radius is about 4 meters. Multiple sticks can be bundled together for a larger explosion (+1D10 per stick). Common in mining and construction work.",
+      "tags": [
+        "explosive",
+        "civilian",
+        "pulp"
+      ]
+    },
+    {
+      "id": "molotov",
+      "name": "Molotov Cocktail",
+      "category": "heavy",
+      "subcategory": "incendiary",
+      "skill": "Throw",
+      "damage": "2D6 fire (+1D6 next round)",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "STR × 1 meter",
+      "attacks": "1",
+      "ammo": 1,
+      "malfunction": 100,
+      "era": [
+        "1920s",
+        "modern"
+      ],
+      "cost_1920s": "improvised",
+      "availability": "improvised",
+      "description": "Bottle filled with flammable liquid and a burning rag as a fuse. Ignites the target and burns for several rounds.",
+      "pulp_notes": "Requires one round to light. Shattering the bottle creates a 2×2 meter area of flames that burns for 1D6 rounds.",
+      "tags": [
+        "fire",
+        "improvised"
+      ]
+    },
+    {
+      "id": "bow_hunting",
+      "name": "Hunting Bow",
+      "category": "archaic",
+      "subcategory": "bow",
+      "skill": "Firearms (Bow)",
+      "damage": "1D6+1",
+      "uses_db": "half",
+      "can_impale": true,
+      "range": "30 meters",
+      "attacks": "1",
+      "ammo": 1,
+      "malfunction": 100,
+      "era": [
+        "all"
+      ],
+      "cost_1920s": "$10",
+      "availability": "uncommon",
+      "description": "Traditional hunting bow. Quiet and uses recoverable ammunition.",
+      "pulp_notes": "Fits jungle natives, tribal societies, or silent kills in pulp settings.",
+      "tags": [
+        "bow",
+        "archaic",
+        "silent"
+      ]
+    },
+    {
+      "id": "tesla_pistol",
+      "name": "Tesla Lightning Pistol (Weird Science)",
+      "category": "pulp",
+      "subcategory": "weird_science",
+      "skill": "Firearms (Handgun) or Weird Science",
+      "damage": "1D10+2 (electric)",
+      "uses_db": false,
+      "can_impale": false,
+      "range": "10 meters",
+      "attacks": "1",
+      "ammo": 6,
+      "malfunction": 90,
+      "era": [
+        "1920s"
+      ],
+      "cost_1920s": "unique",
+      "availability": "unique",
+      "description": "Experimental electro-pistol. Recharges from a battery pack and fires a plasma charge.",
+      "pulp_notes": "Example Weird Science weapon — adjust stats to match the inventor’s Mechanics/Electronics level. Malfunctions often cause self-electrocution (1D6 damage). Targets may be stunned for 1D3 rounds on a failed CON roll.",
+      "tags": [
+        "weird_science",
+        "pulp",
+        "experimental"
+      ]
+    }
+  ]
+}
