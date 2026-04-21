@@ -1,1 +1,86 @@
+name: Build APK
 
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      clean_build:
+        description: "Force clean build (delete .buildozer)"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install system dependencies and libtool 2.4.6
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf automake pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
+          sudo apt remove -y libtool
+          cd /tmp
+          wget https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.gz
+          tar xzf libtool-2.4.6.tar.gz
+          cd libtool-2.4.6
+          ./configure --prefix=/usr
+          make -j"$(nproc)"
+          sudo make install
+          cd /
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip3 install --upgrade buildozer "cython<3.0"
+
+      - name: Cache .buildozer
+        uses: actions/cache@v4
+        with:
+          path: ~/.buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ github.event.inputs.clean_build }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
+
+      - name: Build APK
+        run: |
+          if [[ "${{ github.event.inputs.clean_build }}" == "true" ]]; then
+            echo "Cleaning ~/.buildozer for a clean build"
+            rm -rf ~/.buildozer
+          fi
+          yes | buildozer android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: eldritch-portals-apk
+          path: bin/*.apk
+          retention-days: 7
+
+      - name: Create GitHub Release
+        run: |
+          VERSION=$(grep '^version' buildozer.spec | sed 's/version = //')
+          TAG="v${VERSION}-build${{ github.run_number }}"
+          APK=$(ls bin/*.apk | head -1)
+          gh release create "$TAG" "$APK" \
+            --title "Eldritch Portals $TAG" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            --prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
