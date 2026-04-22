@@ -2078,7 +2078,7 @@ try:
                 if is_spec:
                     row.add_widget(Label(text=sname, font_size=sp(10), color=GDIM,
                                          size_hint_x=0.35, halign='right'))
-                    w = TextInput(text=str(sk.get(sname, '')), hint_text="Spesifiser + verdi",
+                    w = TextInput(text=str(sk.get(sname, '')), hint_text="Specify + value",
                                   font_size=sp(11), multiline=False, background_color=BTN,
                                   foreground_color=TXT, size_hint_x=0.65, padding=[dp(6), dp(4)])
                     self._sk_inputs[sname] = w
