@@ -15,7 +15,7 @@ Eldritch Portals is an all-in-one app for Keepers who want to keep their session
 I am not a professional developer. Eldritch Portals was built by a hobbyist who wanted a practical tool for personal sessions, and most of the code was written with AI assistance (Claude). This is not hidden — I mention it because I believe users should know:
 
 - **Advantages:** Development has moved quickly, which has made it possible to add features based on the needs of active campaigns. The code is well commented and structured.
-- **Limitations:** I cannot always guarantee how the code behaves in every edge case, and I do not necessarily find bugs quickly on my own. Please report issues through [Issues](https://github.com/gizmo6663-dev/EldritchPortal/issues) — all feedback is appreciated.
+- **Limitations:** I cannot always guarantee how the code behaves in every edge case, and I do not necessarily find bugs quickly on my own. Please report issues through [Issues](https://github.com/gizmo6663-dev/EldritchPortals/issues) — all feedback is appreciated.
 - **If you can code:** Pull requests and suggestions are very welcome. The full source code is available here.
 
 ## Features
@@ -30,12 +30,12 @@ I am not a professional developer. Eldritch Portals was built by a hobbyist who 
 
 ## Installation
 
-**Prebuilt APK:** Download the latest build from [Releases](https://github.com/gizmo6663-dev/EldritchPortal/releases). You must allow installation from unknown sources on Android.
+**Prebuilt APK:** Download the latest build from [Releases](https://github.com/gizmo6663-dev/EldritchPortals/releases). You must allow installation from unknown sources on Android.
 
 **Build it yourself:**
 ```bash
-git clone https://github.com/gizmo6663-dev/EldritchPortal
-cd EldritchPortal
+git clone https://github.com/gizmo6663-dev/EldritchPortals
+cd EldritchPortals
 # Via GitHub Actions: manually trigger the "Build APK" workflow
 ```
 
@@ -43,7 +43,7 @@ cd EldritchPortal
 
 ## Usage
 
-The first time you open the app, it creates `/sdcard/Documents/EldritchPortal/` with subfolders for images and music. Place files there to make them appear in the app.
+The first time you open the app, it creates `/sdcard/Documents/EldritchPortals/` with subfolders for images and music. Place files there to make them appear in the app.
 
 **Creating an investigator:**
 1. Open the *Character* tab and tap *+ New*
@@ -63,9 +63,9 @@ The first time you open the app, it creates `/sdcard/Documents/EldritchPortal/` 
 All characters and custom files are stored locally on the phone. Nothing is sent to the internet (except Chromecast, which only sends to your own TV).
 
 Data locations:
-- `/sdcard/Documents/EldritchPortal/characters.json` — saved investigators and NPCs
-- `/sdcard/Documents/EldritchPortal/images/` — custom images and handouts
-- `/sdcard/Documents/EldritchPortal/music/` — custom music files
+- `/sdcard/Documents/EldritchPortals/characters.json` — saved investigators and NPCs
+- `/sdcard/Documents/EldritchPortals/images/` — custom images and handouts
+- `/sdcard/Documents/EldritchPortals/music/` — custom music files
 
 ## Technical details
 
@@ -75,7 +75,7 @@ Written in Python with the Kivy framework. Android performance is handled throug
 
 ## Contributing
 
-Suggestions and bug reports are welcome through [Issues](https://github.com/gizmo6663-dev/EldritchPortal/issues). If you are missing specific Mythos creatures in the initiative tracker or rules in the rules tab, open an issue.
+Suggestions and bug reports are welcome through [Issues](https://github.com/gizmo6663-dev/EldritchPortals/issues). If you are missing specific Mythos creatures in the initiative tracker or rules in the rules tab, open an issue.
 
 ## License
 
