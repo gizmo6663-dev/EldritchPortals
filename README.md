@@ -1,13 +1,11 @@
-# Eldritch Portal
+# Eldritch Portals
 
 **A Keeper's Companion — a Kivy-based Android app for Call of Cthulhu and Pulp Cthulhu**
 
-Eldritch Portal is a tabletop RPG companion built specifically for Lovecraftian roleplaying. The app bundles everything a Keeper needs during a session: an image library, mood sounds, weapon lookup, scenario tracker, and initiative tracker — all inside a dark, brooding interface that suits the genre. The phone can cast images and maps to a TV via Chromecast so your players see exactly what you want them to see.
+Eldritch Portals is a tabletop RPG companion built specifically for Lovecraftian roleplaying. The app bundles everything a Keeper needs during a session: an image library, mood sounds, weapon lookup, scenario tracker, and initiative tracker — all inside a dark, brooding interface that suits the genre. The phone can cast images and maps to a TV via Chromecast so your players see exactly what you want them to see.
 
 Theme: **Abyssal Purple** — deep purple-black, burgundy, and muted gold.
-Version: **0.3.3** · Language: Norwegian (UI) · System: Call of Cthulhu / Pulp Cthulhu
-
-> The app's user interface is in Norwegian. This README uses English throughout but preserves the Norwegian tab names in parentheses so you can match them with what you see on screen.
+Version: **0.3.3** · System: Call of Cthulhu / Pulp Cthulhu
 
 ---
 
@@ -30,16 +28,16 @@ Version: **0.3.3** · Language: Norwegian (UI) · System: Call of Cthulhu / Pulp
 
 The app is split across six main tabs. Several of them carry sub-tabs to keep complex features organised:
 
-### 🖼️ Images (Bilder)
+### 🖼️ Images
 - Gallery with folder navigation to organise images per scenario or campaign
 - Large preview frame in gold — fade-in animation between image swaps
 - Tap an image to display it; optional auto-cast to TV at the same time
 - Recognises `.png`, `.jpg`, `.jpeg`, `.webp`
 
-### 🔊 Sound (Lyd)
+### 🔊 Sound
 Combined tab with two sub-tabs, **Music** and **Ambient**:
 
-**Music (Musikk)** — local playback
+**Music** — local playback
 - Reads `.mp3`, `.ogg`, `.wav`, `.flac` from the `music/` folder
 - Persistent mini-player at the bottom (Play/Pause/Next/Previous) that stays visible when you switch tabs
 - Uses Android MediaPlayer via `pyjnius` for stable background playback
@@ -49,29 +47,29 @@ Combined tab with two sub-tabs, **Music** and **Ambient**:
 - Separate volume control from the music channel, so you can mix a rainy night with an eerie drone underneath
 - No uploads required — links point to curated public-domain tracks
 
-### ⚔️ Combat (Kamp)
+### ⚔️ Combat
 Sub-tabs for combat support:
 
-**Initiative (Initiativ)** — CoC/Pulp Cthulhu tracker
+**Initiative** — CoC/Pulp Cthulhu tracker
 - Add investigators and enemies from the character list, or enter them ad hoc
 - DEX-based initiative ordering (CoC standard)
 - Round counter with active-participant indicator
 - HP updates straight from the tracker
 
-**Map (Kart)** — battlemap for combat scenes
+**Map** — battlemap for combat scenes
 - Activates automatically once you have combat participants
 - 16:9 canvas optimised for TV casting
 - Token composition through Pillow (PIL)
 
-### 🧰 Tools (Verktøy)
+### 🧰 Tools
 Sub-tabs for session prep and quick reference:
 
-**Characters (Karakterer)** — investigator roster
+**Characters** — investigator roster
 - CoC/Pulp Cthulhu character sheets with skills, background, and notes
 - PCs and NPCs are visually distinguished by colour
 - Stored in `characters.json` on device
 
-**Weapons (Våpen)** — CoC weapon database
+**Weapons** — CoC weapon database
 - A bundled `weapons.json` ships inside the APK (no external file needed)
 - Search, filter by category, flag favourites
 - Covers classic CoC eras: 1920s pulp, modern, and so on
@@ -79,12 +77,12 @@ Sub-tabs for session prep and quick reference:
 
 **Scenario** — tracker for pre-written scenarios
 - Loads a `scenario.json` with structured data from the scenario you are running
-- Four views (sub-sub-tabs): **Clues (Ledetråder)** · **Timeline (Tidslinje)** · **Plot (Plot)** · **Notes (Notater)**
+- Four views: **Clues** · **Timeline** · **Plot** · **Notes**
 - Tick off clues as the investigators find them; watch the timeline unfold
 - Notes are editable live during the session
 - The scenario file lives in app-private storage (avoiding Android 13+ scoped storage problems), with **Choose file** and **Import** buttons to pull it in from Documents
 
-### 📖 Rules (Regler)
+### 📖 Rules
 - Collapsible folder layout with CoC/Pulp Cthulhu references
 - Overlay view for rule content — no network required
 - Quick lookup mid-session
@@ -107,7 +105,7 @@ Sub-tabs for session prep and quick reference:
 
 ### Installing on a device
 
-1. Download the latest `EldritchPortal.apk` from [Releases](https://github.com/gizmo6663-dev/EldritchPortal/releases) or from GitHub Actions artefacts
+1. Download the latest `EldritchPortals.apk` from [Releases](https://github.com/gizmo6663-dev/EldritchPortals/releases) or from GitHub Actions artefacts
 2. Enable installation from unknown sources in Android settings
 3. Install the APK and launch the app
 4. Grant storage and network permissions when prompted
@@ -118,7 +116,7 @@ Sub-tabs for session prep and quick reference:
 On first launch the app creates this folder layout automatically:
 
 ```
-Documents/EldritchPortal/
+Documents/EldritchPortals/
 ├── images/          ← image library (subfolders supported)
 ├── music/           ← local music tracks
 ├── characters.json  ← created when you make your first character
@@ -164,13 +162,13 @@ Fields:
   - `where` — context (location, act, chapter)
   - `found` — boolean toggled during the session
 
-Place `scenario.json` in `Documents/EldritchPortal/`, open the Scenario tab, and tap **Reload** or **Choose file**.
+Place `scenario.json` in `Documents/EldritchPortals/`, open the Scenario tab, and tap **Reload** or **Choose file**.
 
 ---
 
 ## On-device folder layout
 
-All user data lives in `/sdcard/Documents/EldritchPortal/`:
+All user data lives in `/sdcard/Documents/EldritchPortals/`:
 
 | Path | Contents |
 |---|---|
@@ -187,7 +185,7 @@ In addition the app stores live scenario state in app-private storage (`user_dat
 
 ## Building
 
-Eldritch Portal is built as an Android APK via GitHub Actions. The workflow at `.github/workflows/build-apk.yml` runs Buildozer inside a Docker container (`kivy/buildozer`).
+Eldritch Portals is built as an Android APK via GitHub Actions. The workflow at `.github/workflows/build-apk.yml` runs Buildozer inside a Docker container (`kivy/buildozer`).
 
 ### Build via GitHub Actions
 
@@ -270,21 +268,21 @@ p4a.branch = v2024.01.21
 ## Troubleshooting
 
 ### The app crashes on launch
-Check `/sdcard/Documents/EldritchPortal/crash.log`. The most common causes are missing permissions or a corrupt JSON file.
+Check `/sdcard/Documents/EldritchPortals/crash.log`. The most common causes are missing permissions or a corrupt JSON file.
 
 ### Music will not play
 - Confirm the files are in `music/` with a supported format (`.mp3`, `.ogg`, `.wav`, `.flac`)
 - On some devices the app must be restarted after storage permission is granted
 
 ### Scenario will not load
-- Check that `scenario.json` is in `Documents/EldritchPortal/` with valid JSON syntax
+- Check that `scenario.json` is in `Documents/EldritchPortals/` with valid JSON syntax
 - Android 13+ may block reading from Documents; use the **Choose file** button to open a file picker
 - The scenario is then copied to app-private storage and loaded from there on subsequent launches
 
 ### Weapons tab is empty
 - The tab uses the bundled `weapons.json` inside the APK
 - If it is empty, check that `source.include_patterns = weapons.json` is set in `buildozer.spec`
-- You may also place your own `weapons.json` in `Documents/EldritchPortal/` to override
+- You may also place your own `weapons.json` in `Documents/EldritchPortals/` to override
 
 ### Chromecast does not find the TV
 - The phone and Chromecast must be on the same Wi-Fi network
@@ -315,8 +313,10 @@ Potential future features:
 
 ## Development
 
-Eldritch Portal is a hobby project developed alongside an active Pulp Cthulhu campaign. Contributions and suggestions are welcome via GitHub issues.
+Eldritch Portals is a hobby project developed alongside an active Pulp Cthulhu campaign. Contributions and suggestions are welcome via GitHub issues.
 
-**Repository:** [gizmo6663-dev/EldritchPortal](https://github.com/gizmo6663-dev/EldritchPortal)
+**Repository:** [gizmo6663-dev/EldritchPortals](https://github.com/gizmo6663-dev/EldritchPortals)
 
-**Related project:** [Campaign Forge](https://github.com/gizmo6663-dev/CampaignForge) — a D&D 5e variant built on the same architecture, styled with the Emerald Grove theme.
+**Related projects:**
+- [EldritchPortal](https://github.com/gizmo6663-dev/EldritchPortal) — the Norwegian-language sibling of this app
+- [Campaign Forge](https://github.com/gizmo6663-dev/CampaignForge) — a D&D 5e variant built on the same architecture, styled with the Emerald Grove theme
