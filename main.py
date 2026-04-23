@@ -25,6 +25,8 @@ try:
     from kivy.uix.textinput import TextInput
     from kivy.uix.widget import Widget
     from kivy.core.window import Window
+    from kivy.uix.filechooser import FileChooserListView
+    from kivy.graphics import Color as GColor, Rectangle as GRect
     from kivy.utils import platform
     from kivy.metrics import dp, sp
     from kivy.animation import Animation
@@ -1160,8 +1162,12 @@ try:
             self.streamer = SPlayer()
             self.cast = CastMgr()
             self.server = MediaServer()
-            self.chars = load_json(CHAR_FILE, [])
+            # Characters live in app-private storage (always writable on Android)
+            self.CHARS_FILE = os.path.join(self.user_data_dir, "characters.json")
+            self.chars = load_json(self.CHARS_FILE, [])
             self.edit_idx = None
+            self._chars_overlay = None
+            self._chars_dim = None
 
             # Weapons: the favorites file lives in app-private storage (always writable)
             self.WEAPONS_FAV_FILE = os.path.join(
@@ -1861,12 +1867,15 @@ try:
             if self._tool_sub == 'chars':
                 self._tool_action_bar.add_widget(
                     mkbtn("+ New", self._new_char, accent=True,
-                          size_hint_x=0.35))
+                          size_hint_x=0.26))
                 self._tool_action_bar.add_widget(
-                    mkbtn("Refresh", self._show_list,
-                          small=True, size_hint_x=0.35))
+                    mkbtn("Import", self._chars_import,
+                          small=True, size_hint_x=0.26))
                 self._tool_action_bar.add_widget(
-                    mklbl("Characters", color=GOLD, size=14, bold=True))
+                    mkbtn("Export", self._chars_export,
+                          small=True, size_hint_x=0.26))
+                self._tool_action_bar.add_widget(
+                    mklbl("Characters", color=GOLD, size=13, bold=True))
                 self._show_list()
             elif self._tool_sub == 'init':
                 self._tool_action_bar.add_widget(
@@ -1974,7 +1983,7 @@ try:
 
         def _new_char(self):
             self.chars.append({"name": "New Character", "type": "PC", "skills": {}})
-            save_json(CHAR_FILE, self.chars)
+            save_json(self.CHARS_FILE, self.chars)
             self._edit_char(len(self.chars) - 1)
 
         def _edit_char(self, idx):
@@ -2101,7 +2110,7 @@ try:
                 return
             sk = {sn: w.text.strip() for sn, w in self._sk_inputs.items() if w.text.strip()}
             self.chars[idx]['skills'] = sk
-            save_json(CHAR_FILE, self.chars)
+            save_json(self.CHARS_FILE, self.chars)
             self._edit_char(idx)
 
         def _save_edit(self):
@@ -2110,14 +2119,201 @@ try:
             ch = self.chars[self.edit_idx]
             for key, w in self._ei.items():
                 ch[key] = w.text if isinstance(w, (TextInput, Spinner)) else ''
-            save_json(CHAR_FILE, self.chars)
+            save_json(self.CHARS_FILE, self.chars)
             self._show_list()
 
         def _del_char(self, idx):
             if 0 <= idx < len(self.chars):
                 self.chars.pop(idx)
-                save_json(CHAR_FILE, self.chars)
+                save_json(self.CHARS_FILE, self.chars)
                 self._show_list()
+
+        # ---------- CHARACTER IMPORT / EXPORT ----------
+
+        def _open_char_overlay(self, overlay):
+            """Attach overlay + dim to the FloatLayout root (same pattern as weapon detail)."""
+            root = self.content
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                # Fallback: add directly to tool_area
+                self.tool_area.add_widget(overlay)
+                self._chars_overlay = overlay
+                return
+            fl = root.parent
+
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GColor(rgba=[0, 0, 0, 0.6])
+                dr = GRect(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w_, v: setattr(dr, 'pos', w_.pos),
+                     size=lambda w_, v: setattr(dr, 'size', w_.size))
+
+            self._chars_dim = dim
+            self._chars_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _chars_close_overlay(self):
+            """Close any active character overlay."""
+            if self._chars_overlay and self._chars_overlay.parent:
+                parent = self._chars_overlay.parent
+                parent.remove_widget(self._chars_overlay)
+                if self._chars_dim and self._chars_dim.parent:
+                    parent.remove_widget(self._chars_dim)
+            self._chars_overlay = None
+            self._chars_dim = None
+
+        def _chars_show_message(self, msg, success=False):
+            """Show a brief status message in an overlay."""
+            self._chars_close_overlay()
+            color = GRN if success else RED
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.82, None),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.height = dp(180)
+            overlay.add_widget(mklbl(msg, color=color, size=13, wrap=True))
+            overlay.add_widget(Widget())
+            overlay.add_widget(mkbtn("OK", self._chars_close_overlay,
+                                     accent=True, size_hint_y=None, height=dp(44)))
+            self._open_char_overlay(overlay)
+
+        def _chars_export(self):
+            """Export the current character list to the Documents folder as characters.json."""
+            if not self.chars:
+                self._chars_show_message("No characters to export.")
+                return
+            try:
+                os.makedirs(BASE_DIR, exist_ok=True)
+                with open(CHAR_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(self.chars, f, indent=2, ensure_ascii=False)
+                n = len(self.chars)
+                self._chars_show_message(
+                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{CHAR_FILE}",
+                    success=True)
+            except Exception as e:
+                self._chars_show_message(f"Export failed:\n{e}")
+
+        def _chars_import(self):
+            """Open a file chooser overlay to import a character bundle."""
+            self._chars_close_overlay()
+            start_path = BASE_DIR if os.path.exists(BASE_DIR) else os.path.expanduser("~")
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(4),
+                padding=dp(10),
+                size_hint=(0.96, 0.92),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+
+            hdr = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            hdr.add_widget(mkbtn("Cancel", self._chars_close_overlay,
+                                 danger=True, small=True, size_hint_x=0.3))
+            hdr.add_widget(mklbl("Select .json File", color=GOLD, size=14, bold=True))
+            overlay.add_widget(hdr)
+
+            fc = FileChooserListView(
+                path=start_path,
+                filters=['*.json'],
+                size_hint_y=1)
+            overlay.add_widget(fc)
+
+            sel_btn = mkbtn("Select", lambda: self._chars_import_selected(fc.selection),
+                            accent=True, size_hint_y=None)
+            sel_btn.height = dp(44)
+            overlay.add_widget(sel_btn)
+            self._open_char_overlay(overlay)
+
+        def _chars_import_selected(self, selection):
+            """Validate the selected .json file and show the import preview."""
+            if not selection:
+                self._chars_show_message("No file selected.")
+                return
+            path = selection[0]
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception as e:
+                self._chars_show_message(f"Error reading file:\n{e}")
+                return
+            if not isinstance(data, list):
+                self._chars_show_message(
+                    "Invalid format: file must contain a list of characters.")
+                return
+            valid = [ch for ch in data if isinstance(ch, dict) and 'name' in ch]
+            if not valid:
+                self._chars_show_message("No valid characters found in file.")
+                return
+            self._chars_close_overlay()
+            self._chars_show_import_preview(valid)
+
+        def _chars_show_import_preview(self, chars_to_import):
+            """Show a preview of characters to import with Merge/Replace options."""
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(6),
+                padding=dp(12),
+                size_hint=(0.94, 0.90),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+
+            hdr = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            hdr.add_widget(mkbtn("Cancel", self._chars_close_overlay,
+                                 danger=True, small=True, size_hint_x=0.3))
+            hdr.add_widget(mklbl("Import Preview", color=GOLD, size=14, bold=True))
+            overlay.add_widget(hdr)
+
+            n = len(chars_to_import)
+            overlay.add_widget(mklbl(
+                f"{n} character{'s' if n != 1 else ''} found:",
+                color=TXT, size=13, h=28))
+
+            scroll = ScrollView(size_hint_y=1)
+            g = GridLayout(cols=1, spacing=dp(4), padding=dp(4), size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+            for ch in chars_to_import[:20]:
+                nm = ch.get('name', '?')
+                tp = ch.get('type', 'PC')
+                oc = ch.get('occ', '')
+                txt = f"[{tp}]  {nm}"
+                if oc:
+                    txt += f"  —  {oc}"
+                c = GRN if tp == 'PC' else GOLD
+                lbl = mklbl(txt, color=c, size=12, h=28)
+                g.add_widget(lbl)
+            if n > 20:
+                g.add_widget(mklbl(f"... and {n - 20} more", color=DIM, size=11, h=22))
+            scroll.add_widget(g)
+            overlay.add_widget(scroll)
+
+            overlay.add_widget(mksep(4))
+            btns = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
+            btns.add_widget(mkbtn(
+                "Add to existing",
+                lambda: self._chars_do_import(chars_to_import, replace=False),
+                accent=True, small=True))
+            btns.add_widget(mkbtn(
+                "Replace all",
+                lambda: self._chars_do_import(chars_to_import, replace=True),
+                danger=True, small=True))
+            overlay.add_widget(btns)
+            self._open_char_overlay(overlay)
+
+        def _chars_do_import(self, chars_to_import, replace=False):
+            """Apply the import, save, and refresh the character list."""
+            if replace:
+                self.chars = list(chars_to_import)
+            else:
+                self.chars.extend(chars_to_import)
+            save_json(self.CHARS_FILE, self.chars)
+            n = len(chars_to_import)
+            verb = "Replaced all with" if replace else "Added"
+            self._chars_close_overlay()
+            self._chars_show_message(
+                f"{verb} {n} character{'s' if n != 1 else ''}.",
+                success=True)
+            self._show_list()
 
         # ---------- INITIATIVE TRACKER (CoC / Pulp Cthulhu) ----------
         def _init_tracker_init(self):
@@ -3606,7 +3802,7 @@ try:
             self.streamer.stop()
             self.server.stop()
             self.cast.disconnect()
-            save_json(CHAR_FILE, self.chars)
+            save_json(self.CHARS_FILE, self.chars)
 
     log("Starting app...")
     EldritchApp().run()

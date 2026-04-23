@@ -205,12 +205,14 @@ All user data lives in `/sdcard/Documents/EldritchPortals/`:
 |---|---|
 | `images/` | Image gallery (subfolders supported) |
 | `music/` | Local music tracks |
-| `characters.json` | Characters and NPCs |
+| `characters.json` | Exported character bundles (shareable backups) |
 | `scenario.json` | Scenario data (imported into app-private storage) |
 | `weapons.json` | *Optional* — overrides the bundled weapon data |
 | `crash.log` | Error log for debugging |
 
-In addition the app stores live scenario state in app-private storage (`user_data_dir`) to avoid scoped-storage restrictions on Android 13+.
+The app stores **live character data** and scenario state in app-private storage (`user_data_dir`) to avoid scoped-storage restrictions on Android 13+.  Characters are saved to `user_data_dir/characters.json` automatically on every change.
+
+To share or back up characters, use the **Export** button on the Characters tab. This writes `characters.json` to the Documents folder above. To import characters from a bundle, use the **Import** button and select any `.json` file containing a list of character objects.
 
 ---
 
