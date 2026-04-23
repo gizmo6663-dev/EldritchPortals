@@ -12,7 +12,7 @@ Version: **0.3.3** · System: Call of Cthulhu / Pulp Cthulhu
 ## Contents
 
 - [Features](#features)
-- [Screenshots](#screenshots)
+- [Skjermbilder](#skjermbilder)
 - [Getting started](#getting-started)
 - [Scenario format](#scenario-format)
 - [On-device folder layout](#on-device-folder-layout)
@@ -95,9 +95,40 @@ Sub-tabs for session prep and quick reference:
 
 ---
 
-## Screenshots
+## Skjermbilder
 
-*Screenshots to be added.*
+<table>
+  <tr>
+    <td><a href="screenshots/Screenshot_20260423_195351_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195351_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195355_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195355_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195359_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195359_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195456_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195456_Eldritch Portal.jpg" width="180"></a></td>
+  </tr>
+  <tr>
+    <td><a href="screenshots/Screenshot_20260423_195459_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195459_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195506_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195506_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195522_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195522_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195531_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195531_Eldritch Portal.jpg" width="180"></a></td>
+  </tr>
+  <tr>
+    <td><a href="screenshots/Screenshot_20260423_195541_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195541_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195546_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195546_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195550_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195550_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195604_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195604_Eldritch Portal.jpg" width="180"></a></td>
+  </tr>
+  <tr>
+    <td><a href="screenshots/Screenshot_20260423_195608_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195608_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195610_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195610_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195617_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195617_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195636_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195636_Eldritch Portal.jpg" width="180"></a></td>
+  </tr>
+  <tr>
+    <td><a href="screenshots/Screenshot_20260423_195645_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195645_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195651_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195651_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195659_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195659_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260423_195710_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195710_Eldritch Portal.jpg" width="180"></a></td>
+  </tr>
+</table>
 
 ---
 
