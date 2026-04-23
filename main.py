@@ -26,6 +26,7 @@ try:
     from kivy.uix.widget import Widget
     from kivy.core.window import Window
     from kivy.uix.filechooser import FileChooserListView
+    from kivy.graphics import Color as GColor, Rectangle as GRect
     from kivy.utils import platform
     from kivy.metrics import dp, sp
     from kivy.animation import Animation
@@ -2141,11 +2142,10 @@ try:
                 return
             fl = root.parent
 
-            from kivy.graphics import Color as GCd, Rectangle as GRd
             dim = Widget(size_hint=(1, 1))
             with dim.canvas:
-                GCd(rgba=[0, 0, 0, 0.6])
-                dr = GRd(pos=dim.pos, size=dim.size)
+                GColor(rgba=[0, 0, 0, 0.6])
+                dr = GRect(pos=dim.pos, size=dim.size)
             dim.bind(pos=lambda w_, v: setattr(dr, 'pos', w_.pos),
                      size=lambda w_, v: setattr(dr, 'size', w_.size))
 
@@ -2186,14 +2186,13 @@ try:
             if not self.chars:
                 self._chars_show_message("No characters to export.")
                 return
-            out_path = os.path.join(BASE_DIR, "characters.json")
             try:
                 os.makedirs(BASE_DIR, exist_ok=True)
-                with open(out_path, 'w', encoding='utf-8') as f:
+                with open(CHAR_FILE, 'w', encoding='utf-8') as f:
                     json.dump(self.chars, f, indent=2, ensure_ascii=False)
                 n = len(self.chars)
                 self._chars_show_message(
-                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{out_path}",
+                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{CHAR_FILE}",
                     success=True)
             except Exception as e:
                 self._chars_show_message(f"Export failed:\n{e}")
