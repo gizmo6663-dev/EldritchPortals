@@ -2187,12 +2187,13 @@ try:
                 self._chars_show_message("No characters to export.")
                 return
             try:
+                export_path = os.path.join(BASE_DIR, "characters_export.json")
                 os.makedirs(BASE_DIR, exist_ok=True)
-                with open(CHAR_FILE, 'w', encoding='utf-8') as f:
+                with open(export_path, 'w', encoding='utf-8') as f:
                     json.dump(self.chars, f, indent=2, ensure_ascii=False)
                 n = len(self.chars)
                 self._chars_show_message(
-                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{CHAR_FILE}",
+                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{export_path}",
                     success=True)
             except Exception as e:
                 self._chars_show_message(f"Export failed:\n{e}")
