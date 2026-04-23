@@ -867,6 +867,7 @@ try:
             from android.permissions import request_permissions, Permission
             request_permissions([
                 Permission.READ_EXTERNAL_STORAGE,
+                Permission.WRITE_EXTERNAL_STORAGE,
                 Permission.READ_MEDIA_IMAGES,
                 Permission.READ_MEDIA_AUDIO,
                 Permission.INTERNET,
@@ -876,6 +877,34 @@ try:
             ])
         except:
             pass
+        # On Android 11+ (API 30+), READ/WRITE_EXTERNAL_STORAGE no longer covers
+        # general files such as .json in /sdcard/Documents/.  Request the
+        # "All Files Access" permission (MANAGE_EXTERNAL_STORAGE) by sending the
+        # user to the system settings page if it hasn't been granted yet.
+        try:
+            from jnius import autoclass
+            Build = autoclass('android.os.Build')
+            if Build.VERSION.SDK_INT >= 30:
+                Environment = autoclass('android.os.Environment')
+                if not Environment.isExternalStorageManager():
+                    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+                    Toast = autoclass('android.widget.Toast')
+                    toast = Toast.makeText(
+                        PythonActivity.mActivity,
+                        "Eldritch Portals needs 'All Files Access' to read/write"
+                        " .json files in Documents. Please grant it on the next screen.",
+                        Toast.LENGTH_LONG)
+                    toast.show()
+                    Intent = autoclass('android.content.Intent')
+                    Settings = autoclass('android.provider.Settings')
+                    Uri = autoclass('android.net.Uri')
+                    pkg = PythonActivity.mActivity.getPackageName()
+                    uri = Uri.fromParts("package", pkg, None)
+                    intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                    intent.setData(uri)
+                    PythonActivity.mActivity.startActivity(intent)
+        except Exception as e:
+            log(f"MANAGE_EXTERNAL_STORAGE request failed: {e}")
 
     def load_json(p, d=None):
         try:
@@ -2187,12 +2216,13 @@ try:
                 self._chars_show_message("No characters to export.")
                 return
             try:
+                export_path = os.path.join(BASE_DIR, "characters_export.json")
                 os.makedirs(BASE_DIR, exist_ok=True)
-                with open(CHAR_FILE, 'w', encoding='utf-8') as f:
+                with open(export_path, 'w', encoding='utf-8') as f:
                     json.dump(self.chars, f, indent=2, ensure_ascii=False)
                 n = len(self.chars)
                 self._chars_show_message(
-                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{CHAR_FILE}",
+                    f"Exported {n} character{'s' if n != 1 else ''} to:\n{export_path}",
                     success=True)
             except Exception as e:
                 self._chars_show_message(f"Export failed:\n{e}")
@@ -2200,6 +2230,10 @@ try:
         def _chars_import(self):
             """Open a file chooser overlay to import a character bundle."""
             self._chars_close_overlay()
+            try:
+                os.makedirs(BASE_DIR, exist_ok=True)
+            except Exception:
+                pass
             start_path = BASE_DIR if os.path.exists(BASE_DIR) else os.path.expanduser("~")
             overlay = RBox(
                 bg_color=BG, radius=dp(16),
