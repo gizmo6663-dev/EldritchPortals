@@ -63,6 +63,7 @@ try:
     except NameError:
         _BUNDLE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
     BUNDLED_WEAPONS = os.path.join(_BUNDLE_DIR, "weapons.json")
+    BUNDLED_CHARS   = os.path.join(_BUNDLE_DIR, "characters.json")
     # Also try an external version — if it exists AND is readable,
     # use it (lets the user override it with their own file if possible).
     EXTERNAL_WEAPONS = os.path.join(BASE_DIR, "weapons.json")
@@ -1194,6 +1195,19 @@ try:
             # Characters live in app-private storage (always writable on Android)
             self.CHARS_FILE = os.path.join(self.user_data_dir, "characters.json")
             self.chars = load_json(self.CHARS_FILE, [])
+            # On first launch (no saved characters), seed from the bundled characters.json
+            if not self.chars and os.path.exists(BUNDLED_CHARS):
+                try:
+                    with open(BUNDLED_CHARS, 'r', encoding='utf-8') as _f:
+                        _data = json.load(_f)
+                    if isinstance(_data, list):
+                        self.chars = [ch for ch in _data
+                                      if isinstance(ch, dict) and 'name' in ch]
+                        if self.chars:
+                            save_json(self.CHARS_FILE, self.chars)
+                            log(f"Seeded {len(self.chars)} characters from bundled file")
+                except Exception as _e:
+                    log(f"Could not load bundled characters: {_e}")
             self.edit_idx = None
             self._chars_overlay = None
             self._chars_dim = None
