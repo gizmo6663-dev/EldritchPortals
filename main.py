@@ -2286,9 +2286,12 @@ try:
             except Exception as e:
                 self._chars_show_message(f"Error reading file:\n{e}")
                 return
+            # Auto-detect format: wrap a single character object in a list
+            if isinstance(data, dict):
+                data = [data]
             if not isinstance(data, list):
                 self._chars_show_message(
-                    "Invalid format: file must contain a list of characters.")
+                    "Invalid format: expected a character object or a list of characters.")
                 return
             valid = [ch for ch in data if isinstance(ch, dict) and 'name' in ch]
             if not valid:
