@@ -67,6 +67,7 @@ try:
     # Also try an external version — if it exists AND is readable,
     # use it (lets the user override it with their own file if possible).
     EXTERNAL_WEAPONS = os.path.join(BASE_DIR, "weapons.json")
+    EXTERNAL_SCENARIO = os.path.join(BASE_DIR, "scenario.json")
     # Favorites are stored in user_data_dir (app-private, always writable).
     # WEAPONS_FAV_FILE is set in build() when user_data_dir is available.
 
@@ -907,6 +908,47 @@ try:
         except Exception as e:
             log(f"MANAGE_EXTERNAL_STORAGE request failed: {e}")
 
+    def has_all_files_access():
+        """Check whether the app has MANAGE_EXTERNAL_STORAGE (Android 11+).
+        Returns True if yes, False if no, None if not Android or not relevant."""
+        if platform != 'android':
+            return None
+        try:
+            from jnius import autoclass
+            Environment = autoclass('android.os.Environment')
+            Build = autoclass('android.os.Build$VERSION')
+            if Build.SDK_INT < 30:
+                return None
+            return bool(Environment.isExternalStorageManager())
+        except Exception as e:
+            log(f"has_all_files_access check failed: {e}")
+            return None
+
+    def request_all_files_access():
+        """Open Android settings where the user can grant 'All files access'.
+        Requires Android 11+ and MANAGE_EXTERNAL_STORAGE in the manifest."""
+        if platform != 'android':
+            return False
+        try:
+            from jnius import autoclass
+            PythonActivity = autoclass('org.kivy.android.PythonActivity')
+            Intent = autoclass('android.content.Intent')
+            Settings = autoclass('android.provider.Settings')
+            Uri = autoclass('android.net.Uri')
+            activity = PythonActivity.mActivity
+            package = activity.getPackageName()
+            try:
+                intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.setData(Uri.parse(f"package:{package}"))
+                activity.startActivity(intent)
+            except Exception:
+                intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                activity.startActivity(intent)
+            return True
+        except Exception as e:
+            log(f"request_all_files_access failed: {e}")
+            return False
+
     def load_json(p, d=None):
         try:
             with open(p, 'r') as f:
@@ -1050,6 +1092,95 @@ try:
             self.cc = None
             self.mc = None
 
+    class FilePicker:
+        """Android Storage Access Framework file picker.
+
+        Opens the system file picker and reads the selected file via URI —
+        requires no storage permissions, works on all Android versions,
+        and the user can pick from anywhere (Documents, Downloads, Google Drive, etc.).
+        """
+        REQUEST_CODE = 7331
+
+        def __init__(self):
+            self.callback = None
+            self._activity = None
+            self._bound = False
+
+        def _ensure_bound(self):
+            """Bind to Android activity-result listener."""
+            if self._bound or platform != 'android':
+                return
+            try:
+                from jnius import autoclass
+                PythonActivity = autoclass('org.kivy.android.PythonActivity')
+                self._activity = PythonActivity.mActivity
+                from android import activity as android_activity
+                android_activity.bind(on_activity_result=self._on_result)
+                self._bound = True
+                log("FilePicker bound to Android activity")
+            except Exception as e:
+                log(f"FilePicker bind error: {e}")
+
+        def pick(self, callback, mime_type='application/json'):
+            """Open file picker. callback(ok, text_or_err) is called
+            when the user has selected (or cancelled)."""
+            if platform != 'android':
+                callback(False, "File picker only available on Android")
+                return
+            self._ensure_bound()
+            if not self._activity:
+                callback(False, "Could not access Android activity")
+                return
+            self.callback = callback
+            try:
+                from jnius import autoclass
+                Intent = autoclass('android.content.Intent')
+                intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.setType(mime_type)
+                self._activity.startActivityForResult(intent, self.REQUEST_CODE)
+            except Exception as e:
+                log(f"FilePicker pick error: {e}")
+                callback(False, f"Could not open file picker: {e}")
+
+        def _on_result(self, request_code, result_code, intent):
+            """Received result from the file picker."""
+            if request_code != self.REQUEST_CODE:
+                return
+            cb = self.callback
+            self.callback = None
+            if cb is None:
+                return
+            if result_code != -1 or intent is None:
+                Clock.schedule_once(lambda dt: cb(False, "Cancelled"), 0)
+                return
+            try:
+                from jnius import autoclass
+                uri = intent.getData()
+                if uri is None:
+                    Clock.schedule_once(lambda dt: cb(False, "No file selected"), 0)
+                    return
+                resolver = self._activity.getContentResolver()
+                stream = resolver.openInputStream(uri)
+                BufferedReader = autoclass('java.io.BufferedReader')
+                InputStreamReader = autoclass('java.io.InputStreamReader')
+                reader = BufferedReader(InputStreamReader(stream, 'UTF-8'))
+                sb = []
+                line = reader.readLine()
+                while line is not None:
+                    sb.append(line)
+                    line = reader.readLine()
+                    if line is not None:
+                        sb.append('\n')
+                reader.close()
+                stream.close()
+                text = ''.join(sb)
+                Clock.schedule_once(lambda dt: cb(True, text), 0)
+            except Exception as e:
+                log(f"FilePicker read error: {e}")
+                err = f"Read failed: {type(e).__name__}: {e}"
+                Clock.schedule_once(lambda dt: cb(False, err), 0)
+
     class APlayer:
         def __init__(self):
             self.mp = None
@@ -1192,8 +1323,10 @@ try:
             self.streamer = SPlayer()
             self.cast = CastMgr()
             self.server = MediaServer()
+            self.file_picker = FilePicker()
             # Characters live in app-private storage (always writable on Android)
             self.CHARS_FILE = os.path.join(self.user_data_dir, "characters.json")
+            self.SCENARIO_FILE = os.path.join(self.user_data_dir, "scenario.json")
             self.chars = load_json(self.CHARS_FILE, [])
             # On first launch (no saved characters), seed from the bundled characters.json
             if not self.chars and os.path.exists(BUNDLED_CHARS):
@@ -1239,7 +1372,7 @@ try:
             tabs = RBox(size_hint_y=None, height=dp(52), spacing=dp(4),
                         padding=[dp(8), 0], bg_color=BTN)
             self._tabs = {}
-            for key, txt in [('img','Images'),('mus','Music'),('amb','Ambient'),('tool','Characters'),('rules','Rules'),('cast','Cast')]:
+            for key, txt in [('img','Images'),('snd','Sound'),('cmb','Combat'),('tool','Characters'),('rules','Rules'),('cast','Cast')]:
                 active = key == 'img'
                 b = RToggle(text=txt, group='tabs',
                             state='down' if active else 'normal',
@@ -1379,8 +1512,8 @@ try:
         def _tab(self, k):
             self.content.clear_widgets()
             builders = {
-                'img': self._mk_img, 'mus': self._mk_mus,
-                'amb': self._mk_amb, 'tool': self._mk_tool,
+                'img': self._mk_img, 'snd': self._mk_sound,
+                'cmb': self._mk_combat, 'tool': self._mk_tool,
                 'rules': self._mk_rules, 'cast': self._mk_cast,
             }
             if k in builders:
@@ -1846,15 +1979,179 @@ try:
             self.cast_lbl.text = "Disconnected"
 
         # ---------- CHARACTERS ----------
-        def _mk_tool(self):
-            """Character tab with sub-tabs: Characters and Initiative."""
+
+        # ---------- SOUND (combined Music + Ambient) ----------
+        def _mk_sound(self):
+            """Sound tab with Music and Ambient sub-tabs."""
+            if not hasattr(self, '_sound_sub'):
+                self._sound_sub = 'mus'
+
+            p = BoxLayout(orientation='vertical', spacing=dp(6))
+
+            sub_bar = RBox(size_hint_y=None, height=dp(42),
+                           spacing=dp(4), padding=[dp(6), dp(4)],
+                           bg_color=BTN, radius=dp(10))
+
+            b_mus = RToggle(
+                text='Music', group='sound_sub',
+                state='down' if self._sound_sub == 'mus' else 'normal',
+                bg_color=BTNH if self._sound_sub == 'mus' else BTN,
+                color=GOLD if self._sound_sub == 'mus' else DIM,
+                font_size=sp(12), bold=True)
+            b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
+            sub_bar.add_widget(b_mus)
+
+            b_amb = RToggle(
+                text='Ambient', group='sound_sub',
+                state='down' if self._sound_sub == 'amb' else 'normal',
+                bg_color=BTNH if self._sound_sub == 'amb' else BTN,
+                color=GOLD if self._sound_sub == 'amb' else DIM,
+                font_size=sp(12), bold=True)
+            b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
+            sub_bar.add_widget(b_amb)
+
+            p.add_widget(sub_bar)
+
+            self._sound_area = BoxLayout()
+            p.add_widget(self._sound_area)
+
+            self._sound_render()
+            return p
+
+        def _sound_switch(self, which):
+            self._sound_sub = which
+            self._sound_render()
+
+        def _sound_render(self):
+            self._sound_area.clear_widgets()
+            if self._sound_sub == 'mus':
+                self._sound_area.add_widget(self._mk_mus())
+            else:
+                self._sound_area.add_widget(self._mk_amb())
+
+        # ---------- COMBAT ----------
+        def _mk_combat(self):
+            """Combat tab with sub-tabs: Initiative and Map."""
             self._init_tracker_init()
-            if not hasattr(self, '_tool_sub'):
+            if not hasattr(self, '_cmb_sub'):
+                self._cmb_sub = 'init'
+
+            p = BoxLayout(orientation='vertical', spacing=dp(6))
+
+            sub_bar = RBox(size_hint_y=None, height=dp(42),
+                           spacing=dp(4), padding=[dp(6), dp(4)],
+                           bg_color=BTN, radius=dp(10))
+
+            b_init = RToggle(
+                text='Initiative', group='cmb_sub',
+                state='down' if self._cmb_sub == 'init' else 'normal',
+                bg_color=BTNH if self._cmb_sub == 'init' else BTN,
+                color=GOLD if self._cmb_sub == 'init' else DIM,
+                font_size=sp(12), bold=True)
+            b_init.bind(on_release=lambda b: self._cmb_switch('init'))
+            sub_bar.add_widget(b_init)
+
+            b_map = RToggle(
+                text='Map', group='cmb_sub',
+                state='down' if self._cmb_sub == 'map' else 'normal',
+                bg_color=BTNH if self._cmb_sub == 'map' else BTN,
+                color=GOLD if self._cmb_sub == 'map' else DIM,
+                font_size=sp(12), bold=True)
+            b_map.bind(on_release=lambda b: self._cmb_switch('map'))
+            sub_bar.add_widget(b_map)
+
+            p.add_widget(sub_bar)
+
+            self._cmb_area = BoxLayout()
+            p.add_widget(self._cmb_area)
+
+            self._cmb_render()
+            return p
+
+        def _cmb_switch(self, which):
+            self._cmb_sub = which
+            self._cmb_render()
+
+        def _cmb_render(self):
+            """Show initiative tracker or map view."""
+            self._cmb_area.clear_widgets()
+            self._init_target_area = self._cmb_area
+            if self._cmb_sub == 'init':
+                self._mk_init_tracker()
+            else:
+                self._mk_cmb_map()
+
+        def _mk_cmb_map(self):
+            """Map sub-tab: open battlemap or show info if list is empty."""
+            p = BoxLayout(orientation='vertical',
+                          spacing=dp(10), padding=dp(12))
+
+            if not self._init_list:
+                p.add_widget(Widget())
+                p.add_widget(mklbl(
+                    "Add participants in the Initiative tab\n"
+                    "to use the map.",
+                    color=DIM, size=13, wrap=True))
+                p.add_widget(Widget())
+                self._cmb_area.add_widget(p)
+                return
+
+            n_pc = sum(1 for e in self._init_list if e.get('type') == 'PC')
+            n_npc = sum(1 for e in self._init_list if e.get('type') == 'NPC')
+            n_s = sum(1 for e in self._init_list if e.get('type') == 'S')
+
+            info_box = RBox(orientation='vertical', bg_color=BG2,
+                            size_hint_y=None, height=dp(110),
+                            padding=dp(12), spacing=dp(4),
+                            radius=dp(10))
+            info_box.add_widget(mklbl(
+                "READY FOR MAP", color=GOLD, size=13, bold=True, h=22))
+            summary = []
+            if n_pc:
+                summary.append(f"{n_pc} investigator(s)")
+            if n_npc:
+                summary.append(f"{n_npc} NPC")
+            if n_s:
+                summary.append(f"{n_s} creature(s)")
+            info_box.add_widget(mklbl(
+                "  •  ".join(summary) if summary else "No participants",
+                color=TXT, size=12, wrap=True))
+
+            act_name = (self._init_list[0].get('name', '')
+                        if self._init_phase == 'active'
+                        and self._init_list else '')
+            if act_name:
+                info_box.add_widget(mklbl(
+                    f"Current turn: {act_name}",
+                    color=DIM, size=11, wrap=True))
+            else:
+                info_box.add_widget(mklbl(
+                    "Go to the Initiative tab and press 'Finish' "
+                    "to start the round order.",
+                    color=DIM, size=10, wrap=True))
+            p.add_widget(info_box)
+
+            p.add_widget(mkbtn("Open map (fullscreen)",
+                               self._bm_open, accent=True,
+                               size_hint_y=None, height=dp(56)))
+
+            p.add_widget(mklbl(
+                "The map opens as a full-width overlay. "
+                "Use 'Close' to return here.",
+                color=DIM, size=10, wrap=True, h=40))
+
+            p.add_widget(Widget())
+            self._cmb_area.add_widget(p)
+
+        def _mk_tool(self):
+            """Character tab with sub-tabs: Characters, Weapons, and Scenario."""
+            self._scen_init()
+            # 'init' was a sub-tab in older versions; fall back to 'chars'
+            if not hasattr(self, '_tool_sub') or self._tool_sub == 'init':
                 self._tool_sub = 'chars'
 
             p = BoxLayout(orientation='vertical', spacing=dp(6))
 
-            # Sub-tab row
             sub_bar = RBox(size_hint_y=None, height=dp(42),
                            spacing=dp(4), padding=[dp(6), dp(4)],
                            bg_color=BTN, radius=dp(10))
@@ -1867,15 +2164,6 @@ try:
             b_chars.bind(on_release=lambda b: self._tool_switch('chars'))
             sub_bar.add_widget(b_chars)
 
-            b_init = RToggle(
-                text='Initiative', group='tool_sub',
-                state='down' if self._tool_sub == 'init' else 'normal',
-                bg_color=BTNH if self._tool_sub == 'init' else BTN,
-                color=GOLD if self._tool_sub == 'init' else DIM,
-                font_size=sp(11), bold=True)
-            b_init.bind(on_release=lambda b: self._tool_switch('init'))
-            sub_bar.add_widget(b_init)
-
             b_weap = RToggle(
                 text='Weapons', group='tool_sub',
                 state='down' if self._tool_sub == 'weap' else 'normal',
@@ -1885,9 +2173,17 @@ try:
             b_weap.bind(on_release=lambda b: self._tool_switch('weap'))
             sub_bar.add_widget(b_weap)
 
+            b_scen = RToggle(
+                text='Scenario', group='tool_sub',
+                state='down' if self._tool_sub == 'scen' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'scen' else BTN,
+                color=GOLD if self._tool_sub == 'scen' else DIM,
+                font_size=sp(11), bold=True)
+            b_scen.bind(on_release=lambda b: self._tool_switch('scen'))
+            sub_bar.add_widget(b_scen)
+
             p.add_widget(sub_bar)
 
-            # Action row (for the character list)
             self._tool_action_bar = BoxLayout(
                 size_hint_y=None, height=dp(42),
                 spacing=dp(6), padding=[dp(6), 0])
@@ -1896,11 +2192,12 @@ try:
             self.tool_area = BoxLayout()
             p.add_widget(self.tool_area)
 
+            self._init_target_area = None
+
             self._tool_render_sub()
             return p
 
         def _tool_switch(self, which):
-            """Switch between characters and initiative."""
             self._tool_sub = which
             self._tool_render_sub()
 
@@ -1920,11 +2217,8 @@ try:
                 self._tool_action_bar.add_widget(
                     mklbl("Characters", color=GOLD, size=13, bold=True))
                 self._show_list()
-            elif self._tool_sub == 'init':
-                self._tool_action_bar.add_widget(
-                    mklbl("Initiative Tracker", color=GOLD,
-                          size=14, bold=True))
-                self._mk_init_tracker()
+            elif self._tool_sub == 'scen':
+                self._mk_scenario()
             else:
                 self._mk_weapons()
 
@@ -2372,11 +2666,21 @@ try:
             if not hasattr(self, '_init_phase'):
                 self._init_phase = 'setup'
                 self._init_list = []
+            if not hasattr(self, '_init_target_area'):
+                self._init_target_area = None
+
+        def _init_area(self):
+            """Return the current container for the initiative UI."""
+            tgt = getattr(self, '_init_target_area', None)
+            if tgt is not None:
+                return tgt
+            return self.tool_area
 
         def _mk_init_tracker(self):
             """Build the initiative tracker UI."""
             self._init_tracker_init()
-            self.tool_area.clear_widgets()
+            area = self._init_area()
+            area.clear_widgets()
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             if self._init_phase == 'setup':
@@ -2384,7 +2688,7 @@ try:
             else:
                 self._init_build_active(p)
 
-            self.tool_area.add_widget(p)
+            area.add_widget(p)
 
         def _init_build_setup(self, p):
             """Setup phase: choose participants and adjust DEX values."""
@@ -2523,7 +2827,7 @@ try:
                     if ch.get('type', 'PC') == 'NPC'
                     and ch.get('name', '') not in already_in]
 
-            self.tool_area.clear_widgets()
+            self._init_area().clear_widgets()
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
@@ -2558,7 +2862,7 @@ try:
 
             scroll.add_widget(g)
             p.add_widget(scroll)
-            self.tool_area.add_widget(p)
+            self._init_area().add_widget(p)
 
         def _init_make_char_btn(self, ch):
             """Create a button for a character in the picker list."""
@@ -2683,7 +2987,7 @@ try:
 
         def _init_show_enemy_picker(self):
             """Show a list of CoC enemies and creatures + custom entry."""
-            self.tool_area.clear_widgets()
+            self._init_area().clear_widgets()
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
@@ -2753,7 +3057,7 @@ try:
 
             scroll.add_widget(g)
             p.add_widget(scroll)
-            self.tool_area.add_widget(p)
+            self._init_area().add_widget(p)
 
         def _init_add_enemy(self, name, dex, hp):
             """Add an enemy from the list. Increment if duplicate."""
@@ -3846,6 +4150,636 @@ try:
                     parent.remove_widget(self._weap_dim)
             self._weap_overlay = None
             self._weap_dim = None
+
+
+        # ---------- SCENARIO ----------
+        def _scen_init(self):
+            """Initialize scenario state."""
+            if not hasattr(self, '_scen_data'):
+                self._scen_data = None
+                self._scen_view = 'clues'
+
+        def _scen_load(self):
+            """Read scenario.json from app-private storage."""
+            path = self.SCENARIO_FILE
+            if not os.path.exists(path):
+                self._scen_data = None
+                return None
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                self._scen_data = data
+                log(f"Scenario loaded: {data.get('title', '?')}")
+                return data
+            except Exception as e:
+                log(f"Scenario error: {e}")
+                self._scen_data = {'_error': str(e)}
+                return None
+
+        def _scen_save(self):
+            """Save scenario.json to app-private storage."""
+            if not self._scen_data or '_error' in self._scen_data:
+                return
+            try:
+                os.makedirs(os.path.dirname(self.SCENARIO_FILE), exist_ok=True)
+                with open(self.SCENARIO_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(self._scen_data, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                log(f"Scenario save failed: {e}")
+
+        def _scen_try_import(self):
+            """Try to copy scenario.json from the Documents folder to
+            app-private storage. Returns (ok, message)."""
+            has_access = has_all_files_access()
+            if not os.path.exists(EXTERNAL_SCENARIO):
+                hint = ""
+                if has_access is False:
+                    hint = ("\n\nHint: the app does not have 'All files access' yet. "
+                            "Tap 'Grant access' to open settings and enable it.")
+                return False, (
+                    f"No file found in Documents.\n\n"
+                    f"Expected path:\n{EXTERNAL_SCENARIO}{hint}")
+            try:
+                with open(EXTERNAL_SCENARIO, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if not isinstance(data, dict):
+                    return False, "File is not a JSON object."
+                os.makedirs(os.path.dirname(self.SCENARIO_FILE), exist_ok=True)
+                with open(self.SCENARIO_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                log(f"Scenario imported: {data.get('title', '?')}")
+                return True, f"Imported: {data.get('title', '(no title)')}"
+            except PermissionError:
+                hint = ""
+                if has_access is False:
+                    hint = ("\n\nFix: tap 'Grant access' below and "
+                            "enable 'Allow managing all files' for Eldritch Portals.")
+                return False, "No access to the Documents folder." + hint
+            except json.JSONDecodeError as e:
+                return False, f"Invalid JSON in file:\n{e}"
+            except Exception as e:
+                return False, f"Error: {type(e).__name__}: {e}"
+
+        def _mk_scenario(self):
+            """Build the scenario sub-tab UI."""
+            self._scen_init()
+            if self._scen_data is None:
+                self._scen_load()
+
+            self._tool_action_bar.add_widget(
+                mkbtn("Pick File", self._scen_do_pick_file,
+                      accent=True, small=True, size_hint_x=0.3))
+            self._tool_action_bar.add_widget(
+                mkbtn("Reload", self._scen_reload,
+                      small=True, size_hint_x=0.25))
+            self._tool_action_bar.add_widget(
+                mkbtn("Reset", self._scen_confirm_reset,
+                      danger=True, small=True, size_hint_x=0.25))
+            title_text = "Scenario"
+            if self._scen_data and '_error' not in self._scen_data:
+                title_text = self._scen_data.get('title', 'Scenario')
+            self._tool_action_bar.add_widget(
+                mklbl(title_text, color=GOLD, size=11, bold=True))
+
+            self.tool_area.clear_widgets()
+
+            if self._scen_data is None:
+                self._scen_show_empty()
+                return
+
+            if '_error' in self._scen_data:
+                self._scen_show_error()
+                return
+
+            p = BoxLayout(orientation='vertical', spacing=dp(4), padding=dp(4))
+
+            sel = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(4))
+            for key, txt in [('clues', 'Clues'),
+                             ('timeline', 'Timeline'),
+                             ('beats', 'Plot'),
+                             ('notes', 'Notes')]:
+                active = (key == self._scen_view)
+                b = RBtn(
+                    text=txt,
+                    bg_color=BTNH if active else BTN,
+                    color=GOLD if active else TXT,
+                    font_size=sp(11), bold=active,
+                    size_hint_y=None, height=dp(36))
+                b.bind(on_release=lambda x, k=key: self._scen_switch_view(k))
+                sel.add_widget(b)
+            p.add_widget(sel)
+
+            sys_txt = self._scen_data.get('system', '')
+            if sys_txt:
+                p.add_widget(mklbl(f"System: {sys_txt}", color=DIM, size=10, h=16))
+
+            content = BoxLayout()
+            if self._scen_view == 'clues':
+                self._scen_build_list(
+                    content,
+                    self._scen_data.get('clues', []),
+                    'where', 'found',
+                    "No clues in this scenario.")
+            elif self._scen_view == 'timeline':
+                self._scen_build_list(
+                    content,
+                    self._scen_data.get('timeline', []),
+                    'when', 'triggered',
+                    "No timeline events.")
+            elif self._scen_view == 'beats':
+                self._scen_build_list(
+                    content,
+                    self._scen_data.get('beats', []),
+                    None, 'done',
+                    "No plot points.")
+            else:
+                self._scen_build_notes(content)
+            p.add_widget(content)
+
+            self.tool_area.add_widget(p)
+
+        def _scen_show_empty(self):
+            """Show message when no scenario.json is loaded."""
+            scroll = ScrollView()
+            box = BoxLayout(orientation='vertical',
+                            spacing=dp(8), padding=dp(16),
+                            size_hint_y=None)
+            box.bind(minimum_height=box.setter('height'))
+
+            box.add_widget(mklbl(
+                "No scenario loaded.",
+                color=GOLD, size=14, bold=True, h=28))
+
+            box.add_widget(mksep(8))
+            box.add_widget(mklbl(
+                "EASIEST — Pick File",
+                color=GOLD, size=12, bold=True, h=22))
+            box.add_widget(mklbl(
+                "Tap 'Pick File' to open Android's file picker. "
+                "Browse to scenario.json wherever you have it — "
+                "Documents, Downloads, Google Drive, SD card. "
+                "No extra permissions required.",
+                color=TXT, size=11, wrap=True))
+            box.add_widget(mkbtn(
+                "Pick File",
+                self._scen_do_pick_file, accent=True,
+                size_hint_y=None, height=dp(52)))
+
+            access = has_all_files_access()
+            box.add_widget(mksep(10))
+            box.add_widget(mklbl(
+                "ALTERNATIVE — Import from Documents",
+                color=GOLD, size=12, bold=True, h=22))
+
+            if access is True:
+                box.add_widget(mklbl(
+                    "All files access: ON",
+                    color=GRN, size=11, bold=True, h=20))
+                box.add_widget(mklbl(
+                    f"Place scenario.json in:\n{EXTERNAL_SCENARIO}\n\n"
+                    "Then tap 'Import from Documents' below.",
+                    color=TXT, size=11, wrap=True))
+                box.add_widget(mkbtn(
+                    "Import from Documents",
+                    self._scen_do_import,
+                    size_hint_y=None, height=dp(44)))
+            elif access is False:
+                box.add_widget(mklbl(
+                    "All files access: OFF",
+                    color=RED, size=11, bold=True, h=20))
+                box.add_widget(mklbl(
+                    "To use the Import button you need to enable "
+                    "'All files access' for this app. "
+                    "One-time setup — but 'Pick File' above is "
+                    "simpler and needs no extra permissions.",
+                    color=TXT, size=11, wrap=True))
+                box.add_widget(mkbtn(
+                    "Grant access (opens settings)",
+                    self._scen_request_access,
+                    size_hint_y=None, height=dp(44)))
+            else:
+                box.add_widget(mklbl(
+                    "Only available on Android 11+.",
+                    color=DIM, size=10, wrap=True))
+
+            box.add_widget(mksep(10))
+            box.add_widget(mklbl(
+                "MANUAL — Copy here",
+                color=GDIM, size=11, bold=True, h=20))
+            box.add_widget(mklbl(
+                self.SCENARIO_FILE,
+                color=GDIM, size=10, wrap=True))
+            box.add_widget(mklbl(
+                "Then tap 'Reload'.",
+                color=DIM, size=10, wrap=True))
+
+            box.add_widget(mksep(8))
+            box.add_widget(mkbtn(
+                "Reload",
+                self._scen_reload,
+                size_hint_y=None, height=dp(40)))
+
+            scroll.add_widget(box)
+            self.tool_area.add_widget(scroll)
+
+        def _scen_request_access(self):
+            """Open Android settings for All Files Access."""
+            ok = request_all_files_access()
+            if not ok:
+                self._scen_show_message(
+                    "Could not open settings",
+                    "Try navigating manually to:\n"
+                    "Settings > Apps > Eldritch Portals > "
+                    "Permissions > All files",
+                    is_error=True)
+
+        def _scen_do_pick_file(self):
+            """Open Android file picker and let the user select scenario.json."""
+            if platform != 'android':
+                self._scen_show_message(
+                    "Not supported",
+                    "File picker is only available on Android.",
+                    is_error=True)
+                return
+            self._scen_show_message(
+                "Opening file picker...",
+                "Select a scenario.json file. You can browse to "
+                "Documents, Downloads, Drive, or wherever you have it.",
+                is_error=False)
+            Clock.schedule_once(
+                lambda dt: self._scen_close_overlay(), 0.8)
+            Clock.schedule_once(
+                lambda dt: self.file_picker.pick(
+                    self._scen_on_file_picked,
+                    mime_type='*/*'),
+                1.0)
+
+        def _scen_on_file_picked(self, ok, text_or_err):
+            """Callback when the file picker is done."""
+            if not ok:
+                if text_or_err != "Cancelled":
+                    self._scen_show_message(
+                        "Could not read file",
+                        text_or_err, is_error=True)
+                return
+            try:
+                data = json.loads(text_or_err)
+            except json.JSONDecodeError as e:
+                self._scen_show_message(
+                    "Invalid JSON",
+                    f"The file is not valid JSON:\n{e}",
+                    is_error=True)
+                return
+            if not isinstance(data, dict):
+                self._scen_show_message(
+                    "Wrong format",
+                    "The file does not contain a JSON object "
+                    "(needs { ... }).",
+                    is_error=True)
+                return
+            try:
+                os.makedirs(os.path.dirname(self.SCENARIO_FILE), exist_ok=True)
+                with open(self.SCENARIO_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                log(f"Scenario picked and saved: {data.get('title', '?')}")
+            except Exception as e:
+                self._scen_show_message(
+                    "Could not save",
+                    f"Error saving:\n{e}",
+                    is_error=True)
+                return
+            self._scen_data = None
+            self._scen_load()
+            self._tool_render_sub()
+            self._scen_show_message(
+                "Scenario loaded",
+                f"Selected: {data.get('title', '(no title)')}",
+                is_error=False)
+
+        def _scen_do_import(self):
+            """Try to import scenario from the Documents folder."""
+            ok, msg = self._scen_try_import()
+            if ok:
+                self._scen_data = None
+                self._scen_load()
+                self._tool_render_sub()
+                self._scen_show_message("Import successful", msg, is_error=False)
+            else:
+                self._scen_show_message("Import failed", msg, is_error=True)
+
+        def _scen_show_message(self, title, msg, is_error=False):
+            """Show a message as an overlay."""
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.88, 0.5),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                title,
+                color=RED if is_error else GOLD,
+                size=14, bold=True, h=28))
+
+            scroll = ScrollView()
+            overlay.add_widget(scroll)
+            body = mklbl(msg, color=TXT, size=11, wrap=True)
+            scroll.add_widget(body)
+
+            overlay.add_widget(mkbtn(
+                "OK", self._scen_close_overlay,
+                accent=True, size_hint_y=None, height=dp(44)))
+
+            root = self.tool_area
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+
+            from kivy.graphics import Color as GCm, Rectangle as GRm
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCm(rgba=[0, 0, 0, 0.6])
+                dr = GRm(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+            dim.bind(on_touch_down=lambda w, t: self._scen_close_overlay() or True)
+
+            self._scen_dim = dim
+            self._scen_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _scen_show_error(self):
+            """Show error message if scenario.json was invalid."""
+            err = self._scen_data.get('_error', 'Unknown error')
+            scroll = ScrollView()
+            box = BoxLayout(orientation='vertical',
+                            spacing=dp(8), padding=dp(16),
+                            size_hint_y=None)
+            box.bind(minimum_height=box.setter('height'))
+
+            box.add_widget(mklbl(
+                "Error reading scenario.json",
+                color=RED, size=14, bold=True, h=28))
+            box.add_widget(mklbl(str(err), color=TXT, size=11, wrap=True))
+
+            box.add_widget(mksep(8))
+            box.add_widget(mklbl(
+                "Possible causes:",
+                color=GOLD, size=12, bold=True, h=22))
+            box.add_widget(mklbl(
+                "• File is not valid JSON "
+                "(check at jsonlint.com)\n"
+                "• Missing write permissions\n"
+                "• File is empty or corrupt",
+                color=TXT, size=11, wrap=True))
+
+            box.add_widget(mksep(6))
+            box.add_widget(mklbl(
+                "File path in use:",
+                color=GOLD, size=11, bold=True, h=20))
+            box.add_widget(mklbl(
+                self.SCENARIO_FILE,
+                color=GDIM, size=10, wrap=True))
+
+            box.add_widget(mksep(10))
+            box.add_widget(mkbtn(
+                "Reload",
+                self._scen_reload, accent=True,
+                size_hint_y=None, height=dp(44)))
+            box.add_widget(mkbtn(
+                "Import from Documents",
+                self._scen_do_import,
+                size_hint_y=None, height=dp(40)))
+
+            scroll.add_widget(box)
+            self.tool_area.add_widget(scroll)
+
+        def _scen_reload(self):
+            """Reload scenario.json from disk."""
+            self._scen_data = None
+            self._scen_load()
+            self._tool_render_sub()
+
+        def _scen_switch_view(self, view):
+            self._scen_view = view
+            self._tool_render_sub()
+
+        def _scen_build_list(self, container, items,
+                             subtitle_key, flag_key, empty_msg):
+            """Build a list with checkbox rows."""
+            if not items:
+                container.add_widget(mklbl(
+                    empty_msg, color=DIM, size=11, wrap=True))
+                return
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(4), padding=dp(4),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            for item in items:
+                g.add_widget(self._scen_make_row(item, subtitle_key, flag_key))
+
+            scroll.add_widget(g)
+            container.add_widget(scroll)
+
+        def _scen_make_row(self, item, subtitle_key, flag_key):
+            """Build a row for a clue/timeline/beat."""
+            done = bool(item.get(flag_key, False))
+            row = RBox(orientation='horizontal',
+                       bg_color=BG2 if not done else BTN,
+                       size_hint_y=None, height=dp(64),
+                       padding=[dp(8), dp(6)], spacing=dp(6),
+                       radius=dp(10))
+
+            tog = RBtn(
+                text='[X]' if done else '[ ]',
+                bg_color=BTNH if done else INPUT,
+                color=GOLD if done else DIM,
+                font_size=sp(14), bold=True,
+                size_hint_x=None, width=dp(52))
+            tog.bind(on_release=lambda b, it=item, fk=flag_key:
+                     self._scen_toggle(it, fk))
+            row.add_widget(tog)
+
+            mid = BoxLayout(orientation='vertical', spacing=dp(2))
+            title_lb = Label(
+                text=item.get('title', '?'),
+                font_size=sp(12),
+                color=DIM if done else GOLD,
+                bold=True,
+                halign='left', valign='middle')
+            title_lb.bind(size=lambda w, v: setattr(w, 'text_size', (v[0], None)))
+            mid.add_widget(title_lb)
+
+            if subtitle_key:
+                sub_val = item.get(subtitle_key, '')
+                if sub_val:
+                    sub_lb = Label(
+                        text=sub_val,
+                        font_size=sp(10),
+                        color=DIM,
+                        halign='left', valign='middle',
+                        size_hint_y=None, height=dp(18))
+                    sub_lb.bind(size=lambda w, v: setattr(w, 'text_size', (v[0], None)))
+                    mid.add_widget(sub_lb)
+
+            row.add_widget(mid)
+
+            desc = item.get('description', '')
+            if desc:
+                info_btn = RBtn(
+                    text='i', bg_color=BTN, color=TXT,
+                    font_size=sp(14), bold=True,
+                    size_hint_x=None, width=dp(44))
+                info_btn.bind(on_release=lambda b,
+                              t=item.get('title', '?'),
+                              d=desc:
+                              self._scen_show_detail(t, d))
+                row.add_widget(info_btn)
+
+            return row
+
+        def _scen_toggle(self, item, flag_key):
+            """Toggle flag and save."""
+            item[flag_key] = not bool(item.get(flag_key, False))
+            self._scen_save()
+            self._tool_render_sub()
+
+        def _scen_show_detail(self, title, desc):
+            """Show full description as an overlay."""
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(6),
+                padding=dp(12),
+                size_hint=(0.9, 0.7),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+
+            hdr = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            hdr.add_widget(mkbtn("Close", self._scen_close_overlay,
+                                 danger=True, small=True, size_hint_x=0.3))
+            hdr.add_widget(mklbl(title, color=GOLD, size=13, bold=True))
+            overlay.add_widget(hdr)
+
+            scroll = ScrollView()
+            body = mklbl(desc, color=TXT, size=12, wrap=True)
+            scroll.add_widget(body)
+            overlay.add_widget(scroll)
+
+            root = self.tool_area
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+
+            from kivy.graphics import Color as GCs, Rectangle as GRs
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCs(rgba=[0, 0, 0, 0.6])
+                dr = GRs(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+            dim.bind(on_touch_down=lambda w, t: self._scen_close_overlay() or True)
+
+            self._scen_dim = dim
+            self._scen_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _scen_close_overlay(self):
+            ov = getattr(self, '_scen_overlay', None)
+            dm = getattr(self, '_scen_dim', None)
+            if ov and ov.parent:
+                ov.parent.remove_widget(ov)
+            if dm and dm.parent:
+                dm.parent.remove_widget(dm)
+            self._scen_overlay = None
+            self._scen_dim = None
+
+        def _scen_build_notes(self, container):
+            """Build notes view."""
+            box = BoxLayout(orientation='vertical', spacing=dp(4))
+            notes = self._scen_data.get('notes', '')
+            self._scen_notes_input = TextInput(
+                text=notes, multiline=True,
+                background_color=INPUT, foreground_color=TXT,
+                cursor_color=GOLD, font_size=sp(12),
+                padding=[dp(8), dp(8)])
+            box.add_widget(self._scen_notes_input)
+            box.add_widget(mkbtn(
+                "Save notes", self._scen_save_notes,
+                accent=True, size_hint_y=None, height=dp(44)))
+            container.add_widget(box)
+
+        def _scen_save_notes(self):
+            """Save notes text."""
+            if not self._scen_data or '_error' in self._scen_data:
+                return
+            self._scen_data['notes'] = self._scen_notes_input.text
+            self._scen_save()
+
+        def _scen_confirm_reset(self):
+            """Ask for confirmation before resetting all flags."""
+            if not self._scen_data or '_error' in self._scen_data:
+                return
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.8, 0.4),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                "Reset progress?",
+                color=GOLD, size=14, bold=True, h=28))
+            overlay.add_widget(mklbl(
+                "All checkboxes in clues, timeline and "
+                "plot points will be reset. Notes are kept.",
+                color=TXT, size=11, wrap=True))
+            btns = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
+            btns.add_widget(mkbtn(
+                "Cancel", self._scen_close_overlay,
+                small=True, size_hint_x=0.5))
+            btns.add_widget(mkbtn(
+                "Reset", self._scen_reset_flags,
+                danger=True, size_hint_x=0.5))
+            overlay.add_widget(btns)
+
+            root = self.tool_area
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+
+            from kivy.graphics import Color as GCr, Rectangle as GRr
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCr(rgba=[0, 0, 0, 0.6])
+                dr = GRr(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+
+            self._scen_dim = dim
+            self._scen_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _scen_reset_flags(self):
+            """Reset all checkboxes."""
+            if not self._scen_data or '_error' in self._scen_data:
+                return
+            for c in self._scen_data.get('clues', []):
+                c['found'] = False
+            for t in self._scen_data.get('timeline', []):
+                t['triggered'] = False
+            for b in self._scen_data.get('beats', []):
+                b['done'] = False
+            self._scen_save()
+            self._scen_close_overlay()
+            self._tool_render_sub()
 
 
         def on_stop(self):
