@@ -1169,9 +1169,8 @@ try:
                 line = reader.readLine()
                 while line is not None:
                     sb.append(line)
+                    sb.append('\n')
                     line = reader.readLine()
-                    if line is not None:
-                        sb.append('\n')
                 reader.close()
                 stream.close()
                 text = ''.join(sb)
@@ -4503,7 +4502,7 @@ try:
                 dr = GRm(pos=dim.pos, size=dim.size)
             dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
                      size=lambda w, v: setattr(dr, 'size', w.size))
-            dim.bind(on_touch_down=lambda w, t: self._scen_close_overlay() or True)
+            dim.bind(on_touch_down=lambda w, t: (self._scen_close_overlay(), True)[1])
 
             self._scen_dim = dim
             self._scen_overlay = overlay
@@ -4682,7 +4681,7 @@ try:
                 dr = GRs(pos=dim.pos, size=dim.size)
             dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
                      size=lambda w, v: setattr(dr, 'size', w.size))
-            dim.bind(on_touch_down=lambda w, t: self._scen_close_overlay() or True)
+            dim.bind(on_touch_down=lambda w, t: (self._scen_close_overlay(), True)[1])
 
             self._scen_dim = dim
             self._scen_overlay = overlay
