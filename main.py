@@ -1460,6 +1460,15 @@ try:
                 btn.bg_color = BTN
                 btn.color = DIM
 
+        @staticmethod
+        def _char_type_color(tp):
+            """Return the label color for a given character type."""
+            if tp == 'PC':
+                return GRN
+            if tp == 'Fiende':
+                return RED
+            return GOLD
+
         def _init(self):
             ensure_dirs()
             self.server.start()
@@ -2240,7 +2249,7 @@ try:
                 for i, ch in enumerate(self.chars):
                     nm, tp = ch.get('name', '?'), ch.get('type', 'PC')
                     oc = ch.get('occ', '')
-                    c = GRN if tp == 'PC' else (RED if tp == 'Fiende' else GOLD)
+                    c = self._char_type_color(tp)
                     txt = f"[{tp}]  {nm}"
                     if oc:
                         txt += f"  -  {oc}"
@@ -2630,7 +2639,7 @@ try:
                 txt = f"[{tp}]  {nm}"
                 if oc:
                     txt += f"  —  {oc}"
-                c = GRN if tp == 'PC' else (RED if tp == 'Fiende' else GOLD)
+                c = self._char_type_color(tp)
                 lbl = mklbl(txt, color=c, size=12, h=28)
                 g.add_widget(lbl)
             if n > 20:
