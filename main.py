@@ -1460,6 +1460,15 @@ try:
                 btn.bg_color = BTN
                 btn.color = DIM
 
+        @staticmethod
+        def _char_type_color(tp):
+            """Return the label color for a given character type."""
+            if tp == 'PC':
+                return GRN
+            if tp == 'Fiende':
+                return RED
+            return GOLD
+
         def _init(self):
             ensure_dirs()
             self.server.start()
@@ -1997,6 +2006,7 @@ try:
                 bg_color=BTNH if self._sound_sub == 'mus' else BTN,
                 color=GOLD if self._sound_sub == 'mus' else DIM,
                 font_size=sp(12), bold=True)
+            b_mus.bind(state=self._tab_color)
             b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
             sub_bar.add_widget(b_mus)
 
@@ -2006,6 +2016,7 @@ try:
                 bg_color=BTNH if self._sound_sub == 'amb' else BTN,
                 color=GOLD if self._sound_sub == 'amb' else DIM,
                 font_size=sp(12), bold=True)
+            b_amb.bind(state=self._tab_color)
             b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
             sub_bar.add_widget(b_amb)
 
@@ -2047,6 +2058,7 @@ try:
                 bg_color=BTNH if self._cmb_sub == 'init' else BTN,
                 color=GOLD if self._cmb_sub == 'init' else DIM,
                 font_size=sp(12), bold=True)
+            b_init.bind(state=self._tab_color)
             b_init.bind(on_release=lambda b: self._cmb_switch('init'))
             sub_bar.add_widget(b_init)
 
@@ -2056,6 +2068,7 @@ try:
                 bg_color=BTNH if self._cmb_sub == 'map' else BTN,
                 color=GOLD if self._cmb_sub == 'map' else DIM,
                 font_size=sp(12), bold=True)
+            b_map.bind(state=self._tab_color)
             b_map.bind(on_release=lambda b: self._cmb_switch('map'))
             sub_bar.add_widget(b_map)
 
@@ -2160,6 +2173,7 @@ try:
                 bg_color=BTNH if self._tool_sub == 'chars' else BTN,
                 color=GOLD if self._tool_sub == 'chars' else DIM,
                 font_size=sp(11), bold=True)
+            b_chars.bind(state=self._tab_color)
             b_chars.bind(on_release=lambda b: self._tool_switch('chars'))
             sub_bar.add_widget(b_chars)
 
@@ -2169,6 +2183,7 @@ try:
                 bg_color=BTNH if self._tool_sub == 'weap' else BTN,
                 color=GOLD if self._tool_sub == 'weap' else DIM,
                 font_size=sp(11), bold=True)
+            b_weap.bind(state=self._tab_color)
             b_weap.bind(on_release=lambda b: self._tool_switch('weap'))
             sub_bar.add_widget(b_weap)
 
@@ -2178,6 +2193,7 @@ try:
                 bg_color=BTNH if self._tool_sub == 'scen' else BTN,
                 color=GOLD if self._tool_sub == 'scen' else DIM,
                 font_size=sp(11), bold=True)
+            b_scen.bind(state=self._tab_color)
             b_scen.bind(on_release=lambda b: self._tool_switch('scen'))
             sub_bar.add_widget(b_scen)
 
@@ -2233,7 +2249,7 @@ try:
                 for i, ch in enumerate(self.chars):
                     nm, tp = ch.get('name', '?'), ch.get('type', 'PC')
                     oc = ch.get('occ', '')
-                    c = GRN if tp == 'PC' else GOLD
+                    c = self._char_type_color(tp)
                     txt = f"[{tp}]  {nm}"
                     if oc:
                         txt += f"  -  {oc}"
@@ -2344,7 +2360,7 @@ try:
                 row.add_widget(Label(text=lbl, font_size=sp(10), color=DIM,
                                      size_hint_x=0.3, halign='right'))
                 if key == 'type':
-                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC'],
+                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC', 'Fiende'],
                                 background_color=BTN, color=GOLD, font_size=sp(11), size_hint_x=0.7)
                 else:
                     w = TextInput(text=str(ch.get(key, '')), font_size=sp(12), multiline=False,
@@ -2623,7 +2639,7 @@ try:
                 txt = f"[{tp}]  {nm}"
                 if oc:
                     txt += f"  —  {oc}"
-                c = GRN if tp == 'PC' else GOLD
+                c = self._char_type_color(tp)
                 lbl = mklbl(txt, color=c, size=12, h=28)
                 g.add_widget(lbl)
             if n > 20:
@@ -2825,6 +2841,9 @@ try:
             npcs = [ch for ch in self.chars
                     if ch.get('type', 'PC') == 'NPC'
                     and ch.get('name', '') not in already_in]
+            fiender = [ch for ch in self.chars
+                       if ch.get('type', 'PC') == 'Fiende'
+                       and ch.get('name', '') not in already_in]
 
             self._init_area().clear_widgets()
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
@@ -2853,7 +2872,13 @@ try:
                 for ch in npcs:
                     g.add_widget(self._init_make_char_btn(ch))
 
-            if not pcs and not npcs:
+            if fiender:
+                g.add_widget(mklbl("FIENDER",
+                                   color=RED, size=11, bold=True, h=22))
+                for ch in fiender:
+                    g.add_widget(self._init_make_char_btn(ch))
+
+            if not pcs and not npcs and not fiender:
                 g.add_widget(mklbl(
                     "No available characters.\n"
                     "Add characters under the 'Characters' tab first.",
