@@ -1,6 +1,6 @@
 [app]
 title = Eldritch Portals
-package.name = eldritchportal
+package.name = eldritchportals
 package.domain = org.rpg
 
 icon.filename = %(source.dir)s/icon.png
