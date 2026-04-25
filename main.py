@@ -3865,8 +3865,6 @@ try:
                     json.dump(data, f, ensure_ascii=False, indent=2)
                 log(f"Scenario importert: {data.get('title', '?')}")
                 return True, f"Importert: {data.get('title', '(uten tittel)')}"
-                log(f"Scenario imported: {data.get('title', '?')}")
-                return True, f"Imported: {data.get('title', '(no title)')}"
             except PermissionError:
                 hint = ""
                 if has_access is False:
@@ -3878,7 +3876,6 @@ try:
                     + hint)
             except json.JSONDecodeError as e:
                 return False, f"Invalid JSON in file:\n{e}"
-                return False, f"Error: {type(e).__name__}: {e}"
         def _mk_scenario(self):
             """Bygg scenario-sub-tab UI."""
             self._scen_init()
