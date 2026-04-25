@@ -8,7 +8,7 @@ icon.filename = %(source.dir)s/icon.png
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
-version = 0.3.1
+version = 0.3.3
 
 requirements = python3,kivy,pillow,android,pychromecast,zeroconf,ifaddr,protobuf
 
