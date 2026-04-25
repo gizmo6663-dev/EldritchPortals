@@ -1487,7 +1487,7 @@ try:
             if self.splash:
                 anim = Animation(opacity=0, duration=0.8)
                 def _remove(*a):
-                    if self.splash.parent:
+                    if self.splash and self.splash.parent:
                         self.splash.parent.remove_widget(self.splash)
                     self.splash = None
                 anim.bind(on_complete=_remove)
