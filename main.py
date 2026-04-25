@@ -3585,7 +3585,7 @@ try:
                     f"tap an empty tile to place.")
             else:
                 self._bm_unp_label.text = (
-                    f"To place ({len([t for t in self._bm_tokens.values() if not t.get('placed')])}): tap to select.")
+                    f"To place ({n_unp}): tap to select.")
             # Calculate valid move tiles if a token is selected
             valid_moves = set()
             sel = self._bm_selected
