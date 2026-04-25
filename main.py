@@ -1,3 +1,9 @@
+import os
+import sys
+import json
+import threading
+import socket
+import traceback
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from functools import partial
 from kivy.clock import Clock
@@ -2606,4 +2612,656 @@ try:
                 + [k for k, _ in CHAR_TEXT]
             )
             result = {}
-            for field in
+            for field in all_str_fields:
+                val = entry.get(field, '')
+                result[field] = str(val) if val != '' else ''
+            # Normalize type to one of 'PC', 'NPC', 'Enemy'
+            raw_type = result.get('type', '').strip()
+            if raw_type.lower() == 'pc':
+                result['type'] = 'PC'
+            elif raw_type.lower() == 'npc':
+                result['type'] = 'NPC'
+            elif raw_type.lower() in ('fiende', 'enemy', 'fiend', 'foe',
+                                      'villain', 'monster', 'creature'):
+                result['type'] = 'Enemy'
+            else:
+                result['type'] = raw_type if raw_type in ('PC', 'NPC', 'Enemy') else 'PC'
+            # skills must be a dict
+            sk = entry.get('skills', {})
+            if not isinstance(sk, dict):
+                sk = {}
+            result['skills'] = sk
+            # Preserve scenario-package extra fields
+            for key in ('initiative', 'token'):
+                if key in entry:
+                    result[key] = entry[key]
+            return result
+
+        def _chars_show_import_preview(self, chars, skipped):
+            """Show preview overlay before import."""
+            count = len(chars)
+            preview_names = [ch.get('name', '?') for ch in chars[:5]]
+            names_text = "\n".join(f"• {n}" for n in preview_names)
+            if count > 5:
+                names_text += f"\n… and {count - 5} more"
+            skip_text = (
+                f"\n\n({skipped} entry"
+                f"{'s' if skipped != 1 else ''} without name were "
+                "skipped)"
+            ) if skipped else ""
+
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.9, 0.65),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                "Import characters",
+                color=GOLD, size=14, bold=True, h=28))
+            overlay.add_widget(mklbl(
+                f"{count} character"
+                f"{'s' if count != 1 else ''} found:"
+                f"{skip_text}",
+                color=TXT, size=11, wrap=True))
+
+            scroll = ScrollView()
+            names_lbl = mklbl(names_text, color=DIM, size=11, wrap=True)
+            scroll.add_widget(names_lbl)
+            overlay.add_widget(scroll)
+
+            overlay.add_widget(mklbl(
+                "How do you want to import?",
+                color=GOLD, size=12, bold=True, h=22))
+
+            btns = BoxLayout(
+                size_hint_y=None, height=dp(44), spacing=dp(6))
+            btns.add_widget(mkbtn(
+                "Cancel", self._chars_close_overlay,
+                small=True, size_hint_x=0.3))
+            btns.add_widget(mkbtn(
+                "Merge",
+                lambda: self._chars_do_import(chars, replace=False),
+                accent=True, size_hint_x=0.35))
+            btns.add_widget(mkbtn(
+                "Replace",
+                lambda: self._chars_do_import(chars, replace=True),
+                danger=True, size_hint_x=0.35))
+            overlay.add_widget(btns)
+
+            root = self.tool_area
+            while root.parent and not isinstance(
+                    root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+
+            from kivy.graphics import Color as GCci, Rectangle as GRci
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCci(rgba=[0, 0, 0, 0.6])
+                dr = GRci(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+
+            self._chars_overlay = overlay
+            self._chars_dim = dim
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _chars_do_import(self, chars, replace):
+            """Perform import — replace existing or merge."""
+            self._chars_close_overlay()
+            if replace:
+                self.chars = list(chars)
+            else:
+                self.chars = self.chars + list(chars)
+            save_json(CHAR_FILE, self.chars)
+            self._show_list()
+            count = len(chars)
+            mode = "Replaced with" if replace else "Added"
+            self._chars_show_message(
+                "Import successful",
+                f"{mode} {count} character"
+                f"{'s' if count != 1 else ''}.",
+                is_error=False)
+
+        def _chars_show_message(self, title, msg, is_error=False):
+            """Show a message as overlay in the characters tab."""
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.88, 0.5),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                title,
+                color=RED if is_error else GOLD,
+                size=14, bold=True, h=28))
+
+            scroll = ScrollView()
+            overlay.add_widget(scroll)
+            body = mklbl(msg, color=TXT, size=11, wrap=True)
+            scroll.add_widget(body)
+
+            overlay.add_widget(mkbtn(
+                "OK", self._chars_close_overlay,
+                accent=True, size_hint_y=None, height=dp(44)))
+
+            root = self.tool_area
+            while root.parent and not isinstance(
+                    root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+
+            from kivy.graphics import Color as GCcm, Rectangle as GRcm
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCcm(rgba=[0, 0, 0, 0.6])
+                dr = GRcm(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+            dim.bind(on_touch_down=lambda w, t:
+                     self._chars_close_overlay() or True)
+
+            self._chars_dim = dim
+            self._chars_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _chars_close_overlay(self):
+            """Close character import overlay."""
+            ov = getattr(self, '_chars_overlay', None)
+            dm = getattr(self, '_chars_dim', None)
+            if ov and ov.parent:
+                ov.parent.remove_widget(ov)
+            if dm and dm.parent:
+                dm.parent.remove_widget(dm)
+            self._chars_overlay = None
+            self._chars_dim = None
+
+        # ---------- INITIATIVE TRACKER (CoC / Pulp Cthulhu) ----------
+        def _init_tracker_init(self):
+            """Initialize state for initiative tracker."""
+            if not hasattr(self, '_init_phase'):
+                self._init_phase = 'setup'
+                self._init_list = []
+            # target_area overridden by Combat tab to self._cmb_area
+            if not hasattr(self, '_init_target_area'):
+                self._init_target_area = None
+
+        def _init_area(self):
+            """Return current container for initiative UI."""
+            tgt = getattr(self, '_init_target_area', None)
+            if tgt is not None:
+                return tgt
+            return self.tool_area
+
+        def _mk_init_tracker(self):
+            """Build initiative tracker UI."""
+            self._init_tracker_init()
+            area = self._init_area()
+            area.clear_widgets()
+            p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
+
+            if self._init_phase == 'setup':
+                self._init_build_setup(p)
+            else:
+                self._init_build_active(p)
+
+            area.add_widget(p)
+
+        def _init_build_setup(self, p):
+            """Setup phase: choose participants and adjust DEX values."""
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn("+ Investigator", self._init_show_char_picker,
+                                 accent=True, small=True, size_hint_x=0.37))
+            top.add_widget(mkbtn("+ Creature", self._init_show_enemy_picker,
+                                 small=True, size_hint_x=0.33))
+            top.add_widget(mkbtn("Empty", self._init_clear_list,
+                                 danger=True, small=True, size_hint_x=0.3))
+            p.add_widget(top)
+
+            p.add_widget(mklbl(
+                "DEX determines order. +50 if shooting with a handgun.",
+                color=DIM, size=10, h=18))
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(4), padding=dp(4),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            if not self._init_list:
+                g.add_widget(mklbl(
+                    "No participants. Use the buttons above.",
+                    color=DIM, size=12, h=60))
+            else:
+                # Header
+                hdr = BoxLayout(size_hint_y=None, height=dp(22),
+                                spacing=dp(4))
+                hdr.add_widget(mklbl("Name", color=GDIM, size=9, h=20))
+                hdr.add_widget(Label(text="DEX", font_size=sp(9),
+                                     color=GDIM, size_hint_x=None,
+                                     width=dp(50)))
+                hdr.add_widget(Label(text="+50", font_size=sp(9),
+                                     color=GDIM, size_hint_x=None,
+                                     width=dp(34)))
+                hdr.add_widget(Label(text="", size_hint_x=None,
+                                     width=dp(36)))
+                g.add_widget(hdr)
+
+                self._init_inputs = []
+                for i, entry in enumerate(self._init_list):
+                    row_box = RBox(orientation='horizontal', bg_color=BG2,
+                                   size_hint_y=None, height=dp(44),
+                                   padding=dp(6), spacing=dp(4), radius=dp(8))
+
+                    # Type-chip (PC/NPC/S = creature)
+                    tp = entry.get('type', 'PC')
+                    chip_color = GRN if tp == 'PC' else (GOLD if tp == 'NPC' else RED)
+                    chip = Label(text=tp, font_size=sp(10), color=chip_color,
+                                 bold=True, size_hint_x=None, width=dp(36))
+                    row_box.add_widget(chip)
+
+                    # Name + base DEX hint
+                    nm = entry.get('name', '?')
+                    base_dex = entry.get('base_dex', 0)
+                    hint = f"  (base {base_dex})" if base_dex else ""
+                    nm_lb = Label(text=f"{nm}{hint}",
+                                  font_size=sp(12), color=TXT,
+                                  halign='left', valign='middle')
+                    nm_lb.bind(size=lambda w, v: setattr(w, 'text_size', v))
+                    row_box.add_widget(nm_lb)
+
+                    # DEX value (editable)
+                    dex_val = str(entry.get('dex', entry.get('base_dex', 0)))
+                    dex_inp = TextInput(
+                        text=dex_val, font_size=sp(13), multiline=False,
+                        background_color=INPUT, foreground_color=TXT,
+                        cursor_color=GOLD,
+                        size_hint_x=None, width=dp(50),
+                        padding=[dp(4), dp(6)],
+                        input_filter='int')
+                    dex_inp._init_idx = i
+                    dex_inp.bind(text=self._init_on_dex_change)
+                    self._init_inputs.append(dex_inp)
+                    row_box.add_widget(dex_inp)
+
+                    # +50 firearms toggle
+                    fa_tog = RToggle(
+                        text='X' if entry.get('firearms') else '',
+                        state='down' if entry.get('firearms') else 'normal',
+                        color=GOLD if entry.get('firearms') else DIM,
+                        bg_color=BTNH if entry.get('firearms') else INPUT,
+                        font_size=sp(11), bold=True,
+                        size_hint_x=None, width=dp(34))
+                    fa_tog._init_idx = i
+                    fa_tog.bind(state=self._init_on_firearms_change)
+                    row_box.add_widget(fa_tog)
+
+                    # Remove button
+                    del_btn = RBtn(text='X', bg_color=BTN, color=RED,
+                                   font_size=sp(11), bold=True,
+                                   size_hint_x=None, width=dp(36))
+                    del_btn.bind(on_release=lambda b, idx=i:
+                                 self._init_remove_entry(idx))
+                    row_box.add_widget(del_btn)
+
+                    g.add_widget(row_box)
+
+            scroll.add_widget(g)
+            p.add_widget(scroll)
+
+            bottom = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
+            bottom.add_widget(mkbtn("Map", self._bm_open,
+                                    small=True, size_hint_x=0.4))
+            bottom.add_widget(mkbtn("Complete", self._init_finish,
+                                    accent=True, size_hint_x=0.6))
+            p.add_widget(bottom)
+
+        def _init_on_dex_change(self, inst, value):
+            """Save DEX value."""
+            idx = inst._init_idx
+            if 0 <= idx < len(self._init_list):
+                try:
+                    self._init_list[idx]['dex'] = int(value) if value else 0
+                except ValueError:
+                    self._init_list[idx]['dex'] = 0
+
+        def _init_on_firearms_change(self, inst, value):
+            """Update +50 firearms toggle."""
+            idx = inst._init_idx
+            if 0 <= idx < len(self._init_list):
+                on = (value == 'down')
+                self._init_list[idx]['firearms'] = on
+                inst.text = 'X' if on else ''
+                inst.color = GOLD if on else DIM
+                inst.bg_color = BTNH if on else INPUT
+
+        def _init_show_char_picker(self):
+            """Show Investigator picker."""
+            already_in = {e.get('name', '') for e in self._init_list}
+            pcs = [ch for ch in self.chars
+                   if ch.get('type', 'PC') == 'PC'
+                   and ch.get('name', '') not in already_in]
+            npcs = [ch for ch in self.chars
+                    if ch.get('type', 'PC') == 'NPC'
+                    and ch.get('name', '') not in already_in]
+            enemies = [ch for ch in self.chars
+                       if ch.get('type', 'PC') == 'Enemy'
+                       and ch.get('name', '') not in already_in]
+
+            area = self._init_area()
+            area.clear_widgets()
+            p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
+
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn("Back", self._mk_init_tracker,
+                                 small=True, size_hint_x=0.3))
+            top.add_widget(mklbl("Select character", color=GOLD, size=13,
+                                 bold=True))
+            p.add_widget(top)
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(6), padding=dp(4),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            if pcs:
+                g.add_widget(mklbl("INVESTIGATORS (PC)",
+                                   color=GRN, size=11, bold=True, h=22))
+                for ch in pcs:
+                    g.add_widget(self._init_make_char_btn(ch))
+
+            if npcs:
+                g.add_widget(mklbl("NPCS",
+                                   color=GOLD, size=11, bold=True, h=22))
+                for ch in npcs:
+                    g.add_widget(self._init_make_char_btn(ch))
+
+            if enemies:
+                g.add_widget(mklbl("ENEMIES",
+                                   color=RED, size=11, bold=True, h=22))
+                for ch in enemies:
+                    g.add_widget(self._init_make_char_btn(ch))
+
+            if not pcs and not npcs and not enemies:
+                g.add_widget(mklbl(
+                    "No characters available.\n"
+                    "Add characters under 'Tools > Characters' first.",
+                    color=DIM, size=11, h=60))
+
+            scroll.add_widget(g)
+            p.add_widget(scroll)
+            area.add_widget(p)
+
+        def _init_make_char_btn(self, ch):
+            """Create button for a character in picker list."""
+            nm = ch.get('name', '?')
+            tp = ch.get('type', 'PC')
+            txt = f"[{tp}]  {_first_last_name(nm)}"
+            b = mkbtn(txt, lambda c=ch: self._init_add_character(c),
+                      small=True)
+            b.halign = 'left'
+            b.size_hint_y = None
+            b.height = dp(42)
+            return b
+
+        def _init_add_character(self, ch):
+            """Add character to initiative list."""
+            try:
+                dex = int(ch.get('dex', 0) or 0)
+            except (ValueError, TypeError):
+                dex = 0
+            self._init_list.append({
+                'name': ch.get('name', '?'),
+                'type': ch.get('type', 'PC'),
+                'base_dex': dex,
+                'dex': dex,
+                'firearms': False,
+                'hp': ch.get('hp', ''),
+            })
+            self._mk_init_tracker()
+
+        # Common enemies and creatures in Call of Cthulhu / Pulp Cthulhu.
+        # (name, DEX, HP)
+        COMMON_ENEMIES = [
+            # --- Humans ---
+            ("Cultist", 55, 11),
+            ("Cult Leader", 65, 12),
+            ("Mercenary", 65, 13),
+            ("Bandit", 50, 10),
+            ("Police Officer", 55, 12),
+            ("Detective", 60, 12),
+            ("Soldier", 60, 13),
+            ("Officer", 65, 14),
+            ("Mad Scientist", 50, 10),
+            ("Priestess", 55, 11),
+            ("Thief", 70, 10),
+            ("Brute", 55, 14),
+            ("Mystic", 60, 10),
+            ("Necromancer", 55, 11),
+            ("Spy", 70, 11),
+            # --- Normal Animals ---
+            ("Dog (guard)", 60, 8),
+            ("Wolf", 75, 11),
+            ("Bear", 50, 19),
+            ("Puma", 85, 12),
+            ("Snake (venomous)", 85, 4),
+            ("Rat (large)", 60, 2),
+            ("Rat-fungus", 90, 35),
+            ("Crocodile", 50, 14),
+            ("Shark", 80, 18),
+            # --- Undead ---
+            ("Zombie", 45, 12),
+            ("Ghoul", 65, 13),
+            ("Mummy", 50, 18),
+            ("Vampire", 80, 15),
+            ("Skeleton", 55, 10),
+            ("Spectre", 70, 0),
+            # --- Minor Mythos creatures ---
+            ("Byakhee", 50, 11),
+            ("Chthonian (young)", 20, 42),
+            ("Chthonian (adult)", 15, 85),
+            ("Deep One", 45, 15),
+            ("Deep One Hybrid", 60, 12),
+            ("Dark Young (Shub-Niggurath)", 45, 60),
+            ("Dimensional Shambler", 45, 25),
+            ("Dhole", 30, 120),
+            ("Fire Vampire", 45, 12),
+            ("Flying Polyp", 70, 55),
+            ("Formless Spawn", 60, 30),
+            ("Ghast", 75, 18),
+            ("Ghoul (Mythos)", 65, 13),
+            ("Gnorri", 40, 15),
+            ("Hound of Tindalos", 90, 34),
+            ("Hunting Horror", 75, 46),
+            ("Lloigor", 60, 25),
+            ("Mi-Go", 55, 13),
+            ("Moon-Beast", 50, 42),
+            ("Nightgaunt", 65, 12),
+            ("Rat-Thing", 80, 4),
+            ("Sand-Dweller", 55, 14),
+            ("Servant of Glaaki", 35, 18),
+            ("Serpent Person", 65, 12),
+            ("Shantak", 45, 40),
+            ("Shoggoth", 25, 100),
+            ("Shoggoth (lesser)", 25, 65),
+            ("Spawn of Cthulhu", 40, 60),
+            ("Star Vampire", 75, 36),
+            ("Star Spawn of Cthulhu", 30, 135),
+            ("Tcho-Tcho", 70, 11),
+            ("Wendigo", 60, 65),
+            ("Winged One (from Yuggoth)", 55, 14),
+            ("Y'm-bhi (activated ghoul)", 55, 14),
+            # --- Independent beings ---
+            ("Elder Thing", 45, 28),
+            ("Great Race of Yith", 25, 25),
+            ("Yithian (in human host)", 50, 13),
+            # --- Pulp-specific gangsters / pulp enemies ---
+            ("Gangster (minion)", 55, 12),
+            ("Gangster (boss)", 60, 14),
+            ("Nazi officer", 65, 13),
+            ("Nazi soldier", 60, 12),
+            ("SS occultist", 65, 13),
+            ("Pulp villain (mastermind)", 75, 15),
+            ("Femme fatale", 75, 11),
+            ("Private investigator (Pulp)", 70, 13),
+        ]
+
+        def _init_show_enemy_picker(self):
+            """Show list of CoC enemies and creatures + custom."""
+            area = self._init_area()
+            area.clear_widgets()
+            p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
+
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn("Back", self._mk_init_tracker,
+                                 small=True, size_hint_x=0.3))
+            top.add_widget(mklbl("Select creature", color=GOLD, size=13,
+                                 bold=True))
+            p.add_widget(top)
+
+            # Custom creature
+            cust_box = RBox(orientation='vertical', bg_color=BG2,
+                            size_hint_y=None, height=dp(110),
+                            padding=dp(10), spacing=dp(6), radius=dp(10))
+            cust_box.add_widget(mklbl("Custom creature",
+                                      color=GOLD, size=11, bold=True, h=18))
+
+            name_row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
+            name_row.add_widget(Label(text="Name:", font_size=sp(11),
+                                      color=DIM, size_hint_x=0.2,
+                                      halign='right', valign='middle'))
+            self._init_custom_name = TextInput(
+                text='', font_size=sp(12), multiline=False,
+                background_color=INPUT, foreground_color=TXT,
+                cursor_color=GOLD, padding=[dp(8), dp(6)],
+                size_hint_x=0.8)
+            name_row.add_widget(self._init_custom_name)
+            cust_box.add_widget(name_row)
+
+            stat_row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
+            stat_row.add_widget(Label(text="DEX:", font_size=sp(11),
+                                      color=DIM, size_hint_x=0.2,
+                                      halign='right', valign='middle'))
+            self._init_custom_dex = TextInput(
+                text='50', font_size=sp(12), multiline=False,
+                background_color=INPUT, foreground_color=TXT,
+                cursor_color=GOLD, padding=[dp(8), dp(6)],
+                size_hint_x=0.2, input_filter='int')
+            stat_row.add_widget(self._init_custom_dex)
+
+            stat_row.add_widget(Widget(size_hint_x=0.1))
+            add_btn = mkbtn("Add", self._init_add_custom,
+                            accent=True, small=True, size_hint_x=0.5)
+            stat_row.add_widget(add_btn)
+            cust_box.add_widget(stat_row)
+
+            p.add_widget(cust_box)
+
+            p.add_widget(mklbl("CoC & Pulp Cthulhu creatures",
+                               color=GOLD, size=11, bold=True, h=22))
+
+            scroll = ScrollView()
+            g = GridLayout(cols=2, spacing=dp(4), padding=dp(4),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            for name, dex, hp in self.COMMON_ENEMIES:
+                txt = f"{name} ({dex})"
+                b = mkbtn(txt,
+                          lambda n=name, d=dex, h=hp:
+                              self._init_add_enemy(n, d, h),
+                          small=True)
+                b.size_hint_y = None
+                b.height = dp(42)
+                b.halign = 'left'
+                b.font_size = sp(10)
+                g.add_widget(b)
+
+            scroll.add_widget(g)
+            p.add_widget(scroll)
+            area.add_widget(p)
+
+        def _init_add_enemy(self, name, dex, hp):
+            """Add enemy from list. Increment if duplicate."""
+            final_name = name
+            existing = [e.get('name', '') for e in self._init_list]
+            if final_name in existing:
+                n = 2
+                while f"{name} {n}" in existing:
+                    n += 1
+                final_name = f"{name} {n}"
+
+            self._init_list.append({
+                'name': final_name,
+                'type': 'S',
+                'base_dex': dex,
+                'dex': dex,
+                'firearms': False,
+                'hp': str(hp) if hp else '',
+            })
+            self._mk_init_tracker()
+
+        def _init_add_custom(self):
+            """Add custom creature."""
+            name = self._init_custom_name.text.strip()
+            if not name:
+                return
+            try:
+                dex = int(self._init_custom_dex.text or '0')
+            except ValueError:
+                dex = 0
+            self._init_add_enemy(name, dex, '')
+
+        def _init_remove_entry(self, idx):
+            """Remove participant from list."""
+            if 0 <= idx < len(self._init_list):
+                self._init_list.pop(idx)
+                self._mk_init_tracker()
+
+        def _init_clear_list(self):
+            """Clear the whole list."""
+            self._init_list = []
+            self._init_phase = 'setup'
+            self._mk_init_tracker()
+
+        def _init_finish(self):
+            """Transition from setup to active: sort by effective DEX."""
+            # Effective DEX = DEX + 50 if firearms
+            for entry in self._init_list:
+                base = entry.get('dex', 0)
+                entry['effective'] = base + (50 if entry.get('firearms') else 0)
+            # Sort highest first (CoC rule: high DEX goes first)
+            # Tiebreak: higher base DEX, then alphabetical name
+            self._init_list.sort(
+                key=lambda e: (e.get('effective', 0),
+                               e.get('base_dex', 0),
+                               e.get('name', '')),
+                reverse=True)
+            self._init_phase = 'active'
+            self._mk_init_tracker()
+
+        def _init_build_active(self, p):
+            """Active phase: show sorted order."""
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn("New round", self._init_new_encounter,
+                                 danger=True, small=True, size_hint_x=0.3))
+            top.add_widget(mkbtn("Edit", self._init_back_to_setup,
+                                 small=True, size_hint_x=0.25))
+            top.add_widget(mkbtn("Map", self._bm_open,
+                                 accent=True, small=True, size_hint_x=0.25))
+            top.add_widget(mklbl("Turn", color=GOLD, size=12, bold=True))
+            p.add_widget(top)
+
+            p.add_widget(mklbl(
+                "Tap the active (topmost) to end their turn.",
+                color=DIM, size=10, h=18))
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(6), padding=dp(4),
+                           size_hint_y=None)
