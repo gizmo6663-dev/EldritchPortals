@@ -12,7 +12,7 @@ Version: **0.3.3** · System: Call of Cthulhu / Pulp Cthulhu
 ## Contents
 
 - [Features](#features)
-- [Skjermbilder](#skjermbilder)
+- [Screenshots](#screenshots)
 - [Getting started](#getting-started)
 - [Scenario format](#scenario-format)
 - [On-device folder layout](#on-device-folder-layout)
@@ -95,7 +95,7 @@ Sub-tabs for session prep and quick reference:
 
 ---
 
-## Skjermbilder
+## Screenshots
 
 <table>
   <tr>
