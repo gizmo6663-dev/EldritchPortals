@@ -54,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ github.event.inputs.clean_build }}
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ github.event.inputs.clean_build || 'false' }}
           restore-keys: |
             ${{ runner.os }}-buildozer-
 
@@ -64,7 +64,18 @@ jobs:
             echo "Cleaning ~/.buildozer for a clean build"
             rm -rf ~/.buildozer
           fi
-          yes | buildozer android debug
+
+          for attempt in 1 2 3; do
+            echo "Build attempt $attempt..."
+            yes | buildozer android debug && break
+            if [ $attempt -lt 3 ]; then
+              echo "Build failed, retrying in 30 seconds..."
+              sleep 30
+            else
+              echo "All attempts failed."
+              exit 1
+            fi
+          done
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
