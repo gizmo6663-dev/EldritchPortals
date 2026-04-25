@@ -351,5 +351,5 @@ Eldritch Portals is a hobby project developed alongside an active Pulp Cthulhu c
 **Repository:** [gizmo6663-dev/EldritchPortals](https://github.com/gizmo6663-dev/EldritchPortals)
 
 **Related projects:**
-- [EldritchPortal](https://github.com/gizmo6663-dev/EldritchPortal) — the Norwegian-language sibling of this app
+- [EldritchPortals](https://github.com/gizmo6663-dev/EldritchPortals) — the Norwegian-language sibling of this app
 - [Campaign Forge](https://github.com/gizmo6663-dev/CampaignForge) — a D&D 5e variant built on the same architecture, styled with the Emerald Grove theme
