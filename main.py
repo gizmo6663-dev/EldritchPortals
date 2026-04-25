@@ -2606,7 +2606,7 @@ try:
         def _chars_normalize_entry(self, entry):
             """Normalize a raw character dict to the app's internal format."""
             all_str_fields = (
-                [k for k, _ in CHAR_INFO]
+                + [k for k, _ in CHAR_INFO]
                 + [k for k, _ in CHAR_STATS]
                 + [k for k, _ in CHAR_DERIVED]
                 + [k for k, _ in CHAR_TEXT]
