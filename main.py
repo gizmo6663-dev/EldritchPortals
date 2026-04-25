@@ -2816,7 +2816,7 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn("+ Investigator", self._init_show_char_picker,
                                  accent=True, small=True, size_hint_x=0.37))
-            top.add_widget(mkbtn("+ Skapning", self._init_show_enemy_picker,
+            top.add_widget(mkbtn("+ Enemies", self._init_show_enemy_picker,
                                  small=True, size_hint_x=0.33))
             top.add_widget(mkbtn("Empty", self._init_clear_list,
                                  danger=True, small=True, size_hint_x=0.3))
@@ -3118,7 +3118,7 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn("Back", self._mk_init_tracker,
                                  small=True, size_hint_x=0.3))
-            top.add_widget(mklbl("Velg skapning", color=GOLD, size=13,
+            top.add_widget(mklbl("Choose enemy", color=GOLD, size=13,
                                  bold=True))
             p.add_widget(top)
 
@@ -3126,7 +3126,7 @@ try:
             cust_box = RBox(orientation='vertical', bg_color=BG2,
                             size_hint_y=None, height=dp(110),
                             padding=dp(10), spacing=dp(6), radius=dp(10))
-            cust_box.add_widget(mklbl("Egendefinert skapning",
+            cust_box.add_widget(mklbl("Custom enemy",
                                       color=GOLD, size=11, bold=True, h=18))
 
             name_row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
@@ -3160,7 +3160,7 @@ try:
 
             p.add_widget(cust_box)
 
-            p.add_widget(mklbl("CoC & Pulp Cthulhu-skapninger",
+            p.add_widget(mklbl("CoC & Pulp Cthulhu Enemies",
                                color=GOLD, size=11, bold=True, h=22))
 
             scroll = ScrollView()
@@ -4543,7 +4543,9 @@ try:
                         color=DIM, size=11, wrap=True))
 
                 msg_box.add_widget(mklbl(
-                    f"Sti som sjekkes:\n{WEAPONS_FILE}",
+                    "Paths checked:\n"
+                    f"{BUNDLED_WEAPONS}\n"
+                    f"{EXTERNAL_WEAPONS}",
                     color=DIM, size=10, wrap=True))
 
                 msg_box.add_widget(mkbtn(
