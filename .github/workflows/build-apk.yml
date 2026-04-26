@@ -93,6 +93,6 @@ jobs:
           gh release create "$TAG" "$APK" \
             --title "Eldritch Portals $TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
-            --prerelease
+            --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
