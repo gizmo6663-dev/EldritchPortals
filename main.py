@@ -122,20 +122,20 @@ try:
                 log(f"makedirs {d}: {e}")
         log(f"Dirs OK: {os.path.exists(IMG_DIR)}, {os.path.exists(MUSIC_DIR)}")
 
-    # === COLORS – ELDRITCH PORTAL (teal/cyan rune-glow) ===
-    BG   = [0.04, 0.07, 0.08, 1]      # very dark teal-black
-    BG2  = [0.07, 0.12, 0.13, 1]      # panel (dark teal-grey)
-    INPUT= [0.05, 0.09, 0.10, 1]      # text input background
-    BTN  = [0.10, 0.20, 0.21, 1]      # button (deep teal)
-    BTNH = [0.16, 0.34, 0.32, 1]      # active tab (mossy teal)
-    SHAD = [0.01, 0.02, 0.02, 0.7]    # shadow
-    GOLD = [0.42, 0.88, 0.76, 1]      # cyan-teal rune glow (replaces gold)
-    GDIM = [0.26, 0.54, 0.48, 1]      # muted teal
-    TXT  = [0.82, 0.93, 0.88, 1]      # pale teal-white text
-    DIM  = [0.45, 0.62, 0.60, 1]      # muted teal-grey text
-    RED  = [0.75, 0.25, 0.28, 1]      # danger/stop
-    GRN  = [0.32, 0.68, 0.45, 1]      # OK/PC
-    BLUE = [0.32, 0.42, 0.68, 1]      # info
+    # === COLORS – ABYSSAL PURPLE ===
+    BG   = [0.05, 0.03, 0.07, 1]      # deep purple-black background
+    BG2  = [0.10, 0.05, 0.12, 1]      # panel
+    INPUT= [0.07, 0.03, 0.09, 1]      # text input background
+    BTN  = [0.22, 0.10, 0.16, 1]      # button (burgundy)
+    BTNH = [0.38, 0.15, 0.22, 1]      # active tab
+    SHAD = [0.02, 0.01, 0.03, 0.6]    # shadow
+    GOLD = [0.95, 0.78, 0.22, 1]      # golden accent
+    GDIM = [0.58, 0.45, 0.20, 1]      # muted gold
+    TXT  = [0.90, 0.85, 0.80, 1]      # light text
+    DIM  = [0.52, 0.38, 0.45, 1]      # muted text (purple tone)
+    RED  = [0.75, 0.20, 0.22, 1]      # danger/stop
+    GRN  = [0.25, 0.58, 0.32, 1]      # OK/PC
+    BLUE = [0.30, 0.40, 0.65, 1]      # info
     BLK  = [0.0, 0.0, 0.0, 1]         # black (preview background)
     IMG_EXT   = ('.png','.jpg','.jpeg','.webp')
     HTTP_PORT = 8089
@@ -1450,60 +1450,29 @@ try:
 
             wrapper.add_widget(main)
 
-            # === SPLASH SCREEN (Eldritch Portal artwork) ===
-            self.splash = FloatLayout(size_hint=(1, 1),
-                                      pos_hint={'x': 0, 'y': 0})
-            splash_path = os.path.join(_BUNDLE_DIR, 'splash.png')
-            if os.path.exists(splash_path):
-                self._splash_bg = Image(
-                    source=splash_path,
-                    allow_stretch=True,
-                    keep_ratio=True,
-                    size_hint=(1, 1),
-                    pos_hint={'center_x': 0.5, 'center_y': 0.5},
-                    opacity=0)
-                self.splash.add_widget(self._splash_bg)
-
-                # Fade-in, deretter pulserende "pust"-animasjon
-                def _start_pulse(*_a):
-                    self._splash_pulse = (
-                        Animation(opacity=0.82, duration=1.6,
-                                  t='in_out_sine') +
-                        Animation(opacity=1.0, duration=1.6,
-                                  t='in_out_sine'))
-                    self._splash_pulse.repeat = True
-                    self._splash_pulse.start(self._splash_bg)
-
-                fade_in = Animation(opacity=1.0, duration=0.6,
-                                    t='out_quad')
-                fade_in.bind(on_complete=_start_pulse)
-                fade_in.start(self._splash_bg)
-            else:
-                # Fallback: tekst-splash hvis bildet mangler
-                self._splash_bg = None
-                box = BoxLayout(orientation='vertical',
-                                size_hint=(1, 1))
-                box.add_widget(Widget())
-                t1 = Label(text="ELDRITCH", font_size=sp(42),
-                           color=GOLD, bold=True,
-                           size_hint_y=None, height=dp(60),
-                           halign='center')
-                t1.bind(size=t1.setter('text_size'))
-                box.add_widget(t1)
-                t2 = Label(text="PORTAL", font_size=sp(42),
-                           color=GDIM, bold=True,
-                           size_hint_y=None, height=dp(60),
-                           halign='center')
-                t2.bind(size=t2.setter('text_size'))
-                box.add_widget(t2)
-                sub = Label(text="Keeper Companion Tool",
-                            font_size=sp(13), color=DIM,
-                            size_hint_y=None, height=dp(30),
-                            halign='center')
-                sub.bind(size=sub.setter('text_size'))
-                box.add_widget(sub)
-                box.add_widget(Widget())
-                self.splash.add_widget(box)
+            # === SPLASH SCREEN ===
+            self.splash = RBox(bg_color=BG, radius=0,
+                               orientation='vertical',
+                               size_hint=(1, 1),
+                               pos_hint={'x': 0, 'y': 0})
+            # Sentrert innhold
+            self.splash.add_widget(Widget())  # fyll topp
+            t1 = Label(text="ELDRITCH", font_size=sp(42), color=GOLD,
+                       bold=True, size_hint_y=None, height=dp(60),
+                       halign='center')
+            t1.bind(size=t1.setter('text_size'))
+            self.splash.add_widget(t1)
+            t2 = Label(text="PORTAL", font_size=sp(42), color=GDIM,
+                       bold=True, size_hint_y=None, height=dp(60),
+                       halign='center')
+            t2.bind(size=t2.setter('text_size'))
+            self.splash.add_widget(t2)
+            sub = Label(text="Keeper Companion Tool", font_size=sp(13),
+                        color=DIM, size_hint_y=None, height=dp(30),
+                        halign='center')
+            sub.bind(size=sub.setter('text_size'))
+            self.splash.add_widget(sub)
+            self.splash.add_widget(Widget())  # fyll bunn
             wrapper.add_widget(self.splash)
 
             self._tab('img')
@@ -1516,15 +1485,11 @@ try:
 
         def _dismiss_splash(self, dt):
             if self.splash:
-                # Stopp pulse-animasjonen på bildet før fade-out
-                if getattr(self, '_splash_bg', None):
-                    Animation.cancel_all(self._splash_bg)
                 anim = Animation(opacity=0, duration=0.8)
                 def _remove(*a):
-                    if self.splash and self.splash.parent:
+                    if self.splash.parent:
                         self.splash.parent.remove_widget(self.splash)
                     self.splash = None
-                    self._splash_bg = None
                 anim.bind(on_complete=_remove)
                 anim.start(self.splash)
 
