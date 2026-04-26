@@ -15,7 +15,7 @@ MAX_OCCUPATION_LENGTH = 15
 os.makedirs(os.path.dirname(LOG), exist_ok=True)
 
 def _first_last_name(name):
-    """Return only the first and last word of a name (e.g. 'John Michael Doe' → 'John Doe').
+    """Return only the first and last word of a name (e.g. 'John Michael Doe' -> 'John Doe').
     Single-word names are returned unchanged."""
     parts = name.split()
     if len(parts) <= 2:
@@ -42,7 +42,7 @@ def log(msg):
     with open(LOG, "a") as f:
         f.write(msg + "\n")
 
-log("=== APP START (v0.3.3 – Abyssal Purple) ===")
+log("=== APP START (v0.3.3 - Abyssal Purple) ===")
 
 try:
     from kivy.app import App
@@ -89,13 +89,13 @@ try:
     MUSIC_DIR = os.path.join(BASE_DIR, "music")
     # Character file: primary storage in user_data_dir (app-private,
     # always writable). External path used only for migration at
-    # first launch — avoids Android 13+ scoped storage problem.
+    # first launch - avoids Android 13+ scoped storage problem.
     EXTERNAL_CHAR_FILE = os.path.join(BASE_DIR, "characters.json")
     # CHAR_FILE is set in build() when user_data_dir is available.
-    CHAR_FILE = EXTERNAL_CHAR_FILE  # midlertidig; overstyres i build()
+    CHAR_FILE = EXTERNAL_CHAR_FILE  # temporary; overridden in build()
     # Scenario file: primary storage in user_data_dir (app-private,
     # always writable). External import path is tried on
-    # "Import" — avoids Android 13+ scoped storage problem.
+    # "Import" - avoids Android 13+ scoped storage problem.
     EXTERNAL_SCENARIO = os.path.join(BASE_DIR, "scenario.json")
     # SCENARIO_FILE is set in build() when user_data_dir is available.
 
@@ -107,7 +107,7 @@ try:
         _BUNDLE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
     BUNDLED_WEAPONS = os.path.join(_BUNDLE_DIR, "weapons.json")
     BUNDLED_CHARS   = os.path.join(_BUNDLE_DIR, "characters.json")
-    # Also try an external version — if it exists AND is readable,
+    # Also try an external version - if it exists AND is readable,
     # use it (allows the user to override with their own file if possible).
     EXTERNAL_WEAPONS = os.path.join(BASE_DIR, "weapons.json")
     # Favourites are stored in user_data_dir (app-private, always writable).
@@ -122,7 +122,7 @@ try:
                 log(f"makedirs {d}: {e}")
         log(f"Dirs OK: {os.path.exists(IMG_DIR)}, {os.path.exists(MUSIC_DIR)}")
 
-    # === COLORS – ABYSSAL PURPLE ===
+    # === COLORS - ABYSSAL PURPLE ===
     BG   = [0.05, 0.03, 0.07, 1]      # deep purple-black background
     BG2  = [0.10, 0.05, 0.12, 1]      # panel
     INPUT= [0.07, 0.03, 0.09, 1]      # text input background
@@ -141,7 +141,7 @@ try:
     HTTP_PORT = 8089
 
     # ============================================================
-    # KV RULES – shadow + rounded corners
+    # KV RULES - shadow + rounded corners
     # Shadow: a dark RoundedRectangle offset 2dp down.
     # Main body: RoundedRectangle with bg_color on top.
     # ============================================================
@@ -281,8 +281,8 @@ try:
         ("Swim","20"), ("Throw","20"), ("Track","10"),
     ]
 
-    # === REGLER & REFERANSE ===
-    # Komplett CoC 7e + Pulp Cthulhu keeper-referanse.
+    # === RULES & REFERENCE ===
+    # Complete CoC 7e + Pulp Cthulhu keeper reference.
     RULES = [
       ("Basic Rules", "", [
         ("Skill Rolls", [
@@ -290,160 +290,160 @@ try:
           "Equal to or under = success.",
           "",
           "Success levels:",
-          "  Critical: resultat = 01",
-          "  Extreme: resultat \u2264 skill / 5",
-          "  Hard: resultat \u2264 skill / 2",
-          "  Regular: resultat \u2264 skill",
-          "  Failure: resultat > skill",
+          "  Critical: result = 01",
+          "  Extreme: result <= skill / 5",
+          "  Hard: result <= skill / 2",
+          "  Regular: result <= skill",
+          "  Failure: result > skill",
           "",
-          "Automatisk suksess: 01 alltid suksess.",
+          "Automatic success: 01 always succeeds.",
           "Fumble (based on MAX SKILL, not base skill):",
-          "  Krav \u2265 50: kun 100 er fumble",
-          "  Krav < 50: 96\u2013100 er fumble",
-          "  Eks: skill 60, Hard diff (krav 30)",
-    "    -> fumble on 96–100",
+          "  Requirement >= 50: only 100 is a fumble",
+          "  Requirement < 50: 96-100 is a fumble",
+          "  Ex: skill 60, Hard diff (requirement 30)",
+    "    -> fumble on 96-100",
         ]),
-        ("Vanskelighetsgrad", [
-          "Keeper setter vanskelighetsgrad:",
-          "  Regular: skill-verdi (standard)",
-          "  Hard: halv skill-verdi",
-          "  Extreme: femtedel av skill-verdi",
+        ("Difficulty", [
+          "Keeper sets difficulty:",
+          "  Regular: skill value (standard)",
+          "  Hard: half skill value",
+          "  Extreme: one fifth of skill value",
           "",
-          "Mot levende motstandere:",
-          "  Motstanders skill < 50: Regular",
-          "  Motstanders skill \u2265 50: Hard",
-          "  Motstanders skill \u2265 90: Extreme",
+          "Against living opponents:",
+          "  Opponent's skill < 50: Regular",
+          "  Opponent's skill >= 50: Hard",
+          "  Opponent's skill >= 90: Extreme",
         ]),
         ("Bonus & Penalty", [
-          "Bonus die: rull 2 tier-terninger,",
-          "  bruk den LAVESTE.",
-          "Penalty die: rull 2 tier-terninger,",
+          "Bonus die: roll 2 tens dice,",
+          "  use the LOWEST.",
+          "Penalty die: roll 2 tens dice,",
           "  use the HIGHEST.",
           "",
-          "Maks 2 bonus ELLER 2 penalty.",
-          "Bonus og penalty kansellerer 1:1.",
+          "Max 2 bonus OR 2 penalty.",
+          "Bonus and penalty cancel out 1:1.",
           "",
           "Granted by Keeper based on circumstances:",
           "  Advantage: bonus die (good light, time, tools)",
           "  Disadvantage: penalty die (stress, poor visibility)",
         ]),
         ("Pushed Rolls", [
-          "Spiller kan pushe ETT mislykket kast.",
+          "Player may push ONE failed roll.",
           "Must describe WHAT they do differently.",
           "Keeper must approve the push.",
           "",
-          "Mislykket push = ALVORLIG konsekvens",
-          "(verre enn vanlig feil).",
+          "Failed push = SEVERE consequence",
+          "(worse than a regular failure).",
           "",
-          "KAN IKKE pushes:",
-          "  SAN-sjekker",
-          "  Luck-sjekker",
-          "  Kamp-kast",
-          "  Allerede pushede kast",
+          "CANNOT be pushed:",
+          "  SAN checks",
+          "  Luck checks",
+          "  Combat rolls",
+          "  Already pushed rolls",
         ]),
         ("Opposed Rolls", [
-          "Begge parter ruller sine skills.",
+          "Both parties roll their skills.",
           "Highest success level wins.",
           "Tied level: highest skill value wins.",
-          "Ingen suksess: status quo.",
+          "No success: status quo.",
           "",
-          "Vanlige opposed rolls:",
+          "Common opposed rolls:",
           "  Sneak vs Listen",
           "  Fast Talk vs Psychology",
           "  Charm vs POW",
-          "  STR vs STR (bryte, holde)",
-          "  DEX vs DEX (gripe, unnvike)",
+          "  STR vs STR (break, hold)",
+          "  DEX vs DEX (grab, evade)",
           "  Disguise vs Spot Hidden",
         ]),
         ("Luck", [
-          "Luck-verdi: 3d6 x 5 (ved opprettelse).",
-          "Luck-sjekk: d100 \u2264 Luck.",
+          "Luck value: 3d6 x 5 (at creation).",
+          "Luck check: d100 <= Luck.",
           "",
           "Spending Luck:",
-          "  Etter et skill-kast: trekk Luck-poeng",
+          "  After a skill roll: subtract Luck points",
           "  1:1 to lower the result.",
-          "  Eks: kast 55, skill 50 -> spend 5 Luck.",
+          "  Ex: roll 55, skill 50 -> spend 5 Luck.",
           "",
-          "Luck regenereres IKKE i standard CoC.",
-          "Pulp: regenerer 2d10 Luck per sesjon.",
+          "Luck does NOT regenerate in standard CoC.",
+          "Pulp: regenerate 2d10 Luck per session.",
           "",
-          "Group Luck: laveste Luck i gruppen",
-          "  brukes for tilfeldige hendelser.",
+          "Group Luck: lowest Luck in the group",
+          "  used for random events.",
         ]),
-        ("Erfaring & utvikling", [
-          "Etter scenario: marker brukte skills.",
-          "Rull d100 for hver markert skill:",
-          "  Resultat > skill = +1d10 til skill.",
-    "  Result ≤ skill = no improvement.",
+        ("Experience & Improvement", [
+          "After scenario: mark used skills.",
+          "Roll d100 for each marked skill:",
+          "  Result > skill = +1d10 to skill.",
+    "  Result <= skill = no improvement.",
           "",
-          "Skill-maks: 99 (unntatt CM: 99).",
-          "Alderseffekter kan senke stats.",
+          "Skill max: 99 (except CM: 99).",
+          "Age effects can lower stats.",
         ]),
       ]),
       ("Combat", "", [
-        ("Kampflyt", [
+        ("Combat Flow", [
           "1. All act in DEX order",
           "   (highest first).",
           "",
           "2. Each participant gets 1 action:",
-          "   - Angripe (melee eller ranged)",
-          "   - Flee (trekke seg ut)",
+          "   - Attack (melee or ranged)",
+          "   - Flee (retreat)",
           "   - Maneuver (trip, disarm, etc.)",
-          "   - Kaste besvergelse",
-          "   - Bruke gjenstand / First Aid",
-          "   - Annet (snakke, lete, etc.)",
+          "   - Cast a spell",
+          "   - Use item / First Aid",
+          "   - Other (talk, search, etc.)",
           "",
-          "3. Forsvarer velger reaksjon:",
+          "3. Defender chooses reaction:",
           "   - Dodge (evade)",
-          "   - Fight Back (motangrep, kun melee)",
-          "   - Ingenting (tar full skade)",
+          "   - Fight Back (counter-attack, melee only)",
+          "   - Nothing (takes full damage)",
           "",
-          "4. Gjenta til kamp er over.",
+          "4. Repeat until combat ends.",
         ]),
         ("Melee", [
-          "Angriper: rull Fighting-skill.",
-          "Forsvarer velger:",
+          "Attacker: roll Fighting skill.",
+          "Defender chooses:",
           "",
           "DODGE (opposed vs Dodge-skill):",
-          "  Angriper vinner -> full skade",
+          "  Attacker wins -> full damage",
           "  Defender wins -> avoids the attack",
-          "  Begge feiler -> ingenting skjer",
+          "  Both fail -> nothing happens",
           "",
           "FIGHT BACK (opposed vs Fighting):",
-          "  Angriper vinner -> full skade",
+          "  Attacker wins -> full damage",
           "  Defender wins -> defender deals damage",
-          "  Begge feiler -> ingenting skjer",
+          "  Both fail -> nothing happens",
           "",
-          "Dodge: 1 gratis per runde,",
-          "  ekstra dodge koster handling neste runde.",
+          "Dodge: 1 free per round,",
+          "  extra dodge costs an action next round.",
           "",
           "OUTNUMBERED:",
           "  When defender has already dodged",
-          "  eller fought back denne runden:",
+          "  or fought back this round:",
           "  -> all subsequent attacks get",
           "     +1 bonus die.",
-          "  Unntak: vesener med flere angrep/runde",
-          "  kan dodge/fight back like mange ganger.",
+          "  Exception: creatures with multiple attacks/round",
+          "  may dodge/fight back the same number of times.",
           "  Does NOT apply to firearms.",
         ]),
         ("Firearms", [
-          "Rull Firearms-skill. INGEN opposed roll.",
-          "Forsvarer kan KUN dodge ved point-blank.",
-          "Ellers: bare dekke/bevege seg ut.",
+          "Roll Firearms skill. NO opposed roll.",
+          "Defender can ONLY dodge at point-blank.",
+          "Otherwise: only take cover/move out.",
           "",
-          "Rekkevidde-modifikatorer:",
-          "  Point-blank (\u2264 1/5 range): +1 bonus",
-          "  Mellomdistanse (base range): normal",
-          "  Lang (inntil 2x base): +1 penalty",
-          "  Ekstrem (inntil 4x base): +2 penalty",
+          "Range modifiers:",
+          "  Point-blank (<= 1/5 range): +1 bonus",
+          "  Medium range (base range): normal",
+          "  Long (up to 2x base): +1 penalty",
+          "  Extreme (up to 4x base): +2 penalty",
           "",
-          "Andre modifikatorer:",
+          "Other modifiers:",
           "  Moving target: +1 penalty die",
           "  Large target: +1 bonus die",
           "  Narrow target: +1 penalty die",
-          "  Sikte (bruker handling): +1 bonus",
+          "  Aim (uses action): +1 bonus",
           "",
-          "Impale: Extreme suksess med",
+          "Impale: Extreme success with",
           "  impaling weapon",
           "  = max weapon damage + extra roll.",
         ]),
@@ -452,24 +452,24 @@ try:
           "  Trip/knockdown: target falls",
           "  Disarm: target loses weapon",
           "  Hold/grapple: target is restrained",
-          "  Kaste: dytte/kaste motstanderen",
+          "  Throw: push/throw the opponent",
           "",
-          "Krever: vinn opposed Fighting-sjekk.",
-          "Build-differanse kan gi bonus/penalty:",
-    "  Attacker Build ≥ target + 2: +1 bonus die",
-    "  Attacker Build ≤ target - 2: +1 penalty die",
+          "Requires: win opposed Fighting check.",
+          "Build difference can give bonus/penalty:",
+    "  Attacker Build >= target + 2: +1 bonus die",
+    "  Attacker Build <= target - 2: +1 penalty die",
         ]),
         ("Damage Bonus (DB)", [
           "DB based on STR + SIZ:",
-          "  2\u201364:    -2",
-          "  65\u201384:   -1",
-          "  85\u2013124:  0",
-          "  125\u2013164: +1d4",
-          "  165\u2013204: +1d6",
-          "  205\u2013284: +2d6",
-          "  285\u2013364: +3d6",
+          "  2-64:    -2",
+          "  65-84:   -1",
+          "  85-124:  0",
+          "  125-164: +1d4",
+          "  165-204: +1d6",
+          "  205-284: +2d6",
+          "  285-364: +3d6",
           "",
-          "Build-verdi:",
+          "Build value:",
           "  DB -2: Build -2",
           "  DB -1: Build -1",
           "  DB 0:  Build 0",
@@ -477,29 +477,29 @@ try:
           "  DB +1d6: Build 2",
           "  DB +2d6: Build 3",
         ]),
-        ("Skade & heling", [
+        ("Damage & Healing", [
           "DAMAGE LEVELS:",
-          "  Minor wound: tap < halve maks HP",
-          "  Major wound: tap \u2265 halve maks HP",
+          "  Minor wound: loss < half max HP",
+          "  Major wound: loss >= half max HP",
           "",
-          "MAJOR WOUND-konsekvenser:",
-          "  CON-sjekk eller besvime",
-          "  First Aid/Medicine innen 1 runde",
+          "MAJOR WOUND consequences:",
+          "  CON check or fall unconscious",
+          "  First Aid/Medicine within 1 round",
           "  Must be stabilised or dies",
           "",
           "DYING (0 HP):",
-          "  CON-sjekk per runde",
+          "  CON check per round",
           "  Fail = death",
-          "  Suksess = holder ut 1 runde til",
+          "  Success = holds on 1 more round",
           "",
-          "HELING:",
+          "HEALING:",
           "  First Aid: +1 HP (1 attempt/wound)",
-          "  Medicine: +1d3 HP (etter First Aid)",
-          "  Naturlig: 1 HP/uke (minor)",
-          "  Major wound: 1d3 HP/uke m/pleie",
+          "  Medicine: +1d3 HP (after First Aid)",
+          "  Natural: 1 HP/week (minor)",
+          "  Major wound: 1d3 HP/week with care",
         ]),
     ("Automatic Weapons", [
-          "Burst: 3 kuler, +1 bonus die til skade.",
+          "Burst: 3 bullets, +1 bonus die to damage.",
           "Full auto: choose number of targets,",
           "  distribute bullets, roll for each target.",
           "  1 bonus die per 10 bullets on the target.",
@@ -507,221 +507,221 @@ try:
           "Suppressive fire:",
           "  Covers an area, everyone in the area",
           "  must Dodge or take 1 hit.",
-          "  Bruker halve magasinet.",
+          "  Uses half the magazine.",
         ]),
       ]),
       ("Sanity", "", [
-        ("SAN-sjekk", [
-    "Roll d100 ≤ current SAN.",
+        ("SAN Check", [
+    "Roll d100 <= current SAN.",
           "",
           "Format: 'X/Y'",
-          "  Suksess: tap = X",
-          "  Feil: tap = Y",
-          "  Eks: '1/1d6' = suksess taper 1,",
-          "    feil taper 1d6 SAN.",
+          "  Success: loss = X",
+          "  Failure: loss = Y",
+          "  Ex: '1/1d6' = success loses 1,",
+          "    failure loses 1d6 SAN.",
           "",
-          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
+          "Max SAN = 99 - Cthulhu Mythos skill.",
           "",
-          "SAN fumble: automatisk maks SAN-tap.",
+          "SAN fumble: automatic max SAN loss.",
         ]),
         ("Temporary Insanity", [
-          "TRIGGER: 5+ SAN tapt i ETT kast.",
+          "TRIGGER: 5+ SAN lost in ONE roll.",
           "",
-          "Keeper krever INT-sjekk:",
-          "  INT suksess = investigator innser",
-          "    sannheten -> MIDLERTIDIG GAL",
-          "  INT feil = fortrengt minne,",
-          "    investigator forblir ved sine fulle fem",
+          "Keeper requires INT check:",
+          "  INT success = investigator realises",
+          "    the truth -> TEMPORARILY INSANE",
+          "  INT failure = repressed memory,",
+          "    investigator remains fully sane",
           "",
-          "Midlertidig insanity varer 1d10 timer.",
+          "Temporary insanity lasts 1d10 hours.",
           "Begynner med Bout of Madness.",
           "Followed by Underlying Insanity.",
         ]),
         ("Bout of Madness", [
           "Occurs during temporary insanity.",
-          "Keeper velger Real-Time eller Summary.",
+          "Keeper chooses Real-Time or Summary.",
           "",
-          "REAL-TIME (varig 1d10 runder):",
-          "  1: Amnesi (husker ingenting)",
+          "REAL-TIME (lasting 1d10 rounds):",
+          "  1: Amnesia (remembers nothing)",
           "  2: Psychosomatic (blind/deaf/paralysed)",
           "  3: Violence (attack nearest person)",
-          "  4: Paranoia (alle er fiender)",
-          "  5: Fysisk (kvalme/besvimelse)",
+          "  4: Paranoia (everyone is an enemy)",
+          "  5: Physical (nausea/fainting)",
           "  6: Flight (run in panic)",
-          "  7: Hallusinasjoner",
+          "  7: Hallucinations",
           "  8: Echo (repeat actions meaninglessly)",
-          "  9: Fobi (ny eller eksisterende)",
-          "  10: Katatoni (stivner helt)",
+          "  9: Phobia (new or existing)",
+          "  10: Catatonia (freezes completely)",
         ]),
-        ("Summary (1d10 timer)", [
-          "Etter real-time bout, varig effekt:",
-          "  1: Amnesi for hele hendelsen",
-          "  2: Tvangstanker / ritualer",
-          "  3: Hallusinasjoner (vedvarende)",
-          "  4: Irrasjonelt hat/frykt",
-          "  5: Fobi (spesifikk, ny eller forsterket)",
-          "  6: Mani (kompulsiv adferd)",
+        ("Summary (1d10 hours)", [
+          "After real-time bout, lasting effect:",
+          "  1: Amnesia for the whole event",
+          "  2: Obsessive thoughts / rituals",
+          "  3: Hallucinations (persistent)",
+          "  4: Irrational hate/fear",
+          "  5: Phobia (specific, new or intensified)",
+          "  6: Mania (compulsive behaviour)",
           "  7: Paranoia (trusts no one)",
-          "  8: Dissosiasjon (fjern, uvirkelig)",
+          "  8: Dissociation (detached, unreal)",
           "  9: Eating disorder / insomnia",
-          "  10: Mythos-besettelse (studerer forbudt)",
+          "  10: Mythos obsession (studies forbidden things)",
         ]),
-        ("Fobier (utvalg)", [
+        ("Phobias (selection)", [
     "Acrophobia – fear of heights",
     "Agoraphobia – open spaces",
-          "Arachnophobia \u2013 edderkopper",
-          "Claustrophobia \u2013 trange rom",
-          "Demophobia \u2013 folkemengder",
-          "Hemophobia \u2013 blod",
-          "Hydrophobia \u2013 vann",
-          "Mysophobia \u2013 smitte/skitt",
+          "Arachnophobia - spiders",
+          "Claustrophobia - confined spaces",
+          "Demophobia - crowds",
+          "Hemophobia - blood",
+          "Hydrophobia - water",
+          "Mysophobia - contagion/dirt",
     "Necrophobia – the dead/corpses",
     "Nyctophobia – darkness",
-          "Pyrophobia \u2013 ild",
-          "Thalassophobia \u2013 havet/dypt vann",
-          "Xenophobia \u2013 fremmede/ukjente",
-          "Zoophobia \u2013 dyr",
+          "Pyrophobia - fire",
+          "Thalassophobia - the sea/deep water",
+          "Xenophobia - strangers/the unknown",
+          "Zoophobia - animals",
         ]),
-        ("Manier (utvalg)", [
-          "Dipsomania \u2013 trang til alkohol",
+        ("Manias (selection)", [
+          "Dipsomania - compulsion to drink alcohol",
     "Kleptomania – compulsion to steal",
-          "Megalomania \u2013 storhetstanker",
+          "Megalomania - delusions of grandeur",
     "Mythomania – compulsive liar",
     "Necromania – obsession with death",
-          "Pyromania \u2013 brannstifting",
+          "Pyromania - compulsion to start fires",
     "Thanatomania – death wish",
-          "Xenomania \u2013 besettelse med fremmede",
+          "Xenomania - obsession with the foreign/unknown",
         ]),
         ("Indefinite Insanity", [
           "Triggered when investigator has lost",
           "  1/5 of current SAN in total.",
           "",
-          "Effekt: langvarig galskap.",
-          "  Spiller mister kontroll over karakter.",
-          "  Keeper bestemmer adferd.",
+          "Effect: long-term madness.",
+          "  Player loses control of character.",
+          "  Keeper decides behaviour.",
           "  Lasts months/years.",
           "",
-          "Behandling:",
-          "  Institusjonalisering",
-          "  Psychoanalysis over tid",
+          "Treatment:",
+          "  Institutionalisation",
+          "  Psychoanalysis over time",
           "  +1d3 SAN per month (max)",
-          "  Mislykket behandling: -1d6 SAN",
+          "  Failed treatment: -1d6 SAN",
         ]),
-        ("SAN-gjenoppretting", [
+        ("SAN Recovery", [
           "Psychoanalysis: +1d3 SAN (1/month)",
-          "  Mislykket: -1d6 SAN!",
-          "Self-help: forbedre skill = +1d3 SAN",
+          "  Failed: -1d6 SAN!",
+          "Self-help: improve skill = +1d3 SAN",
           "Complete scenario: Keeper reward",
           "",
-          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
-          "Permanent SAN-tap kan ikke gjenopprettes",
-          "  utover denne grensen.",
+          "Max SAN = 99 - Cthulhu Mythos skill.",
+          "Permanent SAN loss cannot be recovered",
+          "  beyond this limit.",
         ]),
       ]),
       ("Chase", "", [
-        ("Oppsett", [
+        ("Setup", [
           "1. Type: on foot or vehicle.",
-          "2. Antall locations: 5\u201310 (Keeper velger).",
-          "3. Deltakere:",
+          "2. Number of locations: 5-10 (Keeper chooses).",
+          "3. Participants:",
           "   Foot: MOV based on DEX, STR, SIZ.",
-          "   Bil: speed-rating.",
-          "4. Speed Roll (CON-sjekk):",
-          "   Extreme suksess: +1 MOV for chasen",
-          "   Suksess: ingen endring",
-          "   Feil: -1 MOV for chasen",
+          "   Vehicle: speed rating.",
+          "4. Speed Roll (CON check):",
+          "   Extreme success: +1 MOV for the chase",
+          "   Success: no change",
+          "   Failure: -1 MOV for the chase",
           "   (vehicle: Drive Auto instead)",
           "5. Compare MOV: higher MOV escapes",
-          "   umiddelbart. Ellers -> full chase.",
+          "   immediately. Otherwise -> full chase.",
           "6. Set starting positions on the track.",
           "7. Place barriers/hazards at locations.",
           "",
           "MOV (Movement Rate):",
-          "  Hvis DEX & STR begge > SIZ: MOV 9",
-          "  Hvis enten DEX eller STR > SIZ: MOV 8",
-          "  Hvis begge \u2264 SIZ: MOV 7",
-          "  Alder 40\u201349: MOV -1",
-          "  Alder 50\u201359: MOV -2 (etc.)",
+          "  If DEX & STR both > SIZ: MOV 9",
+          "  If either DEX or STR > SIZ: MOV 8",
+          "  If both <= SIZ: MOV 7",
+          "  Age 40-49: MOV -1",
+          "  Age 50-59: MOV -2 (etc.)",
         ]),
-        ("Bevegelse & handlinger", [
+        ("Movement & Actions", [
           "Rounds in DEX order (highest first).",
           "",
-          "Hver runde kan deltaker:",
-          "  - Bevege seg (MOV locations)",
+          "Each round a participant can:",
+          "  - Move (MOV locations)",
           "  - Perform 1 action:",
-          "    Speed: CON-sjekk for +1 location",
+          "    Speed: CON check for +1 location",
           "    Angrep: Fighting/Firearms",
           "    Barrier: skill check to pass",
           "    Obstacle: create barrier for pursuer",
           "",
-          "Hazard-handling koster handling OG",
-          "  bevegelse den runden.",
+          "Hazard handling costs an action AND",
+          "  movement that round.",
         ]),
-        ("Barrierer", [
+        ("Barriers", [
           "Keeper places barriers at locations.",
           "Skill check to pass:",
           "",
-          "  Hopp over gjerde: Jump / Climb",
-          "  Trang passasje: DEX / Dodge",
-          "  Folkemengde: STR / Charm / Intimidate",
+          "  Jump fence: Jump / Climb",
+          "  Narrow passage: DEX / Dodge",
+          "  Crowd: STR / Charm / Intimidate",
           "  Mud/slippery: DEX / Luck",
           "  Locked door: Locksmith / STR",
-          "  Trafikkert gate: Drive Auto / DEX",
+          "  Busy street: Drive Auto / DEX",
           "",
-          "Feil: mist 1 location bevegelse.",
-          "Fumble: fall, skade, fastklemt, etc.",
+          "Failure: lose 1 location movement.",
+          "Fumble: fall, injury, stuck, etc.",
         ]),
-        ("Seier & tap", [
+        ("Victory & Defeat", [
           "ESCAPE succeeds when:",
-          "  Avstand mellom = antall locations + 1",
+          "  Distance = number of locations + 1",
           "  (pursuer cannot see the target).",
           "",
           "CAUGHT when:",
           "  Pursuer is at the SAME location.",
-          "  Kamp eller interaksjon kan begynne.",
+          "  Combat or interaction can begin.",
           "",
-          "UTMATTELSE:",
-          "  CON-sjekk per runde etter runde 5.",
-          "  Feil: MOV reduseres med 1.",
-          "  MOV 0: kan ikke bevege seg.",
+          "EXHAUSTION:",
+          "  CON check per round after round 5.",
+          "  Failure: MOV reduced by 1.",
+          "  MOV 0: cannot move.",
         ]),
       ]),
-      ("Magi & Tomer", "", [
-        ("Besvergelse", [
-          "Kostnader varierer per spell:",
-          "  Magic Points (MP): vanligst",
-          "  SAN: nesten alltid",
-          "  HP: noen kraftige spells",
-          "  POW: permanent offer (sjeldent)",
+      ("Magic & Tomes", "", [
+        ("Spells", [
+          "Costs vary per spell:",
+          "  Magic Points (MP): most common",
+          "  SAN: almost always",
+          "  HP: some powerful spells",
+          "  POW: permanent sacrifice (rare)",
           "",
-          "Casting time: 1 runde til flere timer.",
-          "Noen krever komponenter/ritualer.",
+          "Casting time: 1 round to several hours.",
+          "Some require components/rituals.",
           "",
-          "MP regenereres: 1 per 2 timer hvile.",
+          "MP regenerates: 1 per 2 hours of rest.",
           "MP = 0: unconscious for 1d8 hours.",
-          "POW-offer: permanent, gjenopprettes IKKE.",
+          "POW sacrifice: permanent, does NOT regenerate.",
         ]),
-        ("Mythos-tomer", [
-          "Lesing av Mythos-tome:",
+        ("Mythos Tomes", [
+          "Reading a Mythos tome:",
           "  Initial reading: weeks to months",
           "  Full study: months to years",
           "",
           "Reward: +Cthulhu Mythos skill.",
-          "Kostnad: SAN-tap (varierer per tome).",
+          "Cost: SAN loss (varies per tome).",
           "Can also learn spells from the tome.",
           "",
-          "EKSEMPLER (CM-gevinst / SAN-tap):",
+          "EXAMPLES (CM gain / SAN loss):",
           "  Necronomicon (latin): +15 / -2d10",
           "  Necronomicon (original): +22 / -3d10",
           "  De Vermis Mysteriis: +10 / -1d8",
           "  Book of Eibon: +11 / -2d4",
           "  Cultes des Goules: +9 / -1d8",
-          "  Pnakotiske man.: +7 / -1d6",
+          "  Pnakotic Manuscripts: +7 / -1d6",
           "  Unaussprechlichen Kulten: +9 / -2d4",
           "  Revelations of Glaaki: +7 / -1d4",
           "  Book of Dzyan: +5 / -1d4",
         ]),
-        ("Mythos-vesener (SAN)", [
-          "Vesen: suksess / feil SAN-tap",
+        ("Mythos Creatures (SAN)", [
+          "Creature: success / failure SAN loss",
           "",
           "  Byakhee: 1/1d6",
           "  Dark Young: 0/1d8",
@@ -740,99 +740,99 @@ try:
           "  Great Old Ones:",
           "  Cthulhu: 1d10/1d100",
           "  Hastur: 1d10/1d100",
-          "  Nyarlathotep: 0/1d10 (varierer)",
+          "  Nyarlathotep: 0/1d10 (varies)",
           "  Yog-Sothoth: 1d10/1d100",
         ]),
       ]),
       ("Pulp Cthulhu", "", [
-        ("Pulp-regler", [
+        ("Pulp Rules", [
           "Heroes are TOUGHER than standard CoC.",
           "",
-          "HP: (CON + SIZ) / 5 (avrundet ned)",
+          "HP: (CON + SIZ) / 5 (rounded down)",
           "  Standard CoC: (CON+SIZ) / 10",
-          "  Effektivt DOBBEL HP.",
+          "  Effectively DOUBLE HP.",
           "  Optional low-level: (CON+SIZ)/10",
           "",
           "Luck: 2d6+6 x 5 (higher than standard)",
           "  Standard CoC: 3d6 x 5",
-          "  Regenerer 2d10 Luck per sesjon.",
+          "  Regenerate 2d10 Luck per session.",
           "",
           "First Aid: +1d4 HP (standard: +1 HP)",
-          "  Extreme suksess: automatisk 4 HP.",
+          "  Extreme success: automatic 4 HP.",
           "Medicine: +1d4 HP (standard: +1d3)",
           "",
-          "Pulp Talents: 2 stk (standard).",
+          "Pulp Talents: 2 (standard).",
           "  Low-level pulp: 1 talent",
           "  High-level pulp: 3 talents",
           "",
-          "Kampkast kan IKKE pushes (som standard).",
+          "Combat rolls CANNOT be pushed (same as standard).",
           "Spending Luck: can also be used to:",
           "  - Avoid dying (5 Luck = stabilise)",
-          "  - Redusere skade (etter kast)",
+          "  - Reduce damage (after roll)",
         ]),
-        ("Arketyper", [
-          "Velg 1 arketype ved opprettelse.",
-          "Gir bonuser og Pulp Talents.",
+        ("Archetypes", [
+          "Choose 1 archetype at creation.",
+          "Grants bonuses and Pulp Talents.",
           "",
-          "  Adventurer: allsidig eventyrer",
-          "  Beefcake: fysisk sterk, ekstra HP",
-          "  Bon Vivant: sjarmerende, sosialt dyktig",
+          "  Adventurer: versatile adventurer",
+          "  Beefcake: physically strong, extra HP",
+          "  Bon Vivant: charming, socially skilled",
           "  Cold Blooded: ruthless, precise",
           "  Dreamer: kreativ, Mythos-sensitiv",
-          "  Egghead: intellektuell, kunnskapsrik",
-          "  Explorer: utforsker, overlevelse",
+          "  Egghead: intellectual, knowledgeable",
+          "  Explorer: explorer, survival",
           "  Femme/Homme Fatale: seductive",
           "  Grease Monkey: mekaniker, oppfinnsom",
           "  Hard Boiled: tough, resilient",
-          "  Harlequin: entertainer, distraherende",
-          "  Hunter: jeger, naturkyndig",
+          "  Harlequin: entertainer, distracting",
+          "  Hunter: hunter, nature-wise",
           "  Mystic: spiritual, clairvoyant",
           "  Outsider: solitary, self-taught",
           "  Reckless: daredevil, risk-taker",
           "  Sidekick: loyal, supportive",
-          "  Swashbuckler: akrobatisk fighter",
-          "  Thrill Seeker: adrenalinjansen",
+          "  Swashbuckler: acrobatic fighter",
+          "  Thrill Seeker: adrenaline junkie",
           "  Two-Fisted: nevekamp-spesialist",
         ]),
-        ("Pulp Talents (utvalg)", [
-          "FYSISK:",
+        ("Pulp Talents (selection)", [
+          "PHYSICAL:",
           "  Brawler: +1d6 melee-skade",
-          "  Iron Jaw: ignorer 1 K.O. per sesjon",
-          "  Quick Healer: dobbel heling",
-          "  Tough Guy: +1d6 ekstra HP",
+          "  Iron Jaw: ignore 1 K.O. per session",
+          "  Quick Healer: double healing",
+          "  Tough Guy: +1d6 extra HP",
           "",
           "MENTAL:",
           "  Arcane Insight: +2 Cthulhu Mythos",
-          "  Gadget: lag improvisert gjenstand",
-          "  Photographic Memory: husk alt",
-          "  Psychic Power: sjette sans",
+          "  Gadget: craft improvised device",
+          "  Photographic Memory: remember everything",
+          "  Psychic Power: sixth sense",
           "",
-          "SOSIAL:",
-          "  Smooth Talker: re-roll 1 sosial sjekk",
+          "SOCIAL:",
+          "  Smooth Talker: re-roll 1 social check",
           "  Master of Disguise: +1 bonus Disguise",
-          "  Lucky: +1d10 ekstra Luck-regen",
+          "  Lucky: +1d10 extra Luck regen",
           "",
-          "KAMP:",
-          "  Rapid Fire: ekstra skudd uten penalty",
+          "COMBAT:",
+          "  Rapid Fire: extra shots without penalty",
           "  Outmaneuver: +1 bonus die on maneuvers",
-          "  Fleet Footed: +1 MOV i chase",
+          "  Fleet Footed: +1 MOV in chase",
         ]),
       ]),
       ("Tabeller", "", [
     ("Melee Weapon Table", [
           "Weapon: damage / attacks",
           "",
-          "  Unarmed (knytneve): 1d3+DB / 1",
+          "  Unarmed (fist): 1d3+DB / 1",
           "  Head butt: 1d4+DB / 1",
           "  Kick: 1d4+DB / 1",
           "  Grapple: special / 1",
-          "  Kniv (liten): 1d4+DB / 1",
-          "  Kniv (stor): 1d6+DB / 1",
+          "  Knife (small): 1d4+DB / 1",
+          "  Knife (large): 1d6+DB / 1",
           "  Club/mace: 1d8+DB / 1",
-          "  Sverd/sabel: 1d8+DB / 1",
+          "  Sword/sabre: 1d8+DB / 1",
           "  Axe (large): 1d8+2+DB / 1",
-          "  Spyd: 1d8+1+DB / 1",
-          "  Motorsag: 2d8 / 1",
+          "  Spear: 1d8+1+DB / 1",
+          "  Chainsaw: 2d8 / 1",
         ]),
     ("Ranged Weapon Table", [
           "Weapon: damage / range / shots",
@@ -850,54 +850,54 @@ try:
           "  Dynamitt: 5d6 / thrown / 1",
           "    (radius 5 yard)",
         ]),
-        ("SAN-tap oversikt", [
-          "HENDELSE: suksess / feil",
+        ("SAN Loss Overview", [
+          "EVENT: success / failure",
           "",
-          "  Se et lik: 0/1d3",
+          "  See a corpse: 0/1d3",
           "  See a friend die: 0/1d4",
-          "  Se noe uforklarlig: 0/1d2",
-          "  Se et grusomt drap: 1/1d4+1",
-          "  Se massedrap: 1d3/1d6+1",
-          "  Finne en grusomhet: 0/1d3",
+          "  See something inexplicable: 0/1d2",
+          "  See a gruesome murder: 1/1d4+1",
+          "  See a massacre: 1d3/1d6+1",
+          "  Find something gruesome: 0/1d3",
           "",
-          "  Oppdage Mythos-bevis: 0/1d2",
-          "  Lese Mythos-tome: 1/1d4",
-          "  Se Mythos-ritual: 1/1d6",
-          "  Bli utsatt for besvergelse: 1/1d6",
+          "  Discover Mythos evidence: 0/1d2",
+          "  Read a Mythos tome: 1/1d4",
+          "  See a Mythos ritual: 1/1d6",
+          "  Be subjected to a spell: 1/1d6",
         ]),
-        ("Alderseffekter", [
+        ("Age Effects", [
           "Age affects stats at character creation:",
           "",
-          "  15\u201319: -5 SIZ/STR, -5 EDU,",
-          "    Luck: rull 2x, bruk best",
-          "  20\u201339: EDU-forbedring: +1",
-          "  40\u201349: EDU +2, -5 fritt STR/CON/DEX,",
+          "  15-19: -5 SIZ/STR, -5 EDU,",
+          "    Luck: roll 2x, use best",
+          "  20-39: EDU improvement: +1",
+          "  40-49: EDU +2, -5 freely to STR/CON/DEX,",
           "    APP -5, MOV -1",
-          "  50\u201359: EDU +3, -10 fritt STR/CON/DEX,",
+          "  50-59: EDU +3, -10 freely to STR/CON/DEX,",
           "    APP -10, MOV -2",
-          "  60\u201369: EDU +4, -20 fritt STR/CON/DEX,",
+          "  60-69: EDU +4, -20 freely to STR/CON/DEX,",
           "    APP -15, MOV -3",
-          "  70\u201379: EDU +4, -40 fritt STR/CON/DEX,",
+          "  70-79: EDU +4, -40 freely to STR/CON/DEX,",
           "    APP -20, MOV -4",
-          "  80\u201389: EDU +4, -80 fritt STR/CON/DEX,",
+          "  80-89: EDU +4, -80 freely to STR/CON/DEX,",
           "    APP -25, MOV -5",
         ]),
         ("Credit Rating", [
-          "Credit Rating = formue/sosial status:",
+          "Credit Rating = wealth/social status:",
           "",
           "  0: poor, homeless",
-    "  1–9: poor, necessities only",
-          "  10\u201349: gjennomsnittlig",
-    "  50–89: wealthy",
-          "  90\u201398: rik",
-          "  99: enormt rik",
+    "  1-9: poor, necessities only",
+          "  10-49: average",
+    "  50-89: wealthy",
+          "  90-98: rich",
+          "  99: enormously rich",
           "",
-          "Spending level (per dag):",
+          "Spending level (per day):",
           "  CR 0: $0.50",
-          "  CR 1\u20139: $2",
-          "  CR 10\u201349: $10",
-          "  CR 50\u201389: $50",
-          "  CR 90\u201398: $250",
+          "  CR 1-9: $2",
+          "  CR 10-49: $10",
+          "  CR 50-89: $50",
+          "  CR 90-98: $250",
           "  CR 99: $5000",
         ]),
       ]),
@@ -922,9 +922,9 @@ try:
             pass
 
     def has_all_files_access():
-        """Sjekk om appen har MANAGE_EXTERNAL_STORAGE (Android 11+).
-        Returnerer True hvis ja, False hvis nei, None hvis ikke
-        Android eller ikke relevant."""
+        """Check if the app has MANAGE_EXTERNAL_STORAGE (Android 11+).
+        Returns True if yes, False if no, None if not
+        Android or not relevant."""
         if platform != 'android':
             return None
         try:
@@ -936,13 +936,13 @@ try:
                 return None
             return bool(Environment.isExternalStorageManager())
         except Exception as e:
-            log(f"has_all_files_access sjekk feilet: {e}")
+            log(f"has_all_files_access check failed: {e}")
             return None
 
     def request_all_files_access():
         """Open Android settings where the user can grant the app
-        'All files access'. Krever Android 11+ og at appen
-        deklarerer MANAGE_EXTERNAL_STORAGE i manifestet."""
+        'All files access'. Requires Android 11+ and that the app
+        declares MANAGE_EXTERNAL_STORAGE in the manifest."""
         if platform != 'android':
             return False
         try:
@@ -960,13 +960,13 @@ try:
                 intent.setData(Uri.parse(f"package:{package}"))
                 activity.startActivity(intent)
             except Exception:
-                # Fallback: generell "All files access"-skjerm
+                # Fallback: generic "All files access" screen
                 intent = Intent(
                     Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                 activity.startActivity(intent)
             return True
         except Exception as e:
-            log(f"request_all_files_access feilet: {e}")
+            log(f"request_all_files_access failed: {e}")
             return False
 
     def load_json(p, d=None):
@@ -984,14 +984,14 @@ try:
             with open(p, 'r', encoding='utf-8') as f:
                 text = f.read()
             if not text.strip():
-                log(f"load_json: tom fil – {p}")
+                log(f"load_json: empty file - {p}")
                 return default
             return json.loads(text)
         except json.JSONDecodeError as e:
-            log(f"load_json: {type(e).__name__} i {p}: {e}")
+            log(f"load_json: {type(e).__name__} in {p}: {e}")
             return default
         except Exception as e:
-            log(f"load_json: feil ved lesing av {p}: {type(e).__name__}: {e}")
+            log(f"load_json: error reading {p}: {type(e).__name__}: {e}")
             return default
 
     def save_json(p, d):
@@ -999,9 +999,9 @@ try:
             with open(p, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            log(f"save_json feilet ({p}): {type(e).__name__}: {e}")
+            log(f"save_json failed ({p}): {type(e).__name__}: {e}")
 
-    # === HJELPEFUNKSJONER ===
+    # === HELPER FUNCTIONS ===
 
     def mkbtn(text, cb=None, accent=False, danger=False, small=False, **kw):
         c = GOLD if accent else (RED if danger else TXT)
@@ -1020,7 +1020,7 @@ try:
         if wrap:
             l.halign = 'left'
             l.size_hint_y = None
-            # Bind text_size til label-bredden slik at det tilpasser seg rotasjon
+            # Bind text_size to label width so it adapts to rotation
             l.bind(width=lambda w, v: setattr(w, 'text_size', (v - dp(8), None)))
             l.bind(texture_size=l.setter('size'))
         return l
@@ -1131,12 +1131,12 @@ try:
             self.mc = None
 
     class FilePicker:
-        """Android Storage Access Framework-filvelger.
+        """Android Storage Access Framework file picker.
 
-        Opens the system file picker and reads the selected file via URI —
+        Opens the system file picker and reads the selected file via URI -
         requires no storage permissions, works on all
-        Android-versjoner, og brukeren kan velge fra hvor som
-        helst (Documents, Downloads, Google Drive, osv).
+        Android versions, and the user can choose from anywhere
+        (Documents, Downloads, Google Drive, etc).
         """
         REQUEST_CODE = 7331
 
@@ -1154,14 +1154,14 @@ try:
                 PythonActivity = autoclass(
                     'org.kivy.android.PythonActivity')
                 self._activity = PythonActivity.mActivity
-                # Registrer callback for activity result
+                # Register callback for activity result
                 from android import activity as android_activity
                 android_activity.bind(
                     on_activity_result=self._on_result)
                 self._bound = True
-                log("FilePicker bundet til Android activity")
+                log("FilePicker bound to Android activity")
             except Exception as e:
-                log(f"FilePicker bind-feil: {e}")
+                log(f"FilePicker bind error: {e}")
 
         def pick(self, callback, mime_type='application/json'):
             """Open file picker. callback(ok, text_or_err) is called
@@ -1401,14 +1401,14 @@ try:
             self._weap_last_error = None
             self._weap_char_target = -1
 
-            # FloatLayout as root – allows us to overlay splash on top
+            # FloatLayout as root - allows us to overlay splash on top
             wrapper = FloatLayout()
 
             main = BoxLayout(orientation='vertical', spacing=0,
                              size_hint=(1, 1), pos_hint={'x': 0, 'y': 0})
             main.add_widget(Widget(size_hint_y=None, height=dp(30)))
 
-            # FANER
+            # TABS
             tabs = RBox(size_hint_y=None, height=dp(52), spacing=dp(4),
                         padding=[dp(8), 0], bg_color=BTN)
             self._tabs = {}
@@ -1708,8 +1708,8 @@ try:
 
             p.add_widget(sub_bar)
 
-            # Content area — functions as "tool_area" for init-tracker
-            # og som vert for kart-visningen.
+            # Content area - functions as "tool_area" for init-tracker
+            # and as host for the map view.
             self._cmb_area = BoxLayout()
             p.add_widget(self._cmb_area)
 
@@ -1721,9 +1721,9 @@ try:
             self._cmb_render()
 
         def _cmb_render(self):
-            """Vis initiativ-tracker eller kart-visning."""
+            """Show initiative tracker or map view."""
             self._cmb_area.clear_widgets()
-            # Pek init-tracker sitt target til cmb_area
+            # Point init-tracker target to cmb_area
             self._init_target_area = self._cmb_area
             if self._cmb_sub == 'init':
                 self._mk_init_tracker()
@@ -1760,18 +1760,18 @@ try:
                             padding=dp(12), spacing=dp(4),
                             radius=dp(10))
             info_box.add_widget(mklbl(
-                "KLAR FOR KART", color=GOLD, size=13, bold=True, h=22))
+                "READY FOR MAP", color=GOLD, size=13, bold=True, h=22))
             summary = []
             if n_pc:
-                summary.append(f"{n_pc} investigator(er)")
+                summary.append(f"{n_pc} investigator(s)")
             if n_npc:
                 summary.append(f"{n_npc} NPC")
             if n_fiende:
-                summary.append(f"{n_fiende} fiende(r)")
+                summary.append(f"{n_fiende} foe(s)")
             if n_s:
-                summary.append(f"{n_s} skapning(er)")
+                summary.append(f"{n_s} creature(s)")
             info_box.add_widget(mklbl(
-                "  •  ".join(summary) if summary else "Ingen deltakere",
+                "  •  ".join(summary) if summary else "No participants",
                 color=TXT, size=12, wrap=True))
 
             act_name = (self._init_list[0].get('name', '')
@@ -2249,8 +2249,8 @@ try:
             p.add_widget(self.tool_area)
 
             # When in the Tools tab the init tracker (if called)
-            # bruke denne tool_area — men siden init-sub-tab er fjernet,
-            # skal det ikke skje. Sett target til None for sikkerhets skyld.
+            # would use this tool_area - but since the init sub-tab is removed,
+            # that should not happen. Set target to None for safety.
             self._init_target_area = None
 
             self._tool_render_sub()
@@ -2644,13 +2644,13 @@ try:
             """Show preview overlay before import."""
             count = len(chars)
             preview_names = [ch.get('name', '?') for ch in chars[:5]]
-            names_text = "\n".join(f"• {n}" for n in preview_names)
+            names_text = "\n".join(f"* {n}" for n in preview_names)
             if count > 5:
-                names_text += f"\n… og {count - 5} til"
+                names_text += f"\n... and {count - 5} more"
             skip_text = (
-                f"\n\n({skipped} entry"
-                f"{'er' if skipped != 1 else ''} uten navn ble "
-                "hoppet over)"
+                f"\n\n({skipped} entr"
+                f"{'ies' if skipped != 1 else 'y'} without name skipped"
+                ")"
             ) if skipped else ""
 
             overlay = RBox(
@@ -2660,11 +2660,11 @@ try:
                 size_hint=(0.9, 0.65),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Importer karakterer",
+                "Import Characters",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
-                f"{count} karakter"
-                f"{'er' if count != 1 else ''} funnet:"
+                f"{count} character"
+                f"{'s' if count != 1 else ''} found:"
                 f"{skip_text}",
                 color=TXT, size=11, wrap=True))
 
@@ -2674,7 +2674,7 @@ try:
             overlay.add_widget(scroll)
 
             overlay.add_widget(mklbl(
-                "Hvordan vil du importere?",
+                "How would you like to import?",
                 color=GOLD, size=12, bold=True, h=22))
 
             btns = BoxLayout(
@@ -2714,7 +2714,7 @@ try:
             fl.add_widget(overlay)
 
         def _chars_do_import(self, chars, replace):
-            """Perform import — replace existing or merge."""
+            """Perform import - replace existing or merge."""
             self._chars_close_overlay()
             if replace:
                 self.chars = list(chars)
