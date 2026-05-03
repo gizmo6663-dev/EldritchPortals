@@ -1540,7 +1540,7 @@ try:
                     allow_stretch=True,
                     keep_ratio=True,
                     size_hint=(1.1, 1.1),
-                    pos_hint={'center_x': 0.5, 'center_y': 0.4},
+                    pos_hint={'center_x': 0.5, 'center_y': 0.3},
                     opacity=0.18)
                 content_wrap.add_widget(self._content_bg)
             self.content = RBox(bg_color=[BG2[0], BG2[1], BG2[2], 0.78],
