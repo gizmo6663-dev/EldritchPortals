@@ -113,6 +113,72 @@ try:
     # Favourites are stored in user_data_dir (app-private, always writable).
     # WEAPONS_FAV_FILE is set in build() when user_data_dir is available.
 
+    # === BOUT OF MADNESS – Pulp Cthulhu / CoC 7e ===
+    # Index 0 = roll 1 etc. Feel free to swap text with formulations
+    # straight from the Pulp Cthulhu rulebook if desired.
+    PULP_MADNESS_RT = [
+        ("Amnesia",
+         "The character forgets the recent events "
+         "(last 1d10 minutes)."),
+        ("Psychosomatic disability",
+         "Suddenly blind, deaf or paralysed for 1d10 rounds "
+         "(keeper's choice)."),
+        ("Violence",
+         "Attacks the nearest target — friend or foe — "
+         "for 1d10 rounds."),
+        ("Paranoia",
+         "Suspects everyone and everything; sees conspiracies "
+         "everywhere for 1d10 rounds."),
+        ("Significant person",
+         "Mistakes someone present for an important figure from "
+         "the past; acts accordingly for 1d10 rounds."),
+        ("Faint",
+         "Collapses unconscious from the shock for 1d10 rounds."),
+        ("Flee",
+         "Flees in blind panic away from the threat for "
+         "1d10 rounds."),
+        ("Physical hysterics",
+         "Cries, laughs or screams uncontrollably for 1d10 rounds; "
+         "unable to act."),
+        ("Phobia",
+         "Develops a new phobia tied to the source of the shock; "
+         "lasts 1d10 rounds."),
+        ("Mania",
+         "Develops a new mania tied to the source of the shock; "
+         "lasts 1d10 rounds."),
+    ]
+
+    PULP_MADNESS_SUM = [
+        ("Amnesia",
+         "Wakes in a safe place with no memory of what happened "
+         "the past 1d10 hours."),
+        ("Stolen hours",
+         "Vanishes for 1d10 days; no one — not even the character "
+         "— knows where he has been."),
+        ("Violent behaviour",
+         "Commits violent acts for 1d10 days; must answer to "
+         "the authorities afterwards."),
+        ("Paranoia",
+         "Strong paranoia for 1d10 days; sees enemies in shadows "
+         "and friends alike."),
+        ("Significant person",
+         "Identifies someone as extremely significant and follows "
+         "or pursues them for 1d10 days."),
+        ("Institutionalised",
+         "Wakes in a hospital, asylum or jail without knowing how; "
+         "1d10 days of confinement."),
+        ("Flight home",
+         "Instinctively heads for home or childhood place; the "
+         "journey takes 1d10 days."),
+        ("Hysterics",
+         "Overwhelming emotional state for 1d10 days; must be "
+         "stabilised by others."),
+        ("Phobia",
+         "Develops a new persistent phobia lasting 1d10 months."),
+        ("Mania",
+         "Develops a new persistent mania lasting 1d10 months."),
+    ]
+
     def ensure_dirs():
         """Create folders AFTER permissions have been granted."""
         for d in [IMG_DIR, MUSIC_DIR]:
@@ -1366,6 +1432,8 @@ try:
         def build(self):
             log("=== BUILD (v0.3.2 Abyssal Purple) ===")
             Window.clearcolor = BG
+            # Scroll content up so keyboard doesn't cover active input
+            Window.softinput_mode = 'below_target'
             self.title = "Eldritch Portals"
             self.tracks = []
             self.ct = -1
@@ -1550,14 +1618,33 @@ try:
             self._weap_last_error = err
 
         def _tab(self, k):
-            self.content.clear_widgets()
             builders = {
                 'img': self._mk_img, 'snd': self._mk_sound,
                 'cmb': self._mk_combat, 'tool': self._mk_tool,
                 'rules': self._mk_rules, 'cast': self._mk_cast,
             }
-            if k in builders:
-                self.content.add_widget(builders[k]())
+            if k not in builders:
+                return
+
+            def _swap_in(*_a):
+                self.content.clear_widgets()
+                new_w = builders[k]()
+                new_w.opacity = 0
+                self.content.add_widget(new_w)
+                Animation(opacity=1, duration=0.18,
+                          t='out_quad').start(new_w)
+
+            # First render: no fade-out
+            if not self.content.children:
+                _swap_in()
+                return
+
+            # Fade out current, then swap in new
+            cur = self.content.children[0]
+            Animation.cancel_all(cur)
+            fade_out = Animation(opacity=0, duration=0.12, t='in_quad')
+            fade_out.bind(on_complete=_swap_in)
+            fade_out.start(cur)
 
         # ---------- BILDER ----------
         def _mk_img(self):
@@ -1696,6 +1783,7 @@ try:
                 font_size=sp(12), bold=True)
             b_init.bind(on_release=lambda b: self._cmb_switch('init'))
             sub_bar.add_widget(b_init)
+            self._cmb_btn_init = b_init
 
             b_map = RToggle(
                 text='Map', group='cmb_sub',
@@ -1705,6 +1793,7 @@ try:
                 font_size=sp(12), bold=True)
             b_map.bind(on_release=lambda b: self._cmb_switch('map'))
             sub_bar.add_widget(b_map)
+            self._cmb_btn_map = b_map
 
             p.add_widget(sub_bar)
 
@@ -1718,6 +1807,12 @@ try:
 
         def _cmb_switch(self, which):
             self._cmb_sub = which
+            for key, btn in (('init', self._cmb_btn_init),
+                             ('map',  self._cmb_btn_map)):
+                active = (key == which)
+                btn.state    = 'down' if active else 'normal'
+                btn.bg_color = BTNH   if active else BTN
+                btn.color    = GOLD   if active else DIM
             self._cmb_render()
 
         def _cmb_render(self):
@@ -1822,6 +1917,7 @@ try:
                 font_size=sp(12), bold=True)
             b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
             sub_bar.add_widget(b_mus)
+            self._snd_btn_mus = b_mus
 
             b_amb = RToggle(
                 text='Ambient', group='sound_sub',
@@ -1831,6 +1927,7 @@ try:
                 font_size=sp(12), bold=True)
             b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
             sub_bar.add_widget(b_amb)
+            self._snd_btn_amb = b_amb
 
             p.add_widget(sub_bar)
 
@@ -1843,6 +1940,12 @@ try:
 
         def _sound_switch(self, which):
             self._sound_sub = which
+            for key, btn in (('mus', self._snd_btn_mus),
+                             ('amb', self._snd_btn_amb)):
+                active = (key == which)
+                btn.state    = 'down' if active else 'normal'
+                btn.bg_color = BTNH   if active else BTN
+                btn.color    = GOLD   if active else DIM
             self._sound_render()
 
         def _sound_render(self):
@@ -2237,6 +2340,15 @@ try:
             self._sub_btn_scen.bind(on_release=lambda b: self._tool_switch('scen'))
             sub_bar.add_widget(self._sub_btn_scen)
 
+            self._sub_btn_mad = RToggle(
+                text='Madness', group='tool_sub',
+                state='down' if self._tool_sub == 'mad' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'mad' else BTN,
+                color=GOLD if self._tool_sub == 'mad' else DIM,
+                font_size=sp(11), bold=True)
+            self._sub_btn_mad.bind(on_release=lambda b: self._tool_switch('mad'))
+            sub_bar.add_widget(self._sub_btn_mad)
+
             p.add_widget(sub_bar)
 
             # Handlings-rad
@@ -2257,11 +2369,12 @@ try:
             return p
 
         def _tool_switch(self, which):
-            """Switch between characters, weapons and scenario."""
+            """Switch between characters, weapons, scenario and madness."""
             self._tool_sub = which
             for key, btn in (('chars', self._sub_btn_chars),
                              ('weap',  self._sub_btn_weap),
-                             ('scen',  self._sub_btn_scen)):
+                             ('scen',  self._sub_btn_scen),
+                             ('mad',   self._sub_btn_mad)):
                 active = (key == which)
                 btn.state    = 'down'   if active else 'normal'
                 btn.bg_color = BTNH     if active else BTN
@@ -2269,7 +2382,7 @@ try:
             self._tool_render_sub()
 
         def _tool_render_sub(self):
-            """Rendre riktig sub-visning."""
+            """Render the active sub-view."""
             self._tool_action_bar.clear_widgets()
             if self._tool_sub == 'chars':
                 self._tool_action_bar.add_widget(
@@ -2282,12 +2395,72 @@ try:
                     mkbtn("Refresh", self._show_list,
                           small=True, size_hint_x=0.22))
                 self._tool_action_bar.add_widget(
-                    mklbl("Karakterer", color=GOLD, size=14, bold=True))
+                    mklbl("Characters", color=GOLD, size=14, bold=True))
                 self._show_list()
             elif self._tool_sub == 'scen':
                 self._mk_scenario()
+            elif self._tool_sub == 'mad':
+                self._mk_madness()
             else:
                 self._mk_weapons()
+
+        # ---------- BOUT OF MADNESS ----------
+        def _mk_madness(self):
+            """Bout of Madness sub-tab — two rolls (Real-Time / Summary)."""
+            self.tool_area.clear_widgets()
+            wrap = BoxLayout(orientation='vertical', spacing=dp(8),
+                             padding=dp(10))
+
+            wrap.add_widget(mklbl("Bout of Madness", color=GOLD, size=18,
+                                  bold=True, h=34))
+            wrap.add_widget(mklbl("Pulp Cthulhu", color=DIM, size=11, h=18))
+            wrap.add_widget(mksep(8))
+
+            # Roll buttons
+            row = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(8))
+            row.add_widget(mkbtn("Real-Time (1d10)",
+                                 lambda: self._roll_madness('rt'),
+                                 accent=True))
+            row.add_widget(mkbtn("Summary (1d10)",
+                                 lambda: self._roll_madness('sum'),
+                                 accent=True))
+            wrap.add_widget(row)
+            wrap.add_widget(mksep(6))
+
+            # Result area (filled by _roll_madness)
+            self._mad_result = RBox(orientation='vertical',
+                                    bg_color=INPUT, radius=dp(10),
+                                    padding=dp(12), spacing=dp(6))
+            placeholder = mklbl(
+                "Press a button to roll…",
+                color=DIM, size=12, h=30)
+            self._mad_result.add_widget(placeholder)
+            wrap.add_widget(self._mad_result)
+
+            self.tool_area.add_widget(wrap)
+
+        def _roll_madness(self, kind):
+            """Roll 1d10 on the right table and show the result."""
+            table = PULP_MADNESS_RT if kind == 'rt' else PULP_MADNESS_SUM
+            label = "Real-Time" if kind == 'rt' else "Summary"
+            roll = random.randint(1, 10)
+            title, desc = table[roll - 1]
+
+            self._mad_result.clear_widgets()
+            header = mklbl(f"{label}  —  roll: {roll}",
+                           color=DIM, size=11, h=22)
+            self._mad_result.add_widget(header)
+            self._mad_result.add_widget(
+                mklbl(title, color=GOLD, size=18, bold=True, h=30))
+            self._mad_result.add_widget(
+                mklbl(desc, color=TXT, size=13, wrap=True))
+
+            # Roll-again button
+            again = mkbtn(f"Roll {label} again",
+                          lambda: self._roll_madness(kind),
+                          small=True, size_hint_y=None, height=dp(38))
+            self._mad_result.add_widget(mksep(6))
+            self._mad_result.add_widget(again)
 
         def _show_list(self):
             self.tool_area.clear_widgets()
@@ -2363,17 +2536,39 @@ try:
                     derived_row.add_widget(framed)
                 g.add_widget(derived_row)
             sk = ch.get('skills', {})
-            if sk and isinstance(sk, dict):
-                g.add_widget(mksep(4))
-                g.add_widget(mklbl("FERDIGHETER", color=GOLD, size=13, bold=True, h=24))
-                for sn in sorted(sk.keys()):
-                    sv = sk[sn]
-                    if sv:
-                        sk_txt = f"{sn}: {sv}"
-                        framed = FramedBox(orientation='horizontal', size_hint_y=None, 
-                                         height=dp(34), padding=dp(4), spacing=dp(4))
-                        framed.add_widget(mklbl(sk_txt, color=TXT, size=12, wrap=True))
-                        g.add_widget(framed)
+            if not isinstance(sk, dict):
+                sk = {}
+            g.add_widget(mksep(4))
+            g.add_widget(mklbl("SKILLS", color=GOLD, size=13,
+                               bold=True, h=24))
+            # 3-column grid for skills
+            sk_grid = GridLayout(cols=3, spacing=dp(4),
+                                 size_hint_y=None)
+            sk_grid.bind(minimum_height=sk_grid.setter('height'))
+            for sname, sdefault in SKILLS:
+                is_spec = sname.endswith(':')
+                user_val = str(sk.get(sname, '')).strip()
+                # Skip spec-skills if user hasn't filled them in
+                if is_spec and not user_val:
+                    continue
+                if is_spec:
+                    sk_txt = f"{sname} {user_val}"
+                    color = TXT
+                elif user_val:
+                    sk_txt = f"{sname}: {user_val}"
+                    color = TXT
+                else:
+                    # Default value (not modified by user)
+                    display_val = sdefault if sdefault else '—'
+                    sk_txt = f"{sname}: {display_val}"
+                    color = DIM
+                framed = FramedBox(orientation='horizontal',
+                                   size_hint_y=None, height=dp(40),
+                                   padding=dp(4), spacing=dp(4))
+                framed.add_widget(mklbl(sk_txt, color=color,
+                                        size=10, wrap=True))
+                sk_grid.add_widget(framed)
+            g.add_widget(sk_grid)
             for key, lbl in CHAR_TEXT:
                 v = ch.get(key, '')
                 if v:
@@ -2475,37 +2670,91 @@ try:
             self.tool_area.clear_widgets()
             p = BoxLayout(orientation='vertical', spacing=dp(4), padding=dp(6))
             top = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
-            top.add_widget(mkbtn("Lagre skills", lambda: self._save_skills(idx),
+            top.add_widget(mkbtn("Save skills", lambda: self._save_skills(idx),
                                  accent=True, small=True, size_hint_x=0.5))
             top.add_widget(mkbtn("Back", lambda: self._edit_char(idx),
                                  small=True, size_hint_x=0.5))
             p.add_widget(top)
-            p.add_widget(mklbl(f"Skills: {ch.get('name', '?')}", color=GOLD, size=13, bold=True, h=26))
+            p.add_widget(mklbl(f"Skills: {ch.get('name', '?')}",
+                               color=GOLD, size=13, bold=True, h=26))
             scroll = ScrollView()
-            g = GridLayout(cols=1, spacing=dp(4), padding=dp(4), size_hint_y=None)
-            g.bind(minimum_height=g.setter('height'))
+            outer = GridLayout(cols=1, spacing=dp(6), padding=dp(4),
+                               size_hint_y=None)
+            outer.bind(minimum_height=outer.setter('height'))
+
             self._sk_inputs = {}
+
+            # Regular skills in 3-column grid
+            sk_grid = GridLayout(cols=3, spacing=dp(6),
+                                 size_hint_y=None)
+            sk_grid.bind(minimum_height=sk_grid.setter('height'))
+
+            # Spec skills (ending with ':') in their own section
+            spec_rows = []
+
             for sname, sdefault in SKILLS:
-                row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
                 is_spec = sname.endswith(':')
                 if is_spec:
-                    row.add_widget(Label(text=sname, font_size=sp(10), color=GDIM,
-                                         size_hint_x=0.35, halign='right'))
-                    w = TextInput(text=str(sk.get(sname, '')), hint_text="Spesifiser + verdi",
-                                  font_size=sp(11), multiline=False, background_color=BTN,
-                                  foreground_color=TXT, size_hint_x=0.65, padding=[dp(6), dp(4)])
+                    row = BoxLayout(size_hint_y=None, height=dp(34),
+                                    spacing=dp(6))
+                    row.add_widget(Label(text=sname, font_size=sp(10),
+                                         color=GDIM, size_hint_x=0.35,
+                                         halign='right'))
+                    w = TextInput(text=str(sk.get(sname, '')),
+                                  hint_text="Specify + value",
+                                  font_size=sp(11), multiline=False,
+                                  background_color=BTN, foreground_color=TXT,
+                                  size_hint_x=0.65, padding=[dp(6), dp(4)])
+                    row.add_widget(w)
                     self._sk_inputs[sname] = w
+                    spec_rows.append(row)
                 else:
-                    row.add_widget(Label(text=f"{sname} ({sdefault})", font_size=sp(10),
-                                         color=DIM, size_hint_x=0.65, halign='left'))
-                    w = TextInput(text=str(sk.get(sname, '')), hint_text=sdefault,
-                                  font_size=sp(12), multiline=False, background_color=BTN,
-                                  foreground_color=TXT, size_hint_x=0.35,
-                                  padding=[dp(6), dp(4)], input_filter='int')
+                    # Vertical cell: name (default) over input
+                    cell = BoxLayout(orientation='vertical',
+                                     size_hint_y=None, height=dp(64),
+                                     spacing=dp(2), padding=[0, dp(2)])
+                    name_lbl = Label(text=sname, font_size=sp(10),
+                                     color=DIM, size_hint_y=None,
+                                     height=dp(18), halign='center',
+                                     shorten=True, shorten_from='right')
+                    name_lbl.bind(size=lambda w, v:
+                                  setattr(w, 'text_size', (v[0], None)))
+                    cell.add_widget(name_lbl)
+                    def_lbl = Label(text=f"({sdefault})", font_size=sp(9),
+                                    color=GDIM, size_hint_y=None,
+                                    height=dp(14), halign='center')
+                    def_lbl.bind(size=lambda w, v:
+                                 setattr(w, 'text_size', (v[0], None)))
+                    cell.add_widget(def_lbl)
+                    w = TextInput(text=str(sk.get(sname, '')),
+                                  hint_text=sdefault,
+                                  font_size=sp(12), multiline=False,
+                                  background_color=BTN,
+                                  foreground_color=TXT,
+                                  padding=[dp(6), dp(4)],
+                                  input_filter='int',
+                                  size_hint_y=None, height=dp(30))
+                    cell.add_widget(w)
                     self._sk_inputs[sname] = w
-                row.add_widget(w)
-                g.add_widget(row)
-            scroll.add_widget(g)
+                    sk_grid.add_widget(cell)
+
+            outer.add_widget(sk_grid)
+
+            if spec_rows:
+                outer.add_widget(mksep(8))
+                outer.add_widget(mklbl("Specified skills:",
+                                       color=GOLD, size=11, bold=True, h=22))
+                spec_grid = GridLayout(cols=1, spacing=dp(4),
+                                       size_hint_y=None)
+                spec_grid.bind(minimum_height=spec_grid.setter('height'))
+                for r in spec_rows:
+                    spec_grid.add_widget(r)
+                outer.add_widget(spec_grid)
+
+            # Extra space below so keyboard can scroll up
+            outer.add_widget(Widget(size_hint_y=None, height=dp(80)))
+
+            scroll.add_widget(outer)
             p.add_widget(scroll)
             self.tool_area.add_widget(p)
 
@@ -3800,7 +4049,10 @@ try:
             """Initialiser scenario-state."""
             if not hasattr(self, '_scen_data'):
                 self._scen_data = None
-                self._scen_view = 'clues'  # clues | timeline | beats | notes | pcs
+                self._scen_view = 'clues'  # clues|timeline|beats|notes|pcs|sessions
+                # Session mode: 'list' | 'view' | 'edit'
+                self._scen_sess_mode = 'list'
+                self._scen_sess_idx = None  # index in sessions list
 
         def _scen_load(self):
             """Les scenario.json fra app-private storage."""
@@ -3925,27 +4177,28 @@ try:
             for key, txt in [('clues', 'Clues'),
                              ('timeline', 'Timeline'),
                              ('beats', 'Plot'),
-                             ('notes', 'Notater'),
-                             ('pcs', 'PCs')]:
+                             ('notes', 'Notes'),
+                             ('pcs', 'PCs'),
+                             ('sessions', 'Sessions')]:
                 active = (key == self._scen_view)
                 b = RBtn(
                     text=txt,
                     bg_color=BTNH if active else BTN,
                     color=GOLD if active else TXT,
-                    font_size=sp(11), bold=active,
+                    font_size=sp(10), bold=active,
                     size_hint_y=None, height=dp(36))
                 b.bind(on_release=lambda x, k=key:
                        self._scen_switch_view(k))
                 sel.add_widget(b)
             p.add_widget(sel)
 
-            # System-info
+            # System info
             sys_txt = self._scen_data.get('system', '')
             if sys_txt:
                 p.add_widget(mklbl(f"System: {sys_txt}",
                                    color=DIM, size=10, h=16))
 
-            # Innhold
+            # Content
             content = BoxLayout()
             if self._scen_view == 'clues':
                 self._scen_build_list(
@@ -3958,15 +4211,17 @@ try:
                     content,
                     self._scen_data.get('timeline', []),
                     'when', 'triggered',
-                    "Ingen tidslinje-hendelser.")
+                    "No timeline events.")
             elif self._scen_view == 'beats':
                 self._scen_build_list(
                     content,
                     self._scen_data.get('beats', []),
                     None, 'done',
-                    "Ingen plot-punkter.")
+                    "No plot beats.")
             elif self._scen_view == 'pcs':
                 self._scen_build_pcs(content)
+            elif self._scen_view == 'sessions':
+                self._scen_build_sessions(content)
             else:
                 self._scen_build_notes(content)
             p.add_widget(content)
@@ -4257,6 +4512,10 @@ try:
 
         def _scen_switch_view(self, view):
             self._scen_view = view
+            # Reset to list mode when switching to Sessions
+            if view == 'sessions':
+                self._scen_sess_mode = 'list'
+                self._scen_sess_idx = None
             self._tool_render_sub()
 
         def _scen_build_list(self, container, items,
@@ -4457,6 +4716,416 @@ try:
                 g.add_widget(row)
             scroll.add_widget(g)
             container.add_widget(scroll)
+
+        # ---------- SESSION JOURNAL ----------
+        def _scen_build_sessions(self, container):
+            """Build session journal view. Three modes: list, view, edit."""
+            mode = getattr(self, '_scen_sess_mode', 'list')
+            if mode == 'edit':
+                self._scen_sessions_edit(container)
+            elif mode == 'view':
+                self._scen_sessions_view(container)
+            else:
+                self._scen_sessions_list(container)
+
+        def _scen_sessions_list(self, container):
+            """List of all sessions in active scenario."""
+            sessions = self._scen_data.get('sessions', [])
+
+            wrap = BoxLayout(orientation='vertical',
+                             spacing=dp(6), padding=dp(4))
+
+            # Action row
+            row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
+            row.add_widget(mkbtn(
+                "+ New session", self._scen_session_new,
+                accent=True, size_hint_x=0.4))
+            if sessions:
+                row.add_widget(mkbtn(
+                    "Export to text",
+                    self._scen_session_export,
+                    small=True, size_hint_x=0.6))
+            wrap.add_widget(row)
+
+            if not sessions:
+                wrap.add_widget(mklbl(
+                    "No sessions yet.\n"
+                    "Press '+ New session' to log the first one.",
+                    color=DIM, size=12, wrap=True))
+                container.add_widget(wrap)
+                return
+
+            # Sessions list
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(6), padding=dp(4),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+            for i, s in enumerate(sessions):
+                num = s.get('num', i + 1)
+                date = s.get('date', '?')
+                title = s.get('title', '').strip() or '(untitled)'
+                btn_txt = f"S{num}  •  {date}  •  {title}"
+                rrow = BoxLayout(size_hint_y=None, height=dp(46),
+                                 spacing=dp(6))
+                b = mkbtn(btn_txt,
+                          lambda idx=i: self._scen_session_open(idx),
+                          small=True, size_hint_x=0.78)
+                b.color = TXT
+                b.halign = 'left'
+                rrow.add_widget(b)
+                rrow.add_widget(mkbtn(
+                    "Delete",
+                    lambda idx=i: self._scen_session_confirm_delete(idx),
+                    danger=True, small=True, size_hint_x=0.22))
+                g.add_widget(rrow)
+            scroll.add_widget(g)
+            wrap.add_widget(scroll)
+            container.add_widget(wrap)
+
+        def _scen_sessions_view(self, container):
+            """Detail view of a single session (read-only)."""
+            sessions = self._scen_data.get('sessions', [])
+            idx = self._scen_sess_idx
+            if idx is None or idx < 0 or idx >= len(sessions):
+                self._scen_sess_mode = 'list'
+                self._scen_sessions_list(container)
+                return
+            s = sessions[idx]
+
+            wrap = BoxLayout(orientation='vertical',
+                             spacing=dp(6), padding=dp(4))
+
+            # Top row
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn(
+                "< Back", self._scen_session_back,
+                small=True, size_hint_x=0.32))
+            top.add_widget(mkbtn(
+                "Edit",
+                lambda: self._scen_session_edit(idx),
+                accent=True, small=True, size_hint_x=0.34))
+            top.add_widget(mkbtn(
+                "Delete",
+                lambda: self._scen_session_confirm_delete(idx),
+                danger=True, small=True, size_hint_x=0.34))
+            wrap.add_widget(top)
+
+            # Header
+            num = s.get('num', idx + 1)
+            wrap.add_widget(mklbl(
+                f"Session {num}", color=GOLD, size=18,
+                bold=True, h=30))
+            wrap.add_widget(mklbl(
+                f"Date: {s.get('date', '?')}", color=DIM, size=11, h=18))
+            t = s.get('title', '').strip()
+            if t:
+                wrap.add_widget(mklbl(
+                    t, color=TXT, size=14, bold=True, wrap=True))
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(8), padding=dp(6),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            for key, label in [
+                ('players',     'Players'),
+                ('summary',     'Summary'),
+                ('clues_found', 'Clues found'),
+                ('sanity',      'Sanity loss'),
+                ('rolls',       'XP / Improvement checks'),
+                ('cliffhanger', 'Cliffhanger / next time'),
+            ]:
+                v = s.get(key, '').strip()
+                if not v:
+                    continue
+                g.add_widget(mklbl(
+                    label.upper(), color=GOLD, size=11,
+                    bold=True, h=20))
+                g.add_widget(mklbl(
+                    v, color=TXT, size=12, wrap=True))
+                g.add_widget(mksep(2))
+
+            scroll.add_widget(g)
+            wrap.add_widget(scroll)
+            container.add_widget(wrap)
+
+        def _scen_sessions_edit(self, container):
+            """Edit or create a session."""
+            sessions = self._scen_data.get('sessions', [])
+            idx = self._scen_sess_idx
+            is_new = (idx is None)
+            if is_new:
+                num = (max((s.get('num', 0) for s in sessions),
+                           default=0) + 1)
+                from datetime import date as _date_cls
+                s = {
+                    'num': num,
+                    'date': _date_cls.today().isoformat(),
+                    'title': '', 'players': '', 'summary': '',
+                    'clues_found': '', 'sanity': '',
+                    'rolls': '', 'cliffhanger': '',
+                }
+            else:
+                s = dict(sessions[idx])
+
+            wrap = BoxLayout(orientation='vertical',
+                             spacing=dp(4), padding=dp(4))
+
+            top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
+            top.add_widget(mkbtn(
+                "Cancel", self._scen_session_back,
+                small=True, size_hint_x=0.4))
+            top.add_widget(mkbtn(
+                "Save",
+                lambda: self._scen_session_save(is_new),
+                accent=True, small=True, size_hint_x=0.6))
+            wrap.add_widget(top)
+
+            wrap.add_widget(mklbl(
+                f"Session {s['num']}",
+                color=GOLD, size=16, bold=True, h=28))
+
+            scroll = ScrollView()
+            g = GridLayout(cols=1, spacing=dp(8), padding=dp(6),
+                           size_hint_y=None)
+            g.bind(minimum_height=g.setter('height'))
+
+            self._scen_sess_inputs = {}
+
+            def _add_field(key, label, multiline=False, h=None):
+                g.add_widget(mklbl(
+                    label, color=GOLD, size=11, bold=True, h=20))
+                ti = TextInput(
+                    text=s.get(key, ''),
+                    multiline=multiline,
+                    background_color=INPUT, foreground_color=TXT,
+                    cursor_color=GOLD, font_size=sp(12),
+                    padding=[dp(8), dp(8)],
+                    size_hint_y=None,
+                    height=dp(h if h else (140 if multiline else 44)))
+                g.add_widget(ti)
+                self._scen_sess_inputs[key] = ti
+
+            _add_field('date',        'Date (YYYY-MM-DD)', False, 44)
+            _add_field('title',       'Title',             False, 44)
+            _add_field('players',     'Players',           False, 44)
+            _add_field('summary',     'Summary',           True, 180)
+            _add_field('clues_found', 'Clues found',       True, 120)
+            _add_field('sanity',      'Sanity loss',       True, 100)
+            _add_field('rolls',       'XP / Improvement checks',
+                                                           True, 100)
+            _add_field('cliffhanger', 'Cliffhanger / next time',
+                                                           True, 100)
+
+            scroll.add_widget(g)
+            wrap.add_widget(scroll)
+            container.add_widget(wrap)
+
+            self._scen_sess_pending_num = s['num']
+
+        # ---- Session actions ----
+        def _scen_session_new(self):
+            self._scen_sess_mode = 'edit'
+            self._scen_sess_idx = None
+            self._tool_render_sub()
+
+        def _scen_session_open(self, idx):
+            self._scen_sess_mode = 'view'
+            self._scen_sess_idx = idx
+            self._tool_render_sub()
+
+        def _scen_session_edit(self, idx):
+            self._scen_sess_mode = 'edit'
+            self._scen_sess_idx = idx
+            self._tool_render_sub()
+
+        def _scen_session_back(self):
+            self._scen_sess_mode = 'list'
+            self._scen_sess_idx = None
+            self._tool_render_sub()
+
+        def _scen_session_save(self, is_new):
+            if not self._scen_data or '_error' in self._scen_data:
+                return
+            inputs = getattr(self, '_scen_sess_inputs', {})
+            if not inputs:
+                return
+            new_data = {
+                'num':         self._scen_sess_pending_num,
+                'date':        inputs['date'].text.strip(),
+                'title':       inputs['title'].text.strip(),
+                'players':     inputs['players'].text.strip(),
+                'summary':     inputs['summary'].text.strip(),
+                'clues_found': inputs['clues_found'].text.strip(),
+                'sanity':      inputs['sanity'].text.strip(),
+                'rolls':       inputs['rolls'].text.strip(),
+                'cliffhanger': inputs['cliffhanger'].text.strip(),
+            }
+            if 'sessions' not in self._scen_data:
+                self._scen_data['sessions'] = []
+            if is_new:
+                self._scen_data['sessions'].append(new_data)
+                self._scen_sess_idx = len(
+                    self._scen_data['sessions']) - 1
+            else:
+                idx = self._scen_sess_idx
+                if idx is not None and 0 <= idx < len(
+                        self._scen_data['sessions']):
+                    self._scen_data['sessions'][idx] = new_data
+            self._scen_save()
+            self._scen_sess_mode = 'view'
+            self._tool_render_sub()
+
+        def _scen_session_confirm_delete(self, idx):
+            """Confirm session deletion (overlay)."""
+            sessions = self._scen_data.get('sessions', [])
+            if idx < 0 or idx >= len(sessions):
+                return
+            s = sessions[idx]
+            num = s.get('num', idx + 1)
+            title = s.get('title', '').strip() or '(untitled)'
+
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.8, 0.4),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                "Delete session?",
+                color=GOLD, size=14, bold=True, h=28))
+            overlay.add_widget(mklbl(
+                f"S{num} — {title}\n\nThis cannot be undone.",
+                color=TXT, size=11, wrap=True))
+            btns = BoxLayout(size_hint_y=None, height=dp(44),
+                             spacing=dp(6))
+            btns.add_widget(mkbtn(
+                "Cancel", self._scen_close_overlay,
+                small=True, size_hint_x=0.5))
+            btns.add_widget(mkbtn(
+                "Delete",
+                lambda: self._scen_session_do_delete(idx),
+                danger=True, size_hint_x=0.5))
+            overlay.add_widget(btns)
+
+            root = self.tool_area
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+            from kivy.graphics import Color as GCs, Rectangle as GRs
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCs(rgba=[0, 0, 0, 0.6])
+                dr = GRs(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+            self._scen_dim = dim
+            self._scen_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
+
+        def _scen_session_do_delete(self, idx):
+            sessions = self._scen_data.get('sessions', [])
+            if 0 <= idx < len(sessions):
+                sessions.pop(idx)
+                self._scen_save()
+            self._scen_close_overlay()
+            self._scen_sess_mode = 'list'
+            self._scen_sess_idx = None
+            self._tool_render_sub()
+
+        def _scen_session_export(self):
+            """Export all sessions to a clean text file in Documents."""
+            if not self._scen_data:
+                return
+            sessions = self._scen_data.get('sessions', [])
+            if not sessions:
+                return
+            scen_title = self._scen_data.get('title', 'scenario')
+            safe = ''.join(c if c.isalnum() or c in (' ', '-', '_')
+                           else '_' for c in scen_title).strip()
+            safe = safe.replace(' ', '_') or 'scenario'
+            out_path = os.path.join(BASE_DIR,
+                                    f"sessions_{safe}.txt")
+
+            lines = []
+            lines.append("=" * 60)
+            lines.append(f"SESSION JOURNAL — {scen_title}")
+            sys_txt = self._scen_data.get('system', '')
+            if sys_txt:
+                lines.append(f"System: {sys_txt}")
+            lines.append("=" * 60)
+            lines.append("")
+
+            for s in sessions:
+                num = s.get('num', '?')
+                date = s.get('date', '?')
+                title = s.get('title', '').strip() or '(untitled)'
+                lines.append("-" * 60)
+                lines.append(f"SESSION {num}  —  {date}  —  {title}")
+                lines.append("-" * 60)
+
+                for key, label in [
+                    ('players',     'Players'),
+                    ('summary',     'Summary'),
+                    ('clues_found', 'Clues found'),
+                    ('sanity',      'Sanity loss'),
+                    ('rolls',       'XP / Improvement checks'),
+                    ('cliffhanger', 'Cliffhanger / next time'),
+                ]:
+                    v = s.get(key, '').strip()
+                    if not v:
+                        continue
+                    lines.append("")
+                    lines.append(f"{label.upper()}:")
+                    lines.append(v)
+                lines.append("")
+
+            try:
+                os.makedirs(BASE_DIR, exist_ok=True)
+                with open(out_path, 'w', encoding='utf-8') as f:
+                    f.write("\n".join(lines))
+                msg = f"Exported to:\n{out_path}"
+                log(f"Session export OK: {out_path}")
+            except Exception as e:
+                msg = f"Export failed:\n{type(e).__name__}: {e}"
+                log(f"Session export failed: {e}")
+
+            # Show confirmation as overlay
+            overlay = RBox(
+                bg_color=BG, radius=dp(16),
+                orientation='vertical', spacing=dp(8),
+                padding=dp(16),
+                size_hint=(0.85, 0.35),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5})
+            overlay.add_widget(mklbl(
+                "Export", color=GOLD, size=14, bold=True, h=28))
+            overlay.add_widget(mklbl(msg, color=TXT, size=11, wrap=True))
+            btns = BoxLayout(size_hint_y=None, height=dp(44))
+            btns.add_widget(mkbtn(
+                "OK", self._scen_close_overlay,
+                accent=True))
+            overlay.add_widget(btns)
+
+            root = self.tool_area
+            while root.parent and not isinstance(root.parent, FloatLayout):
+                root = root.parent
+            if not isinstance(root.parent, FloatLayout):
+                return
+            fl = root.parent
+            from kivy.graphics import Color as GCe, Rectangle as GRe
+            dim = Widget(size_hint=(1, 1))
+            with dim.canvas:
+                GCe(rgba=[0, 0, 0, 0.6])
+                dr = GRe(pos=dim.pos, size=dim.size)
+            dim.bind(pos=lambda w, v: setattr(dr, 'pos', w.pos),
+                     size=lambda w, v: setattr(dr, 'size', w.size))
+            self._scen_dim = dim
+            self._scen_overlay = overlay
+            fl.add_widget(dim)
+            fl.add_widget(overlay)
 
         def _scen_confirm_reset(self):
             """Ask for confirmation before resetting all flags."""
