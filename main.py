@@ -65,6 +65,7 @@ try:
     from kivy.animation import Animation
     from kivy.properties import ListProperty, NumericProperty
     from kivy.lang import Builder
+    from kivy.core.text import LabelBase
     log("Kivy imported OK")
 
     CAST_AVAILABLE = False
@@ -112,6 +113,27 @@ try:
     EXTERNAL_WEAPONS = os.path.join(BASE_DIR, "weapons.json")
     # Favourites are stored in user_data_dir (app-private, always writable).
     # WEAPONS_FAV_FILE is set in build() when user_data_dir is available.
+
+    # === FONTS ===
+    _FONT_DIR = os.path.join(_BUNDLE_DIR, 'fonts')
+
+    def _reg_font(alias, filename):
+        path = os.path.join(_FONT_DIR, filename)
+        if os.path.exists(path):
+            try:
+                LabelBase.register(name=alias, fn_regular=path)
+                log(f"Font registered: {alias} -> {filename}")
+                return True
+            except Exception as e:
+                log(f"Font failed: {alias} -> {e}")
+        else:
+            log(f"Font missing: {path}")
+        return False
+
+    # Splash font (general font is Kivy's default Roboto - supports all chars)
+    _reg_font('Cthulhumbus', 'JMHCthulhumbusUG.ttf')
+
+    FONT_TITLE = 'Cthulhumbus'   # splash-screen
 
     # === BOUT OF MADNESS – Pulp Cthulhu / CoC 7e ===
     # Index 0 = roll 1 etc. Feel free to swap text with formulations
@@ -230,6 +252,11 @@ try:
             pos: self.pos
             size: self.size
             radius: [self.radius]
+        Color:
+            rgba: self.border_color
+        Line:
+            rounded_rectangle: (self.x + dp(1), self.y + dp(1), self.width - dp(2), self.height - dp(2), self.radius)
+            width: 1.2
 
 <RToggle>:
     background_normal: ''
@@ -249,6 +276,11 @@ try:
             pos: self.pos
             size: self.size
             radius: [self.radius]
+        Color:
+            rgba: self.border_color
+        Line:
+            rounded_rectangle: (self.x + dp(1), self.y + dp(1), self.width - dp(2), self.height - dp(2), self.radius)
+            width: self.border_width
 
 <RBox>:
     canvas.before:
@@ -271,11 +303,14 @@ try:
     class RBtn(Button):
         bg_color = ListProperty(BTN)
         shadow_color = ListProperty(SHAD)
+        border_color = ListProperty(GDIM)
         radius = NumericProperty(dp(14))
 
     class RToggle(ToggleButton):
         bg_color = ListProperty(BTN)
         shadow_color = ListProperty(SHAD)
+        border_color = ListProperty(GDIM)
+        border_width = NumericProperty(1.2)
         radius = NumericProperty(dp(14))
 
     class RBox(BoxLayout):
@@ -1487,6 +1522,8 @@ try:
                             state='down' if active else 'normal',
                             bg_color=BTNH if active else BTN,
                             color=GOLD if active else DIM,
+                            border_color=GOLD if active else GDIM,
+                            border_width=2.5 if active else 1.0,
                             font_size=sp(11))
                 b.bind(state=self._tab_color)
                 b.bind(on_release=lambda x, k=key: self._tab(k))
@@ -1494,9 +1531,23 @@ try:
                 self._tabs[key] = b
             main.add_widget(tabs)
 
-            # HOVEDINNHOLD
-            self.content = RBox(bg_color=BG2)
-            main.add_widget(self.content)
+            # HOVEDINNHOLD – med Cthulhu-segl som vannmerke
+            content_wrap = FloatLayout(size_hint=(1, 1))
+            bg_path = os.path.join(_BUNDLE_DIR, 'background.png')
+            if os.path.exists(bg_path):
+                self._content_bg = Image(
+                    source=bg_path,
+                    allow_stretch=True,
+                    keep_ratio=True,
+                    size_hint=(1.1, 1.1),
+                    pos_hint={'center_x': 0.5, 'center_y': 0.4},
+                    opacity=0.18)
+                content_wrap.add_widget(self._content_bg)
+            self.content = RBox(bg_color=[BG2[0], BG2[1], BG2[2], 0.78],
+                                size_hint=(1, 1),
+                                pos_hint={'x': 0, 'y': 0})
+            content_wrap.add_widget(self.content)
+            main.add_widget(content_wrap)
 
             # MINI-PLAYER
             mp = RBox(size_hint_y=None, height=dp(48), spacing=dp(6),
@@ -1526,13 +1577,17 @@ try:
                                pos_hint={'x': 0, 'y': 0})
             # Sentrert innhold
             self.splash.add_widget(Widget())  # fyll topp
-            t1 = Label(text="ELDRITCH", font_size=sp(42), color=GOLD,
-                       bold=True, size_hint_y=None, height=dp(60),
+            t1 = Label(text="ELDRITCH", font_size=sp(54),
+                       font_name=FONT_TITLE,
+                       color=GOLD,
+                       size_hint_y=None, height=dp(72),
                        halign='center')
             t1.bind(size=t1.setter('text_size'))
             self.splash.add_widget(t1)
-            t2 = Label(text="PORTALS", font_size=sp(42), color=GDIM,
-                       bold=True, size_hint_y=None, height=dp(60),
+            t2 = Label(text="PORTALS", font_size=sp(54),
+                       font_name=FONT_TITLE,
+                       color=GDIM,
+                       size_hint_y=None, height=dp(72),
                        halign='center')
             t2.bind(size=t2.setter('text_size'))
             self.splash.add_widget(t2)
@@ -1566,9 +1621,13 @@ try:
             if state == 'down':
                 btn.bg_color = BTNH
                 btn.color = GOLD
+                btn.border_color = GOLD
+                btn.border_width = 2.5
             else:
                 btn.bg_color = BTN
                 btn.color = DIM
+                btn.border_color = GDIM
+                btn.border_width = 1.0
 
         def _init(self):
             ensure_dirs()
@@ -1781,6 +1840,8 @@ try:
                 state='down' if self._cmb_sub == 'init' else 'normal',
                 bg_color=BTNH if self._cmb_sub == 'init' else BTN,
                 color=GOLD if self._cmb_sub == 'init' else DIM,
+                border_color=GOLD if self._cmb_sub == 'init' else GDIM,
+                border_width=2.5 if self._cmb_sub == 'init' else 1.0,
                 font_size=sp(12), bold=True)
             b_init.bind(on_release=lambda b: self._cmb_switch('init'))
             sub_bar.add_widget(b_init)
@@ -1791,6 +1852,8 @@ try:
                 state='down' if self._cmb_sub == 'map' else 'normal',
                 bg_color=BTNH if self._cmb_sub == 'map' else BTN,
                 color=GOLD if self._cmb_sub == 'map' else DIM,
+                border_color=GOLD if self._cmb_sub == 'map' else GDIM,
+                border_width=2.5 if self._cmb_sub == 'map' else 1.0,
                 font_size=sp(12), bold=True)
             b_map.bind(on_release=lambda b: self._cmb_switch('map'))
             sub_bar.add_widget(b_map)
@@ -1814,6 +1877,8 @@ try:
                 btn.state    = 'down' if active else 'normal'
                 btn.bg_color = BTNH   if active else BTN
                 btn.color    = GOLD   if active else DIM
+                btn.border_color = GOLD if active else GDIM
+                btn.border_width = 2.5 if active else 1.0
             self._cmb_render()
 
         def _cmb_render(self):
@@ -1915,6 +1980,8 @@ try:
                 state='down' if self._sound_sub == 'mus' else 'normal',
                 bg_color=BTNH if self._sound_sub == 'mus' else BTN,
                 color=GOLD if self._sound_sub == 'mus' else DIM,
+                border_color=GOLD if self._sound_sub == 'mus' else GDIM,
+                border_width=2.5 if self._sound_sub == 'mus' else 1.0,
                 font_size=sp(12), bold=True)
             b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
             sub_bar.add_widget(b_mus)
@@ -1925,6 +1992,8 @@ try:
                 state='down' if self._sound_sub == 'amb' else 'normal',
                 bg_color=BTNH if self._sound_sub == 'amb' else BTN,
                 color=GOLD if self._sound_sub == 'amb' else DIM,
+                border_color=GOLD if self._sound_sub == 'amb' else GDIM,
+                border_width=2.5 if self._sound_sub == 'amb' else 1.0,
                 font_size=sp(12), bold=True)
             b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
             sub_bar.add_widget(b_amb)
@@ -1947,6 +2016,8 @@ try:
                 btn.state    = 'down' if active else 'normal'
                 btn.bg_color = BTNH   if active else BTN
                 btn.color    = GOLD   if active else DIM
+                btn.border_color = GOLD if active else GDIM
+                btn.border_width = 2.5 if active else 1.0
             self._sound_render()
 
         def _sound_render(self):
@@ -2319,6 +2390,8 @@ try:
                 state='down' if self._tool_sub == 'chars' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'chars' else BTN,
                 color=GOLD if self._tool_sub == 'chars' else DIM,
+                border_color=GOLD if self._tool_sub == 'chars' else GDIM,
+                border_width=2.5 if self._tool_sub == 'chars' else 1.0,
                 font_size=sp(11), bold=True)
             self._sub_btn_chars.bind(on_release=lambda b: self._tool_switch('chars'))
             sub_bar.add_widget(self._sub_btn_chars)
@@ -2328,6 +2401,8 @@ try:
                 state='down' if self._tool_sub == 'weap' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'weap' else BTN,
                 color=GOLD if self._tool_sub == 'weap' else DIM,
+                border_color=GOLD if self._tool_sub == 'weap' else GDIM,
+                border_width=2.5 if self._tool_sub == 'weap' else 1.0,
                 font_size=sp(11), bold=True)
             self._sub_btn_weap.bind(on_release=lambda b: self._tool_switch('weap'))
             sub_bar.add_widget(self._sub_btn_weap)
@@ -2337,6 +2412,8 @@ try:
                 state='down' if self._tool_sub == 'scen' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'scen' else BTN,
                 color=GOLD if self._tool_sub == 'scen' else DIM,
+                border_color=GOLD if self._tool_sub == 'scen' else GDIM,
+                border_width=2.5 if self._tool_sub == 'scen' else 1.0,
                 font_size=sp(11), bold=True)
             self._sub_btn_scen.bind(on_release=lambda b: self._tool_switch('scen'))
             sub_bar.add_widget(self._sub_btn_scen)
@@ -2346,6 +2423,8 @@ try:
                 state='down' if self._tool_sub == 'mad' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'mad' else BTN,
                 color=GOLD if self._tool_sub == 'mad' else DIM,
+                border_color=GOLD if self._tool_sub == 'mad' else GDIM,
+                border_width=2.5 if self._tool_sub == 'mad' else 1.0,
                 font_size=sp(11), bold=True)
             self._sub_btn_mad.bind(on_release=lambda b: self._tool_switch('mad'))
             sub_bar.add_widget(self._sub_btn_mad)
@@ -2380,6 +2459,8 @@ try:
                 btn.state    = 'down'   if active else 'normal'
                 btn.bg_color = BTNH     if active else BTN
                 btn.color    = GOLD     if active else DIM
+                btn.border_color = GOLD if active else GDIM
+                btn.border_width = 2.5  if active else 1.0
             self._tool_render_sub()
 
         def _tool_render_sub(self):
