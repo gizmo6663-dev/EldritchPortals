@@ -1,9 +1,3 @@
-import json
-import os
-import socket
-import sys
-import threading
-import traceback
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from functools import partial
 from kivy.clock import Clock
@@ -42,7 +36,7 @@ def log(msg):
     with open(LOG, "a") as f:
         f.write(msg + "\n")
 
-log("=== APP START (v0.4.0 – Necronomicon) ===")
+log("=== APP START (v0.4.5 – Necronomicon) ===")
 
 try:
     from kivy.app import App
@@ -63,9 +57,11 @@ try:
     from kivy.utils import platform
     from kivy.metrics import dp, sp
     from kivy.animation import Animation
-    from kivy.properties import ListProperty, NumericProperty
+    from kivy.core.image import Image as CoreImage
+    from kivy.properties import AliasProperty, ListProperty, NumericProperty, ObjectProperty
     from kivy.lang import Builder
     from kivy.core.text import LabelBase
+    from kivy.graphics.texture import Texture
     log("Kivy imported OK")
 
     CAST_AVAILABLE = False
@@ -93,14 +89,14 @@ try:
     # first launch — avoids Android 13+ scoped storage problem.
     EXTERNAL_CHAR_FILE = os.path.join(BASE_DIR, "characters.json")
     # CHAR_FILE is set in build() when user_data_dir is available.
-    CHAR_FILE = EXTERNAL_CHAR_FILE  # midlertidig; overstyres i build()
+    CHAR_FILE = EXTERNAL_CHAR_FILE  # temporary; overridden in build()
     # Scenario file: primary storage in user_data_dir (app-private,
     # always writable). External import path is tried on
-    # "Import" — avoids Android 13+ scoped storage problem.
+    # "Import" — avoids Android 13+ scoped storage-problem.
     EXTERNAL_SCENARIO = os.path.join(BASE_DIR, "scenario.json")
     # SCENARIO_FILE is set in build() when user_data_dir is available.
 
-    # Weapon data is BUNDLED with the app (packed into APK).
+    # Weapon data is BUNDLED with the app (packed into the APK).
     # This avoids Android 13+ scoped storage permission problems.
     try:
         _BUNDLE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -108,13 +104,78 @@ try:
         _BUNDLE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
     BUNDLED_WEAPONS = os.path.join(_BUNDLE_DIR, "weapons.json")
     BUNDLED_CHARS   = os.path.join(_BUNDLE_DIR, "characters.json")
+    UI_BG_TEXTURE_PATH = os.path.join(_BUNDLE_DIR, "bght.png")
     # Also try an external version — if it exists AND is readable,
-    # use it (allows the user to override with their own file if possible).
+    # bruk den (lar brukeren overstyre med egen fil hvis mulig).
     EXTERNAL_WEAPONS = os.path.join(BASE_DIR, "weapons.json")
-    # Favourites are stored in user_data_dir (app-private, always writable).
+    # Favoritter lagres i user_data_dir (app-private, alltid skrivbar).
     # WEAPONS_FAV_FILE is set in build() when user_data_dir is available.
 
-    # === FONTS ===
+    # === BOUT OF MADNESS – Pulp Cthulhu / CoC 7e ===
+    # Indeks 0 = trill 1 osv. Bytt gjerne ut tekst med formuleringer
+    # straight from the Pulp Cthulhu book if you wish.
+    PULP_MADNESS_RT = [
+        ("Memory Loss",
+         "Karakteren mister hukommelsen for de siste hendelsene "
+         "(siste 1d10 minutter)."),
+        ("Psychosomatic Disability",
+         "Suddenly blind, deaf, or lame for 1d10 rounds "
+         "(keeper bestemmer)."),
+        ("Violence",
+         "Attacks nearest target — friend or foe — for 1d10 rounds."),
+        ("Paranoia",
+         "Mistenker alle og alt; ser konspirasjoner overalt "
+         "i 1d10 runder."),
+        ("Significant Person",
+         "Mistakes someone present for an important person from "
+         "the past; behaves accordingly for 1d10 rounds."),
+        ("Fainting",
+         "Collapses unconscious from the shock for 1d10 rounds."),
+        ("Flight",
+         "Flees in blind panic away from the threat for 1d10 rounds."),
+        ("Physical Hysteria",
+         "Cries, laughs, or screams uncontrollably for 1d10 rounds; "
+         "unable to act."),
+        ("Phobia",
+         "Develops a new phobia linked to the source of the shock; "
+         "lasts for 1d10 rounds."),
+        ("Mania",
+         "Develops a new mania linked to the source of the shock; "
+         "lasts for 1d10 rounds."),
+    ]
+
+    PULP_MADNESS_SUM = [
+        ("Memory Loss",
+         "Wakes in a safe place with no memory of what happened in the last "
+         "1d10 hours."),
+        ("Stolen Hours",
+         "Disappears for 1d10 days; no one — not even the character "
+         "themselves — knows where they have been."),
+        ("Violent Behaviour",
+         "Commits violent acts for 1d10 days; must explain themselves "
+         "to the authorities afterwards."),
+        ("Paranoia",
+         "Strong paranoia for 1d10 days; sees enemies in shadows and among "
+         "friends."),
+        ("Significant Person",
+         "Identifies someone as extremely significant and follows "
+         "or pursues them for 1d10 days."),
+        ("Committed",
+         "Wakes in a hospital, asylum, or prison without knowing "
+         "how; 1d10 days' stay."),
+        ("Flight Home",
+         "Drar instinktivt mot hjemmet eller barndomstedet; reisen "
+         "tar 1d10 dager."),
+        ("Hysteriaa",
+         "Overwhelming emotional state for 1d10 days; must "
+         "be stabilised by others."),
+        ("Phobia",
+         "Develops a new persistent phobia lasting 1d10 months."),
+        ("Mania",
+         "Develops a new persistent mania lasting 1d10 months."),
+    ]
+
+    # === FONTER ===
     _FONT_DIR = os.path.join(_BUNDLE_DIR, 'fonts')
 
     def _reg_font(alias, filename):
@@ -130,79 +191,14 @@ try:
             log(f"Font missing: {path}")
         return False
 
-    # Splash font (general font is Kivy's default Roboto - supports all chars)
+    # Registrer splash-fonten under eget alias
+    # (General font is Kivy's default Roboto - supports extended characters)
     _reg_font('Cthulhumbus', 'JMHCthulhumbusUG.ttf')
 
     FONT_TITLE = 'Cthulhumbus'   # splash-screen
 
-    # === BOUT OF MADNESS – Pulp Cthulhu / CoC 7e ===
-    # Index 0 = roll 1 etc. Feel free to swap text with formulations
-    # straight from the Pulp Cthulhu rulebook if desired.
-    PULP_MADNESS_RT = [
-        ("Amnesia",
-         "The character forgets the recent events "
-         "(last 1d10 minutes)."),
-        ("Psychosomatic disability",
-         "Suddenly blind, deaf or paralysed for 1d10 rounds "
-         "(keeper's choice)."),
-        ("Violence",
-         "Attacks the nearest target — friend or foe — "
-         "for 1d10 rounds."),
-        ("Paranoia",
-         "Suspects everyone and everything; sees conspiracies "
-         "everywhere for 1d10 rounds."),
-        ("Significant person",
-         "Mistakes someone present for an important figure from "
-         "the past; acts accordingly for 1d10 rounds."),
-        ("Faint",
-         "Collapses unconscious from the shock for 1d10 rounds."),
-        ("Flee",
-         "Flees in blind panic away from the threat for "
-         "1d10 rounds."),
-        ("Physical hysterics",
-         "Cries, laughs or screams uncontrollably for 1d10 rounds; "
-         "unable to act."),
-        ("Phobia",
-         "Develops a new phobia tied to the source of the shock; "
-         "lasts 1d10 rounds."),
-        ("Mania",
-         "Develops a new mania tied to the source of the shock; "
-         "lasts 1d10 rounds."),
-    ]
-
-    PULP_MADNESS_SUM = [
-        ("Amnesia",
-         "Wakes in a safe place with no memory of what happened "
-         "the past 1d10 hours."),
-        ("Stolen hours",
-         "Vanishes for 1d10 days; no one — not even the character "
-         "— knows where he has been."),
-        ("Violent behaviour",
-         "Commits violent acts for 1d10 days; must answer to "
-         "the authorities afterwards."),
-        ("Paranoia",
-         "Strong paranoia for 1d10 days; sees enemies in shadows "
-         "and friends alike."),
-        ("Significant person",
-         "Identifies someone as extremely significant and follows "
-         "or pursues them for 1d10 days."),
-        ("Institutionalised",
-         "Wakes in a hospital, asylum or jail without knowing how; "
-         "1d10 days of confinement."),
-        ("Flight home",
-         "Instinctively heads for home or childhood place; the "
-         "journey takes 1d10 days."),
-        ("Hysterics",
-         "Overwhelming emotional state for 1d10 days; must be "
-         "stabilised by others."),
-        ("Phobia",
-         "Develops a new persistent phobia lasting 1d10 months."),
-        ("Mania",
-         "Develops a new persistent mania lasting 1d10 months."),
-    ]
-
     def ensure_dirs():
-        """Create folders AFTER permissions have been granted."""
+        """Opprett mapper ETTER tillatelser er gitt."""
         for d in [IMG_DIR, MUSIC_DIR]:
             try:
                 os.makedirs(d, exist_ok=True)
@@ -214,49 +210,324 @@ try:
     BG   = [0.08, 0.04, 0.06, 1]      # deep book-brown/burgundy
     BG2  = [0.14, 0.07, 0.10, 1]      # panel burgundy
     INPUT= [0.10, 0.05, 0.07, 1]      # text input
-    BTN  = [0.24, 0.11, 0.14, 1]      # button (wine red)
-    BTNH = [0.42, 0.18, 0.22, 1]      # active tab
+    BTN  = [0.24, 0.11, 0.14, 1]      # button (burgundy)
+    BTNH = [0.46, 0.21, 0.25, 1]      # active tab
     SHAD = [0.02, 0.01, 0.02, 0.7]    # shadow
     GOLD = [0.92, 0.72, 0.32, 1]      # antique gold
+    GOLD_ACCENT_GRADIENT_TOP = [1.0, 0.97, 0.88, 0.94]
+    GOLD_ACCENT_GRADIENT_BOTTOM = [0.95, 0.82, 0.38, 0.72]
     GDIM = [0.62, 0.46, 0.22, 1]      # muted gold (border)
+    GDARK = [0.35, 0.22, 0.08, 0.95]  # dark amber for outer frame
+    GGLINT = [1.0, 0.94, 0.74, 0.62]  # light metallic highlight
+    GSOFT = [0.78, 0.60, 0.24, 1]     # warm midtone for gold
     TXT  = [0.93, 0.86, 0.74, 1]      # parchment text
     DIM  = [0.58, 0.42, 0.40, 1]      # muted text
     RED  = [0.78, 0.22, 0.24, 1]
     GRN  = [0.30, 0.60, 0.34, 1]
     BLUE = [0.32, 0.40, 0.62, 1]
-    BLK  = [0.0, 0.0, 0.0, 1]         # black (preview background)
+    BLK  = [0.0, 0.0, 0.0, 1]
+    TOGGLE_ACCENT_ALPHA_IDLE = 0.75
+    TOGGLE_ACCENT_ALPHA_ACTIVE = 1.0
+    # Background image fills the whole screen on splash.
+    # Aspect ratio beholdes ikke, slik at bildet dekker hele flaten.
+    SPLASH_IMG_SIZE_HINT = (1, 1)
+    SPLASH_IMG_POS_HINT = {'x': 0, 'y': 0}
+    SPLASH_IMG_OPACITY = 0.65
+    APP_BG_IMG_OPACITY = 0.55
+    # 0.82 kept the existing burgundy/gold theme dominant while still leaving the paper texture clearly visible.
+    UI_TEXTURE_TINT_ALPHA = 0.82
+    SPLASH_TEXT_SIZE_HINT = (1, 0.48)
+    SPLASH_TEXT_TOP = 0.96
+    SPLASH_TEXT_POS_HINT = {'x': 0, 'top': SPLASH_TEXT_TOP}
     IMG_EXT   = ('.png','.jpg','.jpeg','.webp')
+    CUSTOM_AMBIENT_NAME = "Custom Sound"
     HTTP_PORT = 8089
+
+    _GRADIENT_CACHE = {}
+
+    def make_vert_gradient_tex(rgb_top, rgb_bot, height=128):
+        """Build a cached 1px-wide vertical RGBA gradient texture.
+
+        rgb_top/rgb_bot are expected to be 4-item color lists in 0..1 range.
+        """
+        height = max(2, int(height))
+        tex = Texture.create(size=(1, height), colorfmt='rgba')
+        buf = bytearray()
+        for y in range(height):
+            t = y / float(height - 1)
+            r = rgb_bot[0] + (rgb_top[0] - rgb_bot[0]) * t
+            g = rgb_bot[1] + (rgb_top[1] - rgb_bot[1]) * t
+            b = rgb_bot[2] + (rgb_top[2] - rgb_bot[2]) * t
+            a = rgb_bot[3] + (rgb_top[3] - rgb_bot[3]) * t
+            buf.extend((
+                int(max(0, min(255, round(r * 255)))),
+                int(max(0, min(255, round(g * 255)))),
+                int(max(0, min(255, round(b * 255)))),
+                int(max(0, min(255, round(a * 255)))),
+            ))
+        tex.blit_buffer(bytes(buf), colorfmt='rgba', bufferfmt='ubyte')
+        tex.wrap = 'clamp_to_edge'
+        # In Kivy, a negative V uvsize flips the texture vertically so the
+        # stronger alpha band stays closest to the widget instead of the floor.
+        tex.uvsize = (1, -1)
+        return tex
+
+    def make_horiz_gradient_tex(rgb_left, rgb_right, width=128):
+        """Build a cached horizontal RGBA gradient texture."""
+        width = max(2, int(width))
+        tex = Texture.create(size=(width, 1), colorfmt='rgba')
+        buf = bytearray()
+        for x in range(width):
+            t = x / float(width - 1)
+            r = rgb_left[0] + (rgb_right[0] - rgb_left[0]) * t
+            g = rgb_left[1] + (rgb_right[1] - rgb_left[1]) * t
+            b = rgb_left[2] + (rgb_right[2] - rgb_left[2]) * t
+            a = rgb_left[3] + (rgb_right[3] - rgb_left[3]) * t
+            buf.extend((
+                int(max(0, min(255, round(r * 255)))),
+                int(max(0, min(255, round(g * 255)))),
+                int(max(0, min(255, round(b * 255)))),
+                int(max(0, min(255, round(a * 255)))),
+            ))
+        tex.blit_buffer(bytes(buf), colorfmt='rgba', bufferfmt='ubyte')
+        tex.wrap = 'clamp_to_edge'
+        return tex
+
+    def make_diag_shadow_tex(width=96, height=96):
+        """Build a cached shadow texture that fades toward the lower-right."""
+        width = max(2, int(width))
+        height = max(2, int(height))
+        tex = Texture.create(size=(width, height), colorfmt='rgba')
+        buf = bytearray()
+        for y in range(height):
+            yn = y / float(height - 1)
+            for x in range(width):
+                xn = x / float(width - 1)
+                fade = max(0.0, 1.0 - ((xn * 0.85) + (yn * 1.1)) / 1.95)
+                alpha = (fade ** 1.65) * 0.34
+                buf.extend((
+                    int(8),
+                    int(3),
+                    int(6),
+                    int(max(0, min(255, round(alpha * 255)))),
+                ))
+        tex.blit_buffer(bytes(buf), colorfmt='rgba', bufferfmt='ubyte')
+        tex.wrap = 'clamp_to_edge'
+        tex.uvsize = (1, -1)
+        return tex
+
+    def get_drop_shadow_tex():
+        key = 'drop_shadow'
+        if key not in _GRADIENT_CACHE:
+            _GRADIENT_CACHE[key] = make_diag_shadow_tex(width=96, height=96)
+        return _GRADIENT_CACHE[key]
+
+    def make_glow_bar_tex(rgb, width=256, height=12):
+        """A horizontal light stripe with soft falloff on both axes.
+        Used as indicator for active tabs — looks like a light glow
+        instead of a hard stripe.
+
+        - rgb: 3-tuple (r, g, b) 0..1 (alpha built from falloff).
+        - Horizontal: strong fade on both ends (~sin^1.35).
+        - Vertical: wide bright core with slightly softer top/bottom (~sin^0.45).
+        """
+        import math
+        width = max(2, int(width))
+        height = max(2, int(height))
+        tex = Texture.create(size=(width, height), colorfmt='rgba')
+        buf = bytearray()
+        r255 = int(max(0, min(255, round(rgb[0] * 255))))
+        g255 = int(max(0, min(255, round(rgb[1] * 255))))
+        b255 = int(max(0, min(255, round(rgb[2] * 255))))
+        for y in range(height):
+            yn = y / float(height - 1)
+            v_factor = math.sin(math.pi * yn) ** 0.45
+            for x in range(width):
+                xn = x / float(width - 1)
+                h_factor = math.sin(math.pi * xn) ** 1.35
+                a = h_factor * v_factor
+                buf.extend((
+                    r255, g255, b255,
+                    int(max(0, min(255, round(a * 255)))),
+                ))
+        tex.blit_buffer(bytes(buf), colorfmt='rgba', bufferfmt='ubyte')
+        tex.wrap = 'clamp_to_edge'
+        return tex
+
+    def get_glow_bar_tex():
+        key = 'glow_bar'
+        if key not in _GRADIENT_CACHE:
+            # Warm amber-gold — midway between GOLD and pale-gold.
+            # Brighter than pure GOLD, but still clearly gold
+            # rather than near-white.
+            _GRADIENT_CACHE[key] = make_glow_bar_tex(
+                (0.96, 0.83, 0.55),
+                width=256,
+                height=12,
+            )
+        return _GRADIENT_CACHE[key]
+
+    def make_pulse_glow_tex(rgb, size=128, inset_ratio=0.32):
+        """Generate a 2D glow texture for the pulse effect on tabs.
+
+        The structure is a distance-field-based "blurred rounded
+        rectangle":
+        - An inner core rectangle (inset_ratio * size from edges)
+          has full alpha.
+        - Outside the core, alpha falls off continuously with a cosine
+          falloff to 0 at the texture edge.
+
+        Cosine gives a softer falloff than pure gaussian — we hit exactly
+        alpha=0 at the edges so there is NO visible "clipping"
+        where the texture ends. Same method as the light stripe.
+        """
+        import math
+        size = max(16, int(size))
+        tex = Texture.create(size=(size, size), colorfmt='rgba')
+        buf = bytearray()
+        r255 = int(max(0, min(255, round(rgb[0] * 255))))
+        g255 = int(max(0, min(255, round(rgb[1] * 255))))
+        b255 = int(max(0, min(255, round(rgb[2] * 255))))
+
+        inset = int(size * inset_ratio * 0.5)
+        rect_min = inset
+        rect_max = size - inset
+        # Max distance from core to texture edge
+        max_dist = float(inset) if inset > 0 else 1.0
+
+        for y in range(size):
+            for x in range(size):
+                # Distanse fra (x, y) til kjernerektangelet
+                dx = max(rect_min - x, x - rect_max, 0)
+                dy = max(rect_min - y, y - rect_max, 0)
+                if dx == 0 and dy == 0:
+                    a = 1.0
+                else:
+                    d = math.sqrt(dx * dx + dy * dy)
+                    if d >= max_dist:
+                        a = 0.0
+                    else:
+                        # Cosine-falloff: 1.0 ved d=0, 0.0 ved d=max_dist
+                        # Much softer than linear, no visible "clipping"
+                        a = 0.5 * (1.0 + math.cos(math.pi * d / max_dist))
+                buf.extend((
+                    r255, g255, b255,
+                    int(max(0, min(255, round(a * 255)))),
+                ))
+        tex.blit_buffer(bytes(buf), colorfmt='rgba', bufferfmt='ubyte')
+        tex.wrap = 'clamp_to_edge'
+        return tex
+
+    def get_pulse_glow_tex():
+        key = 'pulse_glow'
+        if key not in _GRADIENT_CACHE:
+            # Samme varme amber-gull som lysstripen for visuell sammenheng
+            _GRADIENT_CACHE[key] = make_pulse_glow_tex(
+                (0.96, 0.83, 0.55),
+                size=128,
+                inset_ratio=0.42,
+            )
+        return _GRADIENT_CACHE[key]
+
+    def get_gold_bar_tex():
+        key = 'gold_bar'
+        if key not in _GRADIENT_CACHE:
+            _GRADIENT_CACHE[key] = make_horiz_gradient_tex(
+                GOLD_ACCENT_GRADIENT_TOP,
+                GOLD_ACCENT_GRADIENT_BOTTOM,
+                width=160
+            )
+        return _GRADIENT_CACHE[key]
+
+    def get_ui_bg_tex():
+        key = 'ui_bg'
+        if key not in _GRADIENT_CACHE:
+            tex = None
+            if os.path.exists(UI_BG_TEXTURE_PATH):
+                try:
+                    tex = CoreImage(UI_BG_TEXTURE_PATH).texture
+                except Exception as e:
+                    log(f"Failed to load UI background texture: {e}")
+            _GRADIENT_CACHE[key] = tex
+        return _GRADIENT_CACHE[key]
 
     # ============================================================
     # KV RULES – shadow + rounded corners
-    # Shadow: a dark RoundedRectangle offset 2dp down.
-    # Main body: RoundedRectangle with bg_color on top.
+    # Shadow: a dark RoundedRectangle shifted down and made slightly narrower,
+    # while height is kept as a ratio of the widget for a softer
+    # "floor shadow" without changing the button/panel width itself.
+    # Main part: draw bgtb.png without tint first, then add bg_color
+    # semi-transparently on top to preserve the existing color palette.
+    # ============================================================
+    # ============================================================
+    # KV-regler – Forenklet utseende (v0.4.1)
+    # Tidligere tegnet vi 3-4 stablede border-linjer + en intern
+    # gull-gradient-stripe inni hver knapp/panel. Det ga 8 canvas-
+    # operasjoner per widget og et veldig "vilt" inntrykk.
+    #
+    # Ny stil:
+    #   - RBtn / RToggle / RBox: skygge + bakgrunn + 2 rene
+    #     border lines (dark amber + gold) — slimmer and calmer.
+    #   - RToggle: thin gold stripe at the bottom that ONLY shows when
+    #     state == 'down' — Material-style indikator likt
+    #     CampaignForge.
+    #   - PreviewFrame (gallery frames): 2 border lines + top glow.
+    #     Retains ornate character, but without inner glint noise.
     # ============================================================
     Builder.load_string('''
+#:set RBTN_SHADOW_X dp(6)
+#:set RBTN_SHADOW_Y dp(7)
+#:set RBTN_SHADOW_W dp(10)
+#:set RBTN_SHADOW_HEIGHT_RATIO 0.8
+#:set RBOX_SHADOW_X dp(9)
+#:set RBOX_SHADOW_Y dp(9)
+#:set RBOX_SHADOW_W dp(16)
+#:set RBOX_SHADOW_HEIGHT_RATIO 0.72
+#:set PREVIEW_SHADOW_X dp(9)
+#:set PREVIEW_SHADOW_Y dp(9)
+#:set PREVIEW_SHADOW_W dp(16)
+#:set PREVIEW_SHADOW_HEIGHT_RATIO 0.82
 <RBtn>:
     background_normal: ''
     background_down: ''
     background_color: 0, 0, 0, 0
     bold: True
     canvas.before:
+        # Drop shadow
         Color:
-            rgba: self.shadow_color
+            rgba: 1, 1, 1, 1
         RoundedRectangle:
-            pos: self.x, self.y - dp(2)
-            size: self.width, self.height
-            radius: [self.radius]
+            texture: self.shadow_tex
+            pos: self.x + RBTN_SHADOW_X, self.y - RBTN_SHADOW_Y
+            size: self.width - RBTN_SHADOW_W, self.height * RBTN_SHADOW_HEIGHT_RATIO
+            radius: [self.radius + dp(2)]
+        # Tekstur-bakgrunn (papir)
         Color:
-            rgba: self.bg_color
+            rgba: 1, 1, 1, self.bg_color[3]
+        RoundedRectangle:
+            texture: self.bg_tex
+            pos: self.pos
+            size: self.size
+            radius: [self.radius]
+        # Colour overlay (burgundy/wine red)
+        Color:
+            rgba: self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3] * 0.82
         RoundedRectangle:
             pos: self.pos
             size: self.size
             radius: [self.radius]
+        # Dark outer edge (gives depth)
+        Color:
+            rgba: self.border_dark_color
+        Line:
+            rounded_rectangle: (self.x + dp(0.8), self.y + dp(0.8), self.width - dp(1.6), self.height - dp(1.6), self.radius - dp(0.6))
+            width: 1.4
+        # Hoved gull-kant
         Color:
             rgba: self.border_color
         Line:
-            rounded_rectangle: (self.x + dp(1), self.y + dp(1), self.width - dp(2), self.height - dp(2), self.radius)
-            width: 1.2
+            rounded_rectangle: (self.x + dp(2), self.y + dp(2), self.width - dp(4), self.height - dp(4), self.radius - dp(1.6))
+            width: self.border_width
 
 <RToggle>:
     background_normal: ''
@@ -264,32 +535,99 @@ try:
     background_color: 0, 0, 0, 0
     bold: True
     canvas.before:
+        # === PULS-GLOW ===
+        # One Rectangle using a blurred rounded-rectangle texture.
+        # Teksturen har cosine-falloff fra full alpha i kjernen til
+        # exactly 0 at the edges, so there are NO visible clipping edges
+        # uansett hvor stor `pulse` er. Samme prinsipp som lysstripen.
+        # Smal margin (dp(7)) gir tett, kontrollert glow rundt fanen.
         Color:
-            rgba: self.shadow_color
+            rgba: 1, 1, 1, 0.55 * self.pulse
+        Rectangle:
+            texture: self.pulse_glow_tex
+            pos: self.x - dp(7), self.y - dp(7)
+            size: self.width + dp(14), self.height + dp(14)
+        # === FANE ===
+        # Drop shadow
+        Color:
+            rgba: 1, 1, 1, 1
         RoundedRectangle:
-            pos: self.x, self.y - dp(2)
-            size: self.width, self.height
-            radius: [self.radius]
+            texture: self.shadow_tex
+            pos: self.x + self.shadow_dx, self.y - self.shadow_dy
+            size: self.width - RBTN_SHADOW_W, self.height * self.shadow_height_ratio
+            radius: [self.radius + dp(2)]
+        # Tekstur-bakgrunn
         Color:
-            rgba: self.bg_color
+            rgba: 1, 1, 1, self.bg_color[3]
+        RoundedRectangle:
+            texture: self.bg_tex
+            pos: self.pos
+            size: self.size
+            radius: [self.radius]
+        # Farge-overlay
+        Color:
+            rgba: self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3] * 0.82
         RoundedRectangle:
             pos: self.pos
             size: self.size
             radius: [self.radius]
+        # Dark outer edge
+        Color:
+            rgba: self.border_dark_color
+        Line:
+            rounded_rectangle: (self.x + dp(0.8), self.y + dp(0.8), self.width - dp(1.6), self.height - dp(1.6), self.radius - dp(0.6))
+            width: 1.4
+        # Hoved-kant (gull eller dempet gull)
         Color:
             rgba: self.border_color
         Line:
-            rounded_rectangle: (self.x + dp(1), self.y + dp(1), self.width - dp(2), self.height - dp(2), self.radius)
+            rounded_rectangle: (self.x + dp(2), self.y + dp(2), self.width - dp(4), self.height - dp(4), self.radius - dp(1.6))
             width: self.border_width
+        # Tab indicator: narrow light-glow stripe at bottom — ONLY for active tab
+        Color:
+            rgba: 1, 1, 1, 1.0 if self.state == 'down' else 0.0
+        Rectangle:
+            texture: self.glow_tex
+            pos: self.x + dp(6), self.y + dp(3)
+            size: self.width - dp(12), dp(5)
 
 <RBox>:
     canvas.before:
+        # Drop shadow
         Color:
-            rgba: self.bg_color
+            rgba: 1, 1, 1, self.bg_color[3]
+        RoundedRectangle:
+            texture: self.shadow_tex
+            pos: self.x + RBOX_SHADOW_X, self.y - RBOX_SHADOW_Y
+            size: self.width - RBOX_SHADOW_W, self.height * RBOX_SHADOW_HEIGHT_RATIO
+            radius: [self.radius + dp(2)]
+        # Tekstur-bakgrunn
+        Color:
+            rgba: 1, 1, 1, self.bg_color[3]
+        RoundedRectangle:
+            texture: self.bg_tex
+            pos: self.pos
+            size: self.size
+            radius: [self.radius]
+        # Farge-overlay
+        Color:
+            rgba: self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3] * 0.82
         RoundedRectangle:
             pos: self.pos
             size: self.size
             radius: [self.radius]
+        # Dark outer edge
+        Color:
+            rgba: self.border_dark_color[0], self.border_dark_color[1], self.border_dark_color[2], self.border_dark_color[3] * self.bg_color[3]
+        Line:
+            rounded_rectangle: (self.x + dp(1), self.y + dp(1), self.width - dp(2), self.height - dp(2), self.radius - dp(1))
+            width: 1.4
+        # Hoved gull-kant
+        Color:
+            rgba: self.border_color[0], self.border_color[1], self.border_color[2], self.border_color[3] * self.bg_color[3]
+        Line:
+            rounded_rectangle: (self.x + dp(2.4), self.y + dp(2.4), self.width - dp(4.8), self.height - dp(4.8), self.radius - dp(2))
+            width: self.border_width
 
 <FramedBox>:
     canvas.before:
@@ -298,50 +636,212 @@ try:
         Line:
             rectangle: (self.x, self.y, self.width, self.height)
             width: 1.5
-''')
 
+<PreviewFrame>:
+    canvas.before:
+        # Drop shadow
+        Color:
+            rgba: 1, 1, 1, 1
+        RoundedRectangle:
+            texture: self.shadow_tex
+            pos: self.x + PREVIEW_SHADOW_X, self.y - PREVIEW_SHADOW_Y
+            size: self.width - PREVIEW_SHADOW_W, self.height * PREVIEW_SHADOW_HEIGHT_RATIO
+            radius: [self.radius + dp(1)]
+        # Tekstur-bakgrunn
+        Color:
+            rgba: 1, 1, 1, self.bg_color[3]
+        RoundedRectangle:
+            texture: self.bg_tex
+            pos: self.pos
+            size: self.size
+            radius: [self.radius]
+        # Farge-overlay
+        Color:
+            rgba: self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3] * 0.82
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [self.radius]
+        # Dark outer edge
+        Color:
+            rgba: self.border_dark_color
+        Line:
+            rounded_rectangle: (self.x + dp(1.5), self.y + dp(1.5), self.width - dp(3), self.height - dp(3), self.radius - dp(1))
+            width: 2.4
+        # Hoved gull-kant (litt tykkere — det er en bilderamme)
+        Color:
+            rgba: self.border_color
+        Line:
+            rounded_rectangle: (self.x + dp(3.2), self.y + dp(3.2), self.width - dp(6.4), self.height - dp(6.4), self.radius - dp(2))
+            width: self.border_width
+        # Top glow (subtle highlight reflection at top edge)
+        Color:
+            rgba: self.highlight_color
+        Line:
+            rounded_rectangle: (self.x + dp(8), self.top - dp(18), self.width - dp(16), dp(10), dp(4))
+            width: 1.0
+''')
+    
     class RBtn(Button):
         bg_color = ListProperty(BTN)
         shadow_color = ListProperty(SHAD)
-        border_color = ListProperty(GDIM)
+        border_color = ListProperty(GOLD)
+        border_dark_color = ListProperty(GDARK)
+        border_glint_color = ListProperty(GGLINT)
+        accent_bar_color = ListProperty(GOLD)
+        accent_bar_alpha = NumericProperty(0.24)
+        border_width = NumericProperty(2.8)
         radius = NumericProperty(dp(14))
+        shadow_tex = ObjectProperty(None, allownone=True)
+        bg_tex = ObjectProperty(None, allownone=True)
+        accent_tex = ObjectProperty(None, allownone=True)
+
+        def __init__(self, **kw):
+            super().__init__(**kw)
+            self.shadow_tex = get_drop_shadow_tex()
+            self.bg_tex = get_ui_bg_tex()
+            self.accent_tex = get_gold_bar_tex()
 
     class RToggle(ToggleButton):
         bg_color = ListProperty(BTN)
         shadow_color = ListProperty(SHAD)
-        border_color = ListProperty(GDIM)
-        border_width = NumericProperty(1.2)
+        border_color = ListProperty(GSOFT)
+        border_dark_color = ListProperty(GDARK)
+        border_glint_color = ListProperty(GGLINT)
+        accent_bar_color = ListProperty(GOLD)
+        accent_bar_alpha = NumericProperty(0.22)
+        border_width = NumericProperty(2.2)
         radius = NumericProperty(dp(14))
+        shadow_tex = ObjectProperty(None, allownone=True)
+        bg_tex = ObjectProperty(None, allownone=True)
+        accent_tex = ObjectProperty(None, allownone=True)
+        glow_tex = ObjectProperty(None, allownone=True)
+        pulse_glow_tex = ObjectProperty(None, allownone=True)
+        # Pulse amplitude (0..1) — driven by Animation when state='down'.
+        # The KV does the rest: one blurred glow texture fades in/out with
+        # this value to create the breathing effect.
+        pulse = NumericProperty(0.0)
+
+        def _get_shadow_dx(self):
+            return dp(5) if self.state == 'down' else dp(6)
+
+        def _get_shadow_dy(self):
+            return dp(6) if self.state == 'down' else dp(7)
+
+        def _get_shadow_height_ratio(self):
+            return 0.72 if self.state == 'down' else 0.78
+
+        def _get_accent_alpha_mult(self):
+            return (TOGGLE_ACCENT_ALPHA_ACTIVE if self.state == 'down'
+                    else TOGGLE_ACCENT_ALPHA_IDLE)
+
+        shadow_dx = AliasProperty(_get_shadow_dx, None, bind=('state',))
+        shadow_dy = AliasProperty(_get_shadow_dy, None, bind=('state',))
+        shadow_height_ratio = AliasProperty(
+            _get_shadow_height_ratio, None, bind=('state',))
+        accent_alpha_mult = AliasProperty(
+            _get_accent_alpha_mult, None, bind=('state',))
+
+        def __init__(self, **kw):
+            super().__init__(**kw)
+            self.shadow_tex = get_drop_shadow_tex()
+            self.bg_tex = get_ui_bg_tex()
+            self.accent_tex = get_gold_bar_tex()
+            self.glow_tex = get_glow_bar_tex()
+            self.pulse_glow_tex = get_pulse_glow_tex()
+            self._pulse_anim = None
+            self.bind(state=self._on_state_pulse)
+            # Hvis vi opprettes i down-state, start pulsing umiddelbart
+            if self.state == 'down':
+                Clock.schedule_once(lambda *_: self._start_pulse(), 0)
+
+        def _on_state_pulse(self, *_a):
+            if self.state == 'down':
+                self._start_pulse()
+            else:
+                self._stop_pulse()
+
+        def _start_pulse(self):
+            if self._pulse_anim is not None:
+                return
+            # Mye tregere pust: 3.5s opp, 3.5s ned (7s total syklus).
+            # Sinus-easing for myk akselerasjon i begge ender.
+            up = Animation(pulse=1.0, duration=3.5, t='in_out_sine')
+            down = Animation(pulse=0.0, duration=3.5, t='in_out_sine')
+            self._pulse_anim = up + down
+            self._pulse_anim.repeat = True
+            self._pulse_anim.start(self)
+
+        def _stop_pulse(self):
+            if self._pulse_anim is not None:
+                self._pulse_anim.cancel(self)
+                self._pulse_anim = None
+            self.pulse = 0.0
 
     class RBox(BoxLayout):
         bg_color = ListProperty(BG2)
+        border_color = ListProperty(GSOFT)
+        border_dark_color = ListProperty(GDARK)
+        border_glint_color = ListProperty(GGLINT)
+        accent_bar_color = ListProperty(GOLD)
+        accent_bar_alpha = NumericProperty(0.16)
+        border_width = NumericProperty(2.2)
         radius = NumericProperty(dp(20))
+        shadow_tex = ObjectProperty(None, allownone=True)
+        bg_tex = ObjectProperty(None, allownone=True)
+        accent_tex = ObjectProperty(None, allownone=True)
+
+        def __init__(self, **kw):
+            super().__init__(**kw)
+            self.shadow_tex = get_drop_shadow_tex()
+            self.bg_tex = get_ui_bg_tex()
+            self.accent_tex = get_gold_bar_tex()
 
     class FramedBox(BoxLayout):
         frame_color = ListProperty(GOLD)
 
-    # === SOUND SOURCES === ===
+    class PreviewFrame(BoxLayout):
+        bg_color = ListProperty(BLK)
+        border_color = ListProperty(GOLD)
+        border_dark_color = ListProperty(GDARK)
+        border_glint_color = ListProperty(GGLINT)
+        highlight_color = ListProperty([1.0, 0.93, 0.72, 0.26])
+        accent_bar_color = ListProperty(GOLD)
+        accent_bar_alpha = NumericProperty(0.28)
+        border_width = NumericProperty(3.4)
+        radius = NumericProperty(dp(16))
+        shadow_tex = ObjectProperty(None, allownone=True)
+        bg_tex = ObjectProperty(None, allownone=True)
+        accent_tex = ObjectProperty(None, allownone=True)
+
+        def __init__(self, **kw):
+            super().__init__(**kw)
+            self.shadow_tex = get_drop_shadow_tex()
+            self.bg_tex = get_ui_bg_tex()
+            self.accent_tex = get_gold_bar_tex()
+
+    # === LYDKILDER ===
     AMBIENT_SOUNDS = [
-        {"name":"--- Nature ---"},
-        {"name":"Rain and Thunder","url":"https://archive.org/download/RainSound13/Gentle%20Rain%20and%20Thunder.mp3"},
+        {"name":"--- Natur ---"},
+        {"name":"Regn og torden","url":"https://archive.org/download/RainSound13/Gentle%20Rain%20and%20Thunder.mp3"},
         {"name":"Ocean Waves","url":"https://archive.org/download/naturesounds-soundtheraphy/Birds%20With%20Ocean%20Waves%20on%20the%20Beach.mp3"},
-        {"name":"Night Rain","url":"https://archive.org/download/RainSound13/Night%20Rain%20Sound.mp3"},
-        {"name":"Wind and Storm","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/epic-storm-thunder-rainwindwaves-no-loops-106800.mp3"},
-        {"name":"Night Sounds","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/ambience-crickets-chirping-in-very-light-rain-followed-by-gentle-rolling-thunder-10577.mp3"},
-        {"name":"Sea Storm","url":"https://archive.org/download/naturesounds-soundtheraphy/Sound%20Therapy%20-%20Sea%20Storm.mp3"},
-        {"name":"Light Rain","url":"https://archive.org/download/naturesounds-soundtheraphy/Light%20Gentle%20Rain.mp3"},
-        {"name":"Thunderstorm","url":"https://archive.org/download/RainSound13/Rain%20Sound%20with%20Thunderstorm.mp3"},
-        {"name":"Rough Sea","url":"https://archive.org/download/RelaxingRainAndLoudThunderFreeFieldRecordingOfNatureSoundsForSleepOrMeditation/Relaxing%20Rain%20and%20Loud%20Thunder%20%28Free%20Field%20Recording%20of%20Nature%20Sounds%20for%20Sleep%20or%20Meditation%20Mp3%29.mp3"},
+        {"name":"Nattregn","url":"https://archive.org/download/RainSound13/Night%20Rain%20Sound.mp3"},
+        {"name":"Vind og storm","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/epic-storm-thunder-rainwindwaves-no-loops-106800.mp3"},
+        {"name":"Nattlyder","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/ambience-crickets-chirping-in-very-light-rain-followed-by-gentle-rolling-thunder-10577.mp3"},
+        {"name":"Havstorm","url":"https://archive.org/download/naturesounds-soundtheraphy/Sound%20Therapy%20-%20Sea%20Storm.mp3"},
+        {"name":"Lett regn","url":"https://archive.org/download/naturesounds-soundtheraphy/Light%20Gentle%20Rain.mp3"},
+        {"name":"Tordenstorm","url":"https://archive.org/download/RainSound13/Rain%20Sound%20with%20Thunderstorm.mp3"},
+        {"name":"Urolig hav","url":"https://archive.org/download/RelaxingRainAndLoudThunderFreeFieldRecordingOfNatureSoundsForSleepOrMeditation/Relaxing%20Rain%20and%20Loud%20Thunder%20%28Free%20Field%20Recording%20of%20Nature%20Sounds%20for%20Sleep%20or%20Meditation%20Mp3%29.mp3"},
         {"name":"--- Horror ---"},
-        {"name":"Creepy Atmosphere","url":"https://archive.org/download/creepy-music-sounds/Creepy%20music%20%26%20sounds.mp3"},
-        {"name":"Unsettling Drone","url":"https://archive.org/download/scary-sound-effects-8/Evil%20Demon%20Drone%20Movie%20Halloween%20Sounds.mp3"},
-        {"name":"Dark Suspense","url":"https://archive.org/download/scary-sound-effects-8/Dramatic%20Suspense%20Sound%20Effects.mp3"},
-        {"name":"Horror Sounds","url":"https://archive.org/download/creepy-music-sounds/Horror%20Sound%20Effects.mp3"},
+        {"name":"Eerie Atmosphere","url":"https://archive.org/download/creepy-music-sounds/Creepy%20music%20%26%20sounds.mp3"},
+        {"name":"Uhyggelig drone","url":"https://archive.org/download/scary-sound-effects-8/Evil%20Demon%20Drone%20Movie%20Halloween%20Sounds.mp3"},
+        {"name":"Dark Tension","url":"https://archive.org/download/scary-sound-effects-8/Dramatic%20Suspense%20Sound%20Effects.mp3"},
+        {"name":"Horrorlyder","url":"https://archive.org/download/creepy-music-sounds/Horror%20Sound%20Effects.mp3"},
     ]
 
     # === KARAKTERFELT ===
     CHAR_INFO = [
-        ("name","Name"), ("type","Type"), ("occ","Occupation"), ("archetype","Archetype"),
+        ("name","Navn"), ("type","Type"), ("occ","Yrke"), ("archetype","Arketype"),
         ("age","Age"), ("residence","Residence"), ("birthplace","Birthplace"),
     ]
     CHAR_STATS = [
@@ -354,7 +854,7 @@ try:
     ]
     CHAR_TEXT = [
         ("weapons","Weapons"), ("talents","Pulp Talents"),
-        ("backstory","Backstory"), ("notes","Notes"),
+        ("backstory","Bakgrunn"), ("notes","Notater"),
     ]
     SKILLS = [
         ("Accounting","05"), ("Appraise","05"), ("Archaeology","01"),
@@ -382,54 +882,54 @@ try:
         ("Swim","20"), ("Throw","20"), ("Track","10"),
     ]
 
-    # === RULES & REFERENCE ===
-    # Complete CoC 7e + Pulp Cthulhu keeper reference.
+    # === REGLER & REFERANSE ===
+    # Komplett CoC 7e + Pulp Cthulhu keeper-referanse.
     RULES = [
-      ("Basic Rules", "", [
-        ("Skill Rolls", [
-          "Roll d100 (percentile) against the skill value.",
-          "Equal to or under = success.",
+      ("Grunnregler", "", [
+        ("Ferdighetskast", [
+          "Rull d100 (percentile) mot skill-verdi.",
+          "Lik eller under = suksess.",
           "",
           "Success levels:",
-          "  Critical: result = 01",
-          "  Extreme: result \u2264 skill / 5",
-          "  Hard: result \u2264 skill / 2",
-          "  Regular: result \u2264 skill",
-          "  Failure: result > skill",
+          "  Critical: resultat = 01",
+          "  Extreme: resultat \u2264 skill / 5",
+          "  Hard: resultat \u2264 skill / 2",
+          "  Regular: resultat \u2264 skill",
+          "  Failure: resultat > skill",
           "",
           "Automatic success: 01 always succeeds.",
-          "Fumble (based on MAX SKILL, not base skill):",
-          "  Required \u2265 50: only 100 is fumble",
-          "  Required < 50: 96\u2013100 is fumble",
-          "  Ex: skill 60, Hard diff (req 30)",
+          "Fumble (based on THRESHOLD, not base skill):",
+          "  Krav \u2265 50: kun 100 er fumble",
+          "  Krav < 50: 96\u2013100 er fumble",
+          "  E.g.: skill 60, Hard diff (threshold 30)",
           "    -> fumble on 96\u2013100",
         ]),
         ("Difficulty", [
-          "Keeper sets the difficulty:",
-          "  Regular: skill value (default)",
-          "  Hard: half of skill value",
-          "  Extreme: one-fifth of skill value",
+          "Keeper sets difficulty:",
+          "  Regular: skill value (standard)",
+          "  Hard: half skill value",
+          "  Extreme: one fifth of skill value",
           "",
-          "Vs living opponents:",
-          "  Opponent skill < 50: Regular",
-          "  Opponent skill \u2265 50: Hard",
-          "  Opponent skill \u2265 90: Extreme",
+          "Against living opponents:",
+          "  Opponent's skill < 50: Regular",
+          "  Motstanders skill \u2265 50: Hard",
+          "  Motstanders skill \u2265 90: Extreme",
         ]),
         ("Bonus & Penalty", [
-          "Bonus die: roll 2 tens-dice,",
+          "Bonus die: roll 2 tens dice,",
           "  use the LOWEST.",
-          "Penalty die: roll 2 tens-dice,",
+          "Penalty die: roll 2 tens dice,",
           "  use the HIGHEST.",
           "",
           "Max 2 bonus OR 2 penalty.",
           "Bonus and penalty cancel 1:1.",
           "",
-          "Granted by Keeper based on circumstances:",
-          "  Advantage: bonus die (good light, time, tools)",
-          "  Disadvantage: penalty die (stress, poor visibility)",
+          "Given by Keeper based on circumstances:",
+          "  Advantage: bonus (good light, time, tools)",
+          "  Disadvantage: penalty (stress, poor visibility)",
         ]),
         ("Pushed Rolls", [
-          "Player can push ONE failed roll.",
+          "Player may push ONE failed roll.",
           "Must describe WHAT they do differently.",
           "Keeper must approve the push.",
           "",
@@ -452,51 +952,51 @@ try:
           "  Sneak vs Listen",
           "  Fast Talk vs Psychology",
           "  Charm vs POW",
-          "  STR vs STR (break free, hold)",
+          "  STR vs STR (break, hold)",
           "  DEX vs DEX (grab, evade)",
           "  Disguise vs Spot Hidden",
         ]),
         ("Luck", [
           "Luck value: 3d6 x 5 (at creation).",
-          "Luck check: d100 \u2264 Luck.",
+          "Luck-sjekk: d100 \u2264 Luck.",
           "",
           "Spending Luck:",
-          "  After a skill roll: subtract Luck points",
+          "  After a skill roll: spend Luck points",
           "  1:1 to lower the result.",
-          "  Ex: rolled 55, skill 50 -> spend 5 Luck.",
+          "  E.g.: roll 55, skill 50 -> spend 5 Luck.",
           "",
           "Luck does NOT regenerate in standard CoC.",
-          "Pulp: regenerates 2d10 Luck per session.",
+          "Pulp: regenerate 2d10 Luck per session.",
           "",
           "Group Luck: lowest Luck in the group",
-          "  is used for random events.",
+          "  used for random events.",
         ]),
-        ("Experience & development", [
-          "After a scenario: mark used skills.",
+        ("Experience & Development", [
+          "After scenario: mark used skills.",
           "Roll d100 for each marked skill:",
           "  Result > skill = +1d10 to skill.",
-          "  Result \u2264 skill = no improvement.",
+          "  Result \u2264 skill = no increase.",
           "",
           "Skill max: 99 (except CM: 99).",
-          "Aging effects can lower stats.",
+          "Age effects can lower stats.",
         ]),
       ]),
       ("Combat", "", [
-        ("Combat flow", [
+        ("Combat Flow", [
           "1. All act in DEX order",
           "   (highest first).",
           "",
           "2. Each participant gets 1 action:",
           "   - Attack (melee or ranged)",
           "   - Flee (withdraw)",
-          "   - Maneuver (trip, disarm, etc.)",
+          "   - Manoeuvre (trip, disarm, etc.)",
           "   - Cast a spell",
           "   - Use item / First Aid",
           "   - Other (talk, search, etc.)",
           "",
           "3. Defender chooses reaction:",
-          "   - Dodge (evade)",
-          "   - Fight Back (counter, melee only)",
+          "   - Dodge (avoid)",
+          "   - Fight Back (motangrep, kun melee)",
           "   - Nothing (takes full damage)",
           "",
           "4. Repeat until combat ends.",
@@ -505,7 +1005,7 @@ try:
           "Attacker: roll Fighting skill.",
           "Defender chooses:",
           "",
-          "DODGE (opposed vs Dodge skill):",
+          "DODGE (opposed vs Dodge-skill):",
           "  Attacker wins -> full damage",
           "  Defender wins -> avoids the attack",
           "  Both fail -> nothing happens",
@@ -513,53 +1013,52 @@ try:
           "FIGHT BACK (opposed vs Fighting):",
           "  Attacker wins -> full damage",
           "  Defender wins -> defender deals damage",
-          "  Both fail -> nothing happens",
+          "  Begge feiler -> ingenting skjer",
           "",
           "Dodge: 1 free per round,",
-          "  extra dodge costs the next round's action.",
+          "  extra dodge costs an action next round.",
           "",
           "OUTNUMBERED:",
           "  When defender has already dodged",
           "  or fought back this round:",
           "  -> all subsequent attacks get",
           "     +1 bonus die.",
-          "  Exception: creatures with multiple",
-          "  attacks/round can dodge/fight back",
-          "  the same number of times.",
+          "  Exception: creatures with multiple attacks/round",
+          "  can dodge/fight back the same number of times.",
           "  Does NOT apply to firearms.",
         ]),
         ("Firearms", [
           "Roll Firearms skill. NO opposed roll.",
           "Defender can ONLY dodge at point-blank.",
-          "Otherwise: cover or move out of LoS.",
+          "Otherwise: only take cover/move away.",
           "",
           "Range modifiers:",
           "  Point-blank (\u2264 1/5 range): +1 bonus",
-          "  Medium (base range): normal",
+          "  Medium range (base range): normal",
           "  Long (up to 2x base): +1 penalty",
           "  Extreme (up to 4x base): +2 penalty",
           "",
           "Other modifiers:",
-          "  Moving target: +1 penalty die",
-          "  Large target: +1 bonus die",
-          "  Narrow target: +1 penalty die",
-          "  Aim (uses an action): +1 bonus",
+          "  Moving target: +1 penalty",
+          "  Large target: +1 bonus",
+          "  Small target: +1 penalty",
+          "  Aim (uses action): +1 bonus",
           "",
           "Impale: Extreme success with",
           "  impaling weapon",
           "  = max weapon damage + extra roll.",
         ]),
-        ("Maneuvers", [
-          "Fighting maneuvers (instead of damage):",
+        ("Manoeuvres", [
+          "Fighting manoeuvre (instead of damage):",
           "  Trip/knockdown: target falls",
           "  Disarm: target loses weapon",
-          "  Hold/grapple: target is restrained",
-          "  Throw: push or throw the opponent",
+          "  Hold/grapple: target is held",
+          "  Throw: push/throw the opponent",
           "",
           "Requires: win opposed Fighting check.",
-          "Build difference can grant bonus/penalty:",
-          "  Attacker Build \u2265 target + 2: +1 bonus die",
-          "  Attacker Build \u2264 target - 2: +1 penalty die",
+          "Build difference can give bonus/penalty:",
+          "  Attacker Build \u2265 target + 2: +1 bonus",
+          "  Attacker Build \u2264 target - 2: +1 penalty",
         ]),
         ("Damage Bonus (DB)", [
           "DB based on STR + SIZ:",
@@ -579,10 +1078,10 @@ try:
           "  DB +1d6: Build 2",
           "  DB +2d6: Build 3",
         ]),
-        ("Damage & healing", [
+        ("Damage & Healing", [
           "DAMAGE LEVELS:",
-          "  Minor wound: loss < half max HP",
-          "  Major wound: loss \u2265 half max HP",
+          "  Minor wound: tap < halve maks HP",
+          "  Major wound: tap \u2265 halve maks HP",
           "",
           "MAJOR WOUND consequences:",
           "  CON check or fall unconscious",
@@ -590,13 +1089,13 @@ try:
           "  Must be stabilised or dies",
           "",
           "DYING (0 HP):",
-          "  CON check per round",
-          "  Fail = death",
+          "  CON-check per round",
+          "  Failure = death",
           "  Success = lasts 1 more round",
           "",
           "HEALING:",
           "  First Aid: +1 HP (1 attempt/wound)",
-          "  Medicine: +1d3 HP (after First Aid)",
+          "  Medicine: +1d3 HP (etter First Aid)",
           "  Natural: 1 HP/week (minor)",
           "  Major wound: 1d3 HP/week with care",
         ]),
@@ -604,25 +1103,25 @@ try:
           "Burst: 3 bullets, +1 bonus die to damage.",
           "Full auto: choose number of targets,",
           "  distribute bullets, roll for each target.",
-          "  1 bonus die per 10 bullets on the target.",
+          "  1 bonus die per 10 bullets on target.",
           "",
           "Suppressive fire:",
-          "  Covers an area, everyone in the area",
+          "  Covers an area, all in the area",
           "  must Dodge or take 1 hit.",
           "  Uses half the magazine.",
         ]),
       ]),
       ("Sanity", "", [
-        ("SAN check", [
+        ("SAN Check", [
           "Roll d100 \u2264 current SAN.",
           "",
           "Format: 'X/Y'",
-          "  Success: loss = X",
-          "  Failure: loss = Y",
-          "  Ex: '1/1d6' = success loses 1,",
+          "  Success: lose = X",
+          "  Failure: lose = Y",
+          "  E.g.: '1/1d6' = success loses 1,",
           "    failure loses 1d6 SAN.",
           "",
-          "Max SAN = 99 \u2013 Cthulhu Mythos skill.",
+          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
           "",
           "SAN fumble: automatic max SAN loss.",
         ]),
@@ -633,74 +1132,74 @@ try:
           "  INT success = investigator realises",
           "    the truth -> TEMPORARILY INSANE",
           "  INT failure = repressed memory,",
-          "    investigator stays sane",
+          "    investigator remains sane",
           "",
           "Temporary insanity lasts 1d10 hours.",
-          "Begins with a Bout of Madness.",
+          "Begins with Bout of Madness.",
           "Followed by Underlying Insanity.",
         ]),
         ("Bout of Madness", [
-          "Occurs during temporary insanity.",
-          "Keeper picks Real-Time or Summary.",
+          "Occurs on temporary insanity.",
+          "Keeper chooses Real-Time or Summary.",
           "",
-          "REAL-TIME (lasts 1d10 rounds):",
+          "REAL-TIME (lasting 1d10 rounds):",
           "  1: Amnesia (remembers nothing)",
-          "  2: Psychosomatic (blind/deaf/paralysed)",
-          "  3: Violence (attack nearest person)",
-          "  4: Paranoia (everyone is hostile)",
-          "  5: Physical (nausea/faint)",
+          "  2: Psychosomatic (blind/deaf/lame)",
+          "  3: Violence (attack nearest)",
+          "  4: Paranoia (everyone is an enemy)",
+          "  5: Physical (nausea/fainting)",
           "  6: Flight (run in panic)",
           "  7: Hallucinations",
           "  8: Echo (repeat actions meaninglessly)",
           "  9: Phobia (new or existing)",
-          "  10: Catatonia (freezes completely)",
+          "  10: Catatonia (completely rigid)",
         ]),
         ("Summary (1d10 hours)", [
           "After real-time bout, lasting effect:",
           "  1: Amnesia for the entire event",
-          "  2: Compulsions / rituals",
+          "  2: Obsessive thoughts / rituals",
           "  3: Hallucinations (persistent)",
           "  4: Irrational hatred/fear",
-          "  5: Phobia (specific, new or worse)",
+          "  5: Phobia (specific, new or intensified)",
           "  6: Mania (compulsive behaviour)",
           "  7: Paranoia (trusts no one)",
           "  8: Dissociation (distant, unreal)",
           "  9: Eating disorder / insomnia",
-          "  10: Mythos obsession (studies the forbidden)",
+          "  10: Mythos obsession (studies forbidden)",
         ]),
         ("Phobias (selection)", [
-          "Acrophobia \u2013 fear of heights",
+          "Acrophobia \u2013 heights",
           "Agoraphobia \u2013 open spaces",
-          "Arachnophobia \u2013 spiders",
-          "Claustrophobia \u2013 confined spaces",
-          "Demophobia \u2013 crowds",
-          "Hemophobia \u2013 blood",
-          "Hydrophobia \u2013 water",
-          "Mysophobia \u2013 contamination/dirt",
+          "Arachnophobia \u2013 edderkopper",
+          "Claustrophobia \u2013 trange rom",
+          "Demophobia \u2013 folkemengder",
+          "Hemophobia \u2013 blod",
+          "Hydrophobia \u2013 vann",
+          "Mysophobia \u2013 smitte/skitt",
           "Necrophobia \u2013 the dead/corpses",
           "Nyctophobia \u2013 darkness",
-          "Pyrophobia \u2013 fire",
-          "Thalassophobia \u2013 the sea/deep water",
-          "Xenophobia \u2013 strangers/the unknown",
-          "Zoophobia \u2013 animals",
+          "Pyrophobia \u2013 ild",
+          "Thalassophobia \u2013 havet/dypt vann",
+          "Xenophobia \u2013 fremmede/ukjente",
+          "Zoophobia \u2013 dyr",
         ]),
         ("Manias (selection)", [
-          "Dipsomania \u2013 craving for alcohol",
-          "Kleptomania \u2013 compulsion to steal",
-          "Megalomania \u2013 grandiosity",
-          "Mythomania \u2013 compulsive liar",
+          "Dipsomania \u2013 trang til alkohol",
+          "Kleptomania \u2013 urge to steal",
+          "Megalomania \u2013 storhetstanker",
+          "Mythomania \u2013 compulsive lying",
           "Necromania \u2013 obsession with death",
-          "Pyromania \u2013 firestarting",
+          "Pyromania \u2013 brannstifting",
           "Thanatomania \u2013 death wish",
-          "Xenomania \u2013 obsession with strangers",
+          "Xenomania \u2013 besettelse med fremmede",
         ]),
         ("Indefinite Insanity", [
           "Triggered when investigator has lost",
           "  1/5 of current SAN in total.",
           "",
-          "Effect: long-term madness.",
+          "Effect: prolonged insanity.",
           "  Player loses control of character.",
-          "  Keeper dictates behaviour.",
+          "  Keeper determines behaviour.",
           "  Lasts months/years.",
           "",
           "Treatment:",
@@ -709,13 +1208,13 @@ try:
           "  +1d3 SAN per month (max)",
           "  Failed treatment: -1d6 SAN",
         ]),
-        ("SAN recovery", [
+        ("SAN Recovery", [
           "Psychoanalysis: +1d3 SAN (1/month)",
           "  Failed: -1d6 SAN!",
-          "Self-help: improve a skill = +1d3 SAN",
+          "Self-help: improve skill = +1d3 SAN",
           "Complete scenario: Keeper reward",
           "",
-          "Max SAN = 99 \u2013 Cthulhu Mythos skill.",
+          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
           "Permanent SAN loss cannot be recovered",
           "  beyond this limit.",
         ]),
@@ -723,29 +1222,29 @@ try:
       ("Chase", "", [
         ("Setup", [
           "1. Type: on foot or vehicle.",
-          "2. Number of locations: 5\u201310 (Keeper picks).",
+          "2. Antall locations: 5\u201310 (Keeper velger).",
           "3. Participants:",
-          "   Foot: MOV based on DEX, STR, SIZ.",
-          "   Car: speed rating.",
+          "   On foot: MOV based on DEX, STR, SIZ.",
+          "   Vehicle: speed rating.",
           "4. Speed Roll (CON check):",
-          "   Extreme success: +1 MOV for the chase",
+          "   Extreme success: +1 MOV for the chased",
           "   Success: no change",
-          "   Failure: -1 MOV for the chase",
+          "   Failure: -1 MOV for the chased",
           "   (vehicle: Drive Auto instead)",
           "5. Compare MOV: higher MOV escapes",
           "   immediately. Otherwise -> full chase.",
           "6. Set starting positions on the track.",
-          "7. Place barriers/hazards at locations.",
+          "7. Place barriers/hazards on locations.",
           "",
           "MOV (Movement Rate):",
-          "  If DEX & STR are both > SIZ: MOV 9",
+          "  If DEX & STR both > SIZ: MOV 9",
           "  If either DEX or STR > SIZ: MOV 8",
-          "  If both \u2264 SIZ: MOV 7",
-          "  Age 40\u201349: MOV -1",
-          "  Age 50\u201359: MOV -2 (etc.)",
+          "  Hvis begge \u2264 SIZ: MOV 7",
+          "  Alder 40\u201349: MOV -1",
+          "  Alder 50\u201359: MOV -2 (etc.)",
         ]),
-        ("Movement & actions", [
-          "Rounds in DEX order (highest first).",
+        ("Movement & Actions", [
+          "Rounds in DEX order (high first).",
           "",
           "Each round a participant can:",
           "  - Move (MOV locations)",
@@ -753,16 +1252,16 @@ try:
           "    Speed: CON check for +1 location",
           "    Attack: Fighting/Firearms",
           "    Barrier: skill check to pass",
-          "    Obstacle: create barrier for pursuer",
+          "    Hinder: create barrier for pursuer",
           "",
-          "Hazard handling costs the action AND",
-          "  the movement that round.",
+          "Hazard action costs action AND",
+          "  movement that round.",
         ]),
         ("Barriers", [
-          "Keeper places barriers at locations.",
+          "Keeper places barriers on locations.",
           "Skill check to pass:",
           "",
-          "  Jump fence: Jump / Climb",
+          "  Jump over fence: Jump / Climb",
           "  Narrow passage: DEX / Dodge",
           "  Crowd: STR / Charm / Intimidate",
           "  Mud/slippery: DEX / Luck",
@@ -770,25 +1269,25 @@ try:
           "  Busy street: Drive Auto / DEX",
           "",
           "Failure: lose 1 location of movement.",
-          "Fumble: fall, injury, stuck, etc.",
+          "Fumble: fall, damage, stuck, etc.",
         ]),
-        ("Victory & defeat", [
+        ("Victory & Defeat", [
           "ESCAPE succeeds when:",
-          "  Distance between = number of locations + 1",
+          "  Distance = number of locations + 1",
           "  (pursuer cannot see the target).",
           "",
           "CAUGHT when:",
-          "  Pursuer is at the SAME location.",
+          "  Pursuer is on the SAME location.",
           "  Combat or interaction can begin.",
           "",
           "EXHAUSTION:",
-          "  CON check per round after round 5.",
+          "  CON-check per round etter runde 5.",
           "  Failure: MOV reduced by 1.",
           "  MOV 0: cannot move.",
         ]),
       ]),
       ("Magic & Tomes", "", [
-        ("Spellcasting", [
+        ("Spells", [
           "Costs vary per spell:",
           "  Magic Points (MP): most common",
           "  SAN: almost always",
@@ -798,11 +1297,11 @@ try:
           "Casting time: 1 round to several hours.",
           "Some require components/rituals.",
           "",
-          "MP regenerates: 1 per 2 hours of rest.",
+          "MP regenerates: 1 per 2 hours rest.",
           "MP = 0: unconscious for 1d8 hours.",
-          "POW sacrifice: permanent, NEVER recovers.",
+          "POW sacrifice: permanent, NOT recovered.",
         ]),
-        ("Mythos tomes", [
+        ("Mythos Tomes", [
           "Reading a Mythos tome:",
           "  Initial reading: weeks to months",
           "  Full study: months to years",
@@ -812,17 +1311,17 @@ try:
           "Can also learn spells from the tome.",
           "",
           "EXAMPLES (CM gain / SAN loss):",
-          "  Necronomicon (Latin): +15 / -2d10",
+          "  Necronomicon (latin): +15 / -2d10",
           "  Necronomicon (original): +22 / -3d10",
           "  De Vermis Mysteriis: +10 / -1d8",
           "  Book of Eibon: +11 / -2d4",
           "  Cultes des Goules: +9 / -1d8",
-          "  Pnakotic Manuscripts: +7 / -1d6",
+          "  Pnakotiske man.: +7 / -1d6",
           "  Unaussprechlichen Kulten: +9 / -2d4",
           "  Revelations of Glaaki: +7 / -1d4",
           "  Book of Dzyan: +5 / -1d4",
         ]),
-        ("Mythos creatures (SAN)", [
+        ("Mythos Creatures (SAN)", [
           "Creature: success / failure SAN loss",
           "",
           "  Byakhee: 1/1d6",
@@ -842,62 +1341,62 @@ try:
           "  Great Old Ones:",
           "  Cthulhu: 1d10/1d100",
           "  Hastur: 1d10/1d100",
-          "  Nyarlathotep: 0/1d10 (varies)",
+          "  Nyarlathotep: 0/1d10 (varierer)",
           "  Yog-Sothoth: 1d10/1d100",
         ]),
       ]),
       ("Pulp Cthulhu", "", [
-        ("Pulp rules", [
+        ("Pulp-regler", [
           "Heroes are TOUGHER than standard CoC.",
           "",
           "HP: (CON + SIZ) / 5 (rounded down)",
           "  Standard CoC: (CON+SIZ) / 10",
           "  Effectively DOUBLE HP.",
-          "  Optional low-level: (CON+SIZ)/10",
+          "  Optional low-power: (CON+SIZ)/10",
           "",
           "Luck: 2d6+6 x 5 (higher than standard)",
           "  Standard CoC: 3d6 x 5",
-          "  Regenerates 2d10 Luck per session.",
+          "  Regenerate 2d10 Luck per session.",
           "",
           "First Aid: +1d4 HP (standard: +1 HP)",
           "  Extreme success: automatic 4 HP.",
           "Medicine: +1d4 HP (standard: +1d3)",
           "",
           "Pulp Talents: 2 (standard).",
-          "  Low-level pulp: 1 talent",
-          "  High-level pulp: 3 talents",
+          "  Low-power pulp: 1 talent",
+          "  High-power pulp: 3 talents",
           "",
           "Combat rolls CANNOT be pushed (as standard).",
           "Spending Luck: can also be used to:",
           "  - Avoid dying (5 Luck = stabilise)",
-          "  - Reduce damage (after the roll)",
+          "  - Reduce damage (after roll)",
         ]),
         ("Archetypes", [
-          "Pick 1 archetype at creation.",
-          "Grants bonuses and Pulp Talents.",
+          "Choose 1 archetype at creation.",
+          "Gives bonuses and Pulp Talents.",
           "",
-          "  Adventurer: versatile explorer",
+          "  Adventurer: versatile adventurer",
           "  Beefcake: physically strong, extra HP",
-          "  Bon Vivant: charming, socially adept",
+          "  Bon Vivant: charming, socially skilled",
           "  Cold Blooded: ruthless, precise",
           "  Dreamer: creative, Mythos-sensitive",
           "  Egghead: intellectual, knowledgeable",
-          "  Explorer: trailblazer, survival",
+          "  Explorer: explorer, survival",
           "  Femme/Homme Fatale: seductive",
-          "  Grease Monkey: mechanic, inventive",
-          "  Hard Boiled: tough, resilient",
+          "  Grease Monkey: mechanic, resourceful",
+          "  Hard Boiled: tough, enduring",
           "  Harlequin: entertainer, distracting",
-          "  Hunter: tracker, naturalist",
-          "  Mystic: spiritual, clairvoyant",
-          "  Outsider: solitary, self-taught",
+          "  Hunter: hunter, nature-wise",
+          "  Mystic: spiritual, prescient",
+          "  Outsider: lone, self-taught",
           "  Reckless: daredevil, risk-taker",
           "  Sidekick: loyal, supportive",
-          "  Swashbuckler: acrobatic fighter",
-          "  Thrill Seeker: adrenaline junkie",
-          "  Two-Fisted: melee specialist",
+          "  Swashbuckler: akrobatisk fighter",
+          "  Thrill Seeker: adrenaline-junkie",
+          "  Two-Fisted: nevekamp-spesialist",
         ]),
         ("Pulp Talents (selection)", [
-          "PHYSICAL:",
+          "FYSISK:",
           "  Brawler: +1d6 melee damage",
           "  Iron Jaw: ignore 1 K.O. per session",
           "  Quick Healer: double healing",
@@ -905,23 +1404,23 @@ try:
           "",
           "MENTAL:",
           "  Arcane Insight: +2 Cthulhu Mythos",
-          "  Gadget: build improvised item",
+          "  Gadget: create improvised item",
           "  Photographic Memory: remember everything",
           "  Psychic Power: sixth sense",
           "",
-          "SOCIAL:",
+          "SOSIAL:",
           "  Smooth Talker: re-roll 1 social check",
           "  Master of Disguise: +1 bonus Disguise",
           "  Lucky: +1d10 extra Luck regen",
           "",
           "COMBAT:",
-          "  Rapid Fire: extra shot without penalty",
-          "  Outmaneuver: +1 bonus die on maneuvers",
-          "  Fleet Footed: +1 MOV in chases",
+          "  Rapid Fire: extra shots without penalty",
+          "  Outmaneuver: +1 bonus on manoeuvres",
+          "  Fleet Footed: +1 MOV i chase",
         ]),
       ]),
-      ("Tables", "", [
-        ("Melee Weapon Table", [
+      ("Tabeller", "", [
+        ("Weapon Table \u2013 melee", [
           "Weapon: damage / attacks",
           "",
           "  Unarmed (fist): 1d3+DB / 1",
@@ -931,12 +1430,12 @@ try:
           "  Knife (small): 1d4+DB / 1",
           "  Knife (large): 1d6+DB / 1",
           "  Club/mace: 1d8+DB / 1",
-          "  Sword/sabre: 1d8+DB / 1",
+          "  Sverd/sabel: 1d8+DB / 1",
           "  Axe (large): 1d8+2+DB / 1",
-          "  Spear: 1d8+1+DB / 1",
-          "  Chainsaw: 2d8 / 1",
+          "  Spyd: 1d8+1+DB / 1",
+          "  Motorsag: 2d8 / 1",
         ]),
-        ("Ranged Weapon Table", [
+        ("Weapon Table \u2013 firearms", [
           "Weapon: damage / range / shots",
           "",
           "  Derringer (.41): 1d8 / 10y / 1",
@@ -949,39 +1448,39 @@ try:
           "  Shotgun (12g): 4d6/2d6/1d6",
           "    (range: 10/20/50 yard)",
           "  Thompson SMG: 1d10+2 / 20y / 20",
-          "  Dynamite: 5d6 / thrown / 1",
+          "  Dynamitt: 5d6 / thrown / 1",
           "    (radius 5 yard)",
         ]),
-        ("SAN loss reference", [
+        ("SAN Loss Overview", [
           "EVENT: success / failure",
           "",
           "  See a corpse: 0/1d3",
           "  See a friend die: 0/1d4",
           "  See something inexplicable: 0/1d2",
-          "  Witness a brutal murder: 1/1d4+1",
-          "  Witness a massacre: 1d3/1d6+1",
-          "  Find a horrific scene: 0/1d3",
+          "  See a gruesome murder: 1/1d4+1",
+          "  See mass murder: 1d3/1d6+1",
+          "  Find an atrocity: 0/1d3",
           "",
           "  Discover Mythos evidence: 0/1d2",
-          "  Read a Mythos tome: 1/1d4",
-          "  Witness a Mythos ritual: 1/1d6",
+          "  Read Mythos tome: 1/1d4",
+          "  See Mythos ritual: 1/1d6",
           "  Be subjected to a spell: 1/1d6",
         ]),
-        ("Aging effects", [
-          "Age affects stats at character creation:",
+        ("Age Effects", [
+          "Age affects stats at creation:",
           "",
           "  15\u201319: -5 SIZ/STR, -5 EDU,",
-          "    Luck: roll 2x, take best",
-          "  20\u201339: EDU improvement: +1",
-          "  40\u201349: EDU +2, -5 free among STR/CON/DEX,",
+          "    Luck: roll 2x, use best",
+          "  20\u201339: EDU-forbedring: +1",
+          "  40\u201349: EDU +2, -5 fritt STR/CON/DEX,",
           "    APP -5, MOV -1",
-          "  50\u201359: EDU +3, -10 free among STR/CON/DEX,",
+          "  50\u201359: EDU +3, -10 fritt STR/CON/DEX,",
           "    APP -10, MOV -2",
-          "  60\u201369: EDU +4, -20 free among STR/CON/DEX,",
+          "  60\u201369: EDU +4, -20 fritt STR/CON/DEX,",
           "    APP -15, MOV -3",
-          "  70\u201379: EDU +4, -40 free among STR/CON/DEX,",
+          "  70\u201379: EDU +4, -40 fritt STR/CON/DEX,",
           "    APP -20, MOV -4",
-          "  80\u201389: EDU +4, -80 free among STR/CON/DEX,",
+          "  80\u201389: EDU +4, -80 fritt STR/CON/DEX,",
           "    APP -25, MOV -5",
         ]),
         ("Credit Rating", [
@@ -989,12 +1488,12 @@ try:
           "",
           "  0: poor, homeless",
           "  1\u20139: poor, necessities only",
-          "  10\u201349: average",
+          "  10\u201349: gjennomsnittlig",
           "  50\u201389: wealthy",
-          "  90\u201398: rich",
-          "  99: super rich",
+          "  90\u201398: rik",
+          "  99: enormt rik",
           "",
-          "Spending level (per day):",
+          "Spending level (per dag):",
           "  CR 0: $0.50",
           "  CR 1\u20139: $2",
           "  CR 10\u201349: $10",
@@ -1033,18 +1532,18 @@ try:
             from jnius import autoclass
             Environment = autoclass('android.os.Environment')
             Build = autoclass('android.os.Build$VERSION')
-            # Only relevant on Android 11 (API 30) and later
+            # Only relevant on Android 11 (API 30) and newer
             if Build.SDK_INT < 30:
                 return None
             return bool(Environment.isExternalStorageManager())
         except Exception as e:
-            log(f"has_all_files_access sjekk feilet: {e}")
+            log(f"has_all_files_access check failed: {e}")
             return None
 
     def request_all_files_access():
         """Open Android settings where the user can grant the app
-        'All files access'. Krever Android 11+ og at appen
-        deklarerer MANAGE_EXTERNAL_STORAGE i manifestet."""
+        'All files access'. Requires Android 11+ and that the app
+        declares MANAGE_EXTERNAL_STORAGE in the manifest."""
         if platform != 'android':
             return False
         try:
@@ -1107,7 +1606,11 @@ try:
 
     def mkbtn(text, cb=None, accent=False, danger=False, small=False, **kw):
         c = GOLD if accent else (RED if danger else TXT)
-        b = RBtn(text=text, color=c, bg_color=BTN,
+        b = RBtn(text=text, color=c,
+                 bg_color=BTNH if accent else BTN,
+                 border_color=GOLD if accent else GSOFT,
+                 border_width=3.2 if accent else 2.8,
+                 accent_bar_alpha=0.48 if accent else 0.24,
                  font_size=sp(11) if small else sp(13), **kw)
         if cb:
             b.bind(on_release=lambda x: cb())
@@ -1233,12 +1736,12 @@ try:
             self.mc = None
 
     class FilePicker:
-        """Android Storage Access Framework-filvelger.
+        """Android Storage Access Framework file picker.
 
         Opens the system file picker and reads the selected file via URI —
         requires no storage permissions, works on all
-        Android-versjoner, og brukeren kan velge fra hvor som
-        helst (Documents, Downloads, Google Drive, osv).
+        Android versions, and the user can choose from anywhere
+        (Documents, Downloads, Google Drive, etc).
         """
         REQUEST_CODE = 7331
 
@@ -1246,6 +1749,7 @@ try:
             self.callback = None
             self._activity = None
             self._bound = False
+            self._return_mode = 'text'
 
         def _ensure_bound(self):
             """Attach Android activity-result listener."""
@@ -1256,24 +1760,34 @@ try:
                 PythonActivity = autoclass(
                     'org.kivy.android.PythonActivity')
                 self._activity = PythonActivity.mActivity
-                # Registrer callback for activity result
+                # Register callback for activity result
                 from android import activity as android_activity
                 android_activity.bind(
                     on_activity_result=self._on_result)
                 self._bound = True
-                log("FilePicker bundet til Android activity")
+                log("FilePicker bound to Android activity")
             except Exception as e:
-                log(f"FilePicker bind-feil: {e}")
+                log(f"FilePicker bind error: {e}")
 
         def pick(self, callback, mime_type='application/json'):
             """Open file picker. callback(ok, text_or_err) is called
-            when the user has selected (or cancelled)."""
+            when user has selected (or cancelled)."""
+            self._return_mode = 'text'
+            self._pick(callback, mime_type)
+
+        def pick_uri(self, callback, mime_type='audio/*'):
+            """Open file picker and return URI/meta for selected file."""
+            self._return_mode = 'uri'
+            self._pick(callback, mime_type)
+
+        def _pick(self, callback, mime_type):
+            """Internal opening of Android file picker."""
             if platform != 'android':
                 callback(False, "File picker only available on Android")
                 return
             self._ensure_bound()
             if not self._activity:
-                callback(False, "Fikk ikke tilgang til Android activity")
+                callback(False, "Could not access Android activity")
                 return
             self.callback = callback
             try:
@@ -1282,6 +1796,8 @@ try:
                 intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
                 intent.addCategory(Intent.CATEGORY_OPENABLE)
                 intent.setType(mime_type)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
                 self._activity.startActivityForResult(
                     intent, self.REQUEST_CODE)
             except Exception as e:
@@ -1299,17 +1815,47 @@ try:
             # RESULT_OK = -1, RESULT_CANCELED = 0
             if result_code != -1 or intent is None:
                 Clock.schedule_once(
-                    lambda dt: cb(False, "Aborted"), 0)
+                    lambda dt: cb(False, "Avbrutt"), 0)
                 return
             try:
                 from jnius import autoclass
+                Intent = autoclass('android.content.Intent')
                 uri = intent.getData()
                 if uri is None:
                     Clock.schedule_once(
-                        lambda dt: cb(False, "No file selected"), 0)
+                        lambda dt: cb(False, "Ingen fil valgt"), 0)
+                    return
+                resolver = self._activity.getContentResolver()
+                if self._return_mode == 'uri':
+                    try:
+                        flags = intent.getFlags()
+                        resolver.takePersistableUriPermission(
+                            uri, flags & (
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+                    except Exception as e:
+                        log(f"FilePicker persist-uri feil: {e}")
+                    name = CUSTOM_AMBIENT_NAME
+                    try:
+                        OpenableColumns = autoclass(
+                            'android.provider.OpenableColumns')
+                        cursor = resolver.query(uri, None, None, None, None)
+                        if cursor:
+                            try:
+                                if cursor.moveToFirst():
+                                    idx = cursor.getColumnIndex(
+                                        OpenableColumns.DISPLAY_NAME)
+                                    if idx >= 0:
+                                        name = cursor.getString(idx)
+                            finally:
+                                cursor.close()
+                    except Exception as e:
+                        log(f"FilePicker navn-feil: {e}")
+                    payload = {'uri': uri.toString(), 'name': name}
+                    Clock.schedule_once(
+                        lambda dt, data=payload: cb(True, data), 0)
                     return
                 # Open input stream via content resolver
-                resolver = self._activity.getContentResolver()
                 stream = resolver.openInputStream(uri)
                 # Les innhold (byte-vis gjennom InputStreamReader)
                 BufferedReader = autoclass(
@@ -1390,28 +1936,44 @@ try:
             self.mp = None
             self.is_playing = False
             self._v = 0.5
-        def play_url(self, url):
+        def _play_android(self, setup_cb):
             self.stop()
             if not USE_JNIUS:
                 return False
             def _s():
+                mp = None
                 try:
-                    self.mp = MediaPlayer()
-                    self.mp.setDataSource(url)
-                    self.mp.setVolume(self._v, self._v)
-                    self.mp.prepare()
-                    self.mp.start()
+                    mp = MediaPlayer()
+                    setup_cb(mp)
+                    mp.setVolume(self._v, self._v)
+                    mp.prepare()
+                    mp.start()
+                    self.mp = mp
                     self.is_playing = True
-                    log("Stream OK")
+                    log("Ambient OK")
                 except Exception as e:
-                    log(f"Stream err: {e}")
-                    if self.mp:
-                        try: self.mp.release()
-                        except: pass
-                        self.mp = None
+                    log(f"Ambient err: {e}")
+                    if mp:
+                        try:
+                            mp.release()
+                        except:
+                            pass
+                    self.mp = None
                     self.is_playing = False
             threading.Thread(target=_s, daemon=True).start()
             return True
+        def play_url(self, url):
+            def _setup(mp):
+                mp.setDataSource(url)
+            return self._play_android(_setup)
+        def play_uri(self, uri_text, loop=False):
+            def _setup(mp):
+                from jnius import autoclass
+                PythonActivity = autoclass('org.kivy.android.PythonActivity')
+                Uri = autoclass('android.net.Uri')
+                mp.setDataSource(PythonActivity.mActivity, Uri.parse(uri_text))
+                mp.setLooping(loop)
+            return self._play_android(_setup)
         def stop(self):
             if self.mp:
                 try:
@@ -1467,10 +2029,10 @@ try:
     class EldritchApp(App):
         def build(self):
             log("=== BUILD (v0.4.0 Necronomicon) ===")
-            Window.clearcolor = BG
-            # Scroll content up so keyboard doesn't cover active input
+            Window.clearcolor = (0, 0, 0, 1)
+            # Scroll content up so keyboard does not cover active input
             Window.softinput_mode = 'below_target'
-            self.title = "Eldritch Portals"
+            self.title = "Eldritch Portal"
             self.tracks = []
             self.ct = -1
             self.sel_img = None
@@ -1481,14 +2043,17 @@ try:
             self.cast = CastMgr()
             self.server = MediaServer()
             self.file_picker = FilePicker()
+            self._ambient_source = None
+            self._ambient_custom_uri = None
+            self._ambient_custom_name = ""
             self.chars = load_json(CHAR_FILE, [])
             self.edit_idx = None
 
-            # Weapons: favorites file goes in app-private storage (always writable)
+            # Weapons: favourite file goes in app-private storage (always writable)
             self.WEAPONS_FAV_FILE = os.path.join(
                 self.user_data_dir, "weapons_favorites.json")
-        # Scenario: also app-private (avoids scoped storage errors
-        # when reading .json in /sdcard/Documents/ on Android 13+)
+            # Scenario: also app-private (avoids scoped storage errors
+            # when reading .json in /sdcard/Documents/ on Android 13+)
             self.SCENARIO_FILE = os.path.join(
                 self.user_data_dir, "scenario.json")
             self.weapons_data = {
@@ -1505,45 +2070,101 @@ try:
             self._weap_last_error = None
             self._weap_char_target = -1
 
-            # FloatLayout as root – allows us to overlay splash on top
+            # FloatLayout as root – lets us layer splash on top
             wrapper = FloatLayout()
+
+            background_image_path = os.path.join(_BUNDLE_DIR, 'background.png')
+            if os.path.exists(background_image_path):
+                # Bildet strekkes bevisst til fullskjerm som app-bakgrunn.
+                wrapper.add_widget(Image(
+                    source=background_image_path,
+                    allow_stretch=True,
+                    keep_ratio=False,
+                    size_hint=(1, 1),
+                    pos_hint={'x': 0, 'y': 0},
+                    opacity=APP_BG_IMG_OPACITY
+                ))
 
             main = BoxLayout(orientation='vertical', spacing=0,
                              size_hint=(1, 1), pos_hint={'x': 0, 'y': 0})
-            main.add_widget(Widget(size_hint_y=None, height=dp(30)))
+            main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
-            # FANER
-            tabs = RBox(size_hint_y=None, height=dp(52), spacing=dp(4),
-                        padding=[dp(8), 0], bg_color=BTN)
+            # === TAB-PANEL ===
+            # A combined panel for main tabs + sub-tabs. When switching
+            # to a tab with sub-tabs (Sound/Combat/Tools) the panel expands
+            # downward to make room for sub-tabs. When
+            # switching to a tab without sub-tabs, it collapses again.
+            # NB: spacing starts at 0 and animates to dp(4) when the panel
+            # expands — otherwise the 4dp gap row would take space even
+            # when the sub-row is empty, pushing main tabs out of the panel.
+            self.tab_panel = RBox(
+                orientation='vertical',
+                size_hint_y=None,
+                height=dp(60),
+                spacing=0,
+                padding=[dp(8), dp(4)],
+                bg_color=BTN)
+
+            # Hovedfane-rad
+            main_tab_row = BoxLayout(
+                orientation='horizontal',
+                size_hint_y=None,
+                height=dp(52),
+                spacing=dp(4))
+
             self._tabs = {}
-            for key, txt in [('img','Images'),('snd','Sound'),('cmb','Combat'),('tool','Tools'),('rules','Rules'),('cast','Cast')]:
+            min_cutout_gap = dp(72)
+            max_cutout_gap = dp(108)
+            cutout_width_ratio = 0.18
+            cutout_gap = max(
+                min_cutout_gap,
+                min(max_cutout_gap, Window.width * cutout_width_ratio)
+            )
+            tab_specs = [
+                ('img', 'Bilder'),
+                ('snd', 'Sound'),
+                ('cmb', 'Combat'),
+                None,
+                ('tool', 'Tools'),
+                ('rules', 'Rules'),
+                ('cast', 'Cast'),
+            ]
+            for spec in tab_specs:
+                if spec is None:
+                    main_tab_row.add_widget(
+                        Widget(size_hint_x=None, width=cutout_gap))
+                    continue
+                key, txt = spec
                 active = key == 'img'
                 b = RToggle(text=txt, group='tabs',
                             state='down' if active else 'normal',
                             bg_color=BTNH if active else BTN,
                             color=GOLD if active else DIM,
-                            border_color=GOLD if active else GDIM,
-                            border_width=2.5 if active else 1.0,
+                            border_color=GOLD if active else GSOFT,
+                            border_width=3.2 if active else 2.2,
+                            accent_bar_alpha=0.48 if active else 0.0,
                             font_size=sp(11))
                 b.bind(state=self._tab_color)
                 b.bind(on_release=lambda x, k=key: self._tab(k))
-                tabs.add_widget(b)
+                main_tab_row.add_widget(b)
                 self._tabs[key] = b
-            main.add_widget(tabs)
+            self.tab_panel.add_widget(main_tab_row)
 
-            # HOVEDINNHOLD – med Cthulhu-segl som vannmerke
+            # Sub-tab row (collapsed initially, filled dynamically
+            # by _update_subtabs when active tab has sub-tabs).
+            self.subtab_row = BoxLayout(
+                orientation='horizontal',
+                size_hint_y=None,
+                height=0,
+                opacity=0,
+                spacing=dp(4))
+            self.tab_panel.add_widget(self.subtab_row)
+
+            main.add_widget(self.tab_panel)
+
+            # HOVEDINNHOLD
             content_wrap = FloatLayout(size_hint=(1, 1))
-            bg_path = os.path.join(_BUNDLE_DIR, 'background.png')
-            if os.path.exists(bg_path):
-                self._content_bg = Image(
-                    source=bg_path,
-                    allow_stretch=True,
-                    keep_ratio=True,
-                    size_hint=(1.1, 1.1),
-                    pos_hint={'center_x': 0.5, 'center_y': 0.3},
-                    opacity=0.18)
-                content_wrap.add_widget(self._content_bg)
-            self.content = RBox(bg_color=[BG2[0], BG2[1], BG2[2], 0.78],
+            self.content = RBox(bg_color=[0, 0, 0, 0],
                                 size_hint=(1, 1),
                                 pos_hint={'x': 0, 'y': 0})
             content_wrap.add_widget(self.content)
@@ -1553,7 +2174,7 @@ try:
             mp = RBox(size_hint_y=None, height=dp(48), spacing=dp(6),
                       padding=[dp(10), dp(4)], bg_color=BTN)
             mp.add_widget(Widget(size_hint_x=None, width=dp(4)))
-            self.mp_lbl = Label(text="No music", font_size=sp(11),
+            self.mp_lbl = Label(text="Ingen musikk", font_size=sp(11),
                                 color=DIM, size_hint_x=0.45, halign='left')
             self.mp_lbl.bind(size=self.mp_lbl.setter('text_size'))
             mp.add_widget(self.mp_lbl)
@@ -1571,32 +2192,49 @@ try:
             wrapper.add_widget(main)
 
             # === SPLASH SCREEN ===
-            self.splash = RBox(bg_color=BG, radius=0,
-                               orientation='vertical',
-                               size_hint=(1, 1),
-                               pos_hint={'x': 0, 'y': 0})
-            # Sentrert innhold
-            self.splash.add_widget(Widget())  # fyll topp
+            self.splash = FloatLayout(size_hint=(1, 1),
+                                      pos_hint={'x': 0, 'y': 0})
+            self.splash.add_widget(
+                RBox(bg_color=BG, radius=0,
+                     size_hint=(1, 1),
+                     pos_hint={'x': 0, 'y': 0})
+            )
+            if os.path.exists(background_image_path):
+                self.splash.add_widget(
+                    Image(
+                        source=background_image_path,
+                        allow_stretch=True,
+                        keep_ratio=False,
+                        size_hint=SPLASH_IMG_SIZE_HINT,
+                        pos_hint=SPLASH_IMG_POS_HINT,
+                        opacity=SPLASH_IMG_OPACITY
+                    )
+                )
+            splash_text = BoxLayout(orientation='vertical',
+                                    size_hint=SPLASH_TEXT_SIZE_HINT,
+                                    pos_hint=SPLASH_TEXT_POS_HINT)
+            splash_text.add_widget(Widget())  # fyll topp
             t1 = Label(text="ELDRITCH", font_size=sp(54),
                        font_name=FONT_TITLE,
                        color=GOLD,
                        size_hint_y=None, height=dp(72),
                        halign='center')
             t1.bind(size=t1.setter('text_size'))
-            self.splash.add_widget(t1)
-            t2 = Label(text="PORTALS", font_size=sp(54),
+            splash_text.add_widget(t1)
+            t2 = Label(text="PORTAL", font_size=sp(54),
                        font_name=FONT_TITLE,
                        color=GDIM,
                        size_hint_y=None, height=dp(72),
                        halign='center')
             t2.bind(size=t2.setter('text_size'))
-            self.splash.add_widget(t2)
+            splash_text.add_widget(t2)
             sub = Label(text="Keeper Companion Tool", font_size=sp(13),
                         color=DIM, size_hint_y=None, height=dp(30),
                         halign='center')
             sub.bind(size=sub.setter('text_size'))
-            self.splash.add_widget(sub)
-            self.splash.add_widget(Widget())  # fyll bunn
+            splash_text.add_widget(sub)
+            splash_text.add_widget(Widget())  # fyll bunn
+            self.splash.add_widget(splash_text)
             wrapper.add_widget(self.splash)
 
             self._tab('img')
@@ -1622,12 +2260,14 @@ try:
                 btn.bg_color = BTNH
                 btn.color = GOLD
                 btn.border_color = GOLD
-                btn.border_width = 2.5
+                btn.border_width = 3.2
+                btn.accent_bar_alpha = 0.48
             else:
                 btn.bg_color = BTN
                 btn.color = DIM
-                btn.border_color = GDIM
-                btn.border_width = 1.0
+                btn.border_color = GSOFT
+                btn.border_width = 2.2
+                btn.accent_bar_alpha = 0.0
 
         def _init(self):
             ensure_dirs()
@@ -1639,8 +2279,8 @@ try:
 
         def _weap_do_load(self):
             """Load weapon data. Try external first (user's own),
-            fall tilbake til bundlet versjon."""
-            # Attempt 1: external file in /sdcard/Documents/EldritchPortals/
+            fall back to bundled version."""
+            # Attempt 1: external file in /sdcard/Documents/EldritchPortal/
             if os.path.exists(EXTERNAL_WEAPONS):
                 try:
                     with open(EXTERNAL_WEAPONS, 'r', encoding='utf-8') as f:
@@ -1652,9 +2292,9 @@ try:
                         self._weap_last_error = None
                         return
                 except PermissionError:
-                    log("_weap_do_load: ekstern finnes men ingen tilgang, bruker bundlet")
+                    log("_weap_do_load: external exists but no access, using bundled")
                 except Exception as e:
-                    log(f"_weap_do_load: ekstern feil ({e}), bruker bundlet")
+                    log(f"_weap_do_load: external error ({e}), using bundled")
             # Attempt 2: bundled file (packed into APK)
             if os.path.exists(BUNDLED_WEAPONS):
                 try:
@@ -1666,14 +2306,14 @@ try:
                     self._weap_last_error = None
                     return
                 except Exception as e:
-                    err = f"Bundlet fil: {type(e).__name__}: {e}"
+                    err = f"Bundled file: {type(e).__name__}: {e}"
                     log(f"_weap_do_load: {err}")
                     self._weap_last_error = err
                     return
-            # Ingen kilder fungerte
-            err = (f"Fant ingen weapons.json.\n"
-                   f"Bundlet sti: {BUNDLED_WEAPONS}\n"
-                   f"Ekstern sti: {EXTERNAL_WEAPONS}")
+            # No sources worked
+            err = (f"No weapons.json found.\n"
+                   f"Bundled path: {BUNDLED_WEAPONS}\n"
+                   f"External path: {EXTERNAL_WEAPONS}")
             log(f"_weap_do_load: {err}")
             self._weap_last_error = err
 
@@ -1685,6 +2325,9 @@ try:
             }
             if k not in builders:
                 return
+
+            # Animer sub-fane-panelet inn/ut samtidig som innholdet bytter
+            self._update_subtabs(k)
 
             def _swap_in(*_a):
                 self.content.clear_widgets()
@@ -1706,29 +2349,201 @@ try:
             fade_out.bind(on_complete=_swap_in)
             fade_out.start(cur)
 
+        # ---------- SUB-TABS (shared panel) ----------
+        def _update_subtabs(self, k):
+            """Animate sub-tab row in/out based on active main tab.
+
+            - Tabs with sub-tabs (snd/cmb/tool): panel expands
+              downward and sub-tabs fade in.
+            - Tabs without sub-tabs (img/rules/cast): panel collapses.
+
+            spacing animates together with height (0 ↔ dp(4)) so that
+            geometry is consistent in both states. Without this the
+            4dp gap row would take space in collapsed state and push
+            main tabs out of the panel.
+            """
+            builders = {
+                'snd':  self._build_snd_subtabs,
+                'cmb':  self._build_cmb_subtabs,
+                'tool': self._build_tool_subtabs,
+            }
+
+            sub_h = dp(42)
+            row_spacing = dp(4)
+            collapsed_h = dp(60)
+            expanded_h = collapsed_h + row_spacing + sub_h
+
+            # Cancel any ongoing animations
+            Animation.cancel_all(self.tab_panel, 'height', 'spacing')
+            Animation.cancel_all(self.subtab_row, 'height', 'opacity')
+
+            if k in builders:
+                # Build sub-tabs first
+                self.subtab_row.clear_widgets()
+                builders[k](self.subtab_row)
+                # Animate opening + fade-in (all use same duration/easing
+                # so geometry stays consistent through animation)
+                Animation(height=sub_h, duration=0.22,
+                          t='out_quad').start(self.subtab_row)
+                Animation(opacity=1, duration=0.22,
+                          t='out_quad').start(self.subtab_row)
+                Animation(height=expanded_h, spacing=row_spacing,
+                          duration=0.22, t='out_quad').start(self.tab_panel)
+            else:
+                # Animate closing. Remove children first when animation is done
+                # so they do not flicker while row shrinks.
+                def _clear_subs(*_a):
+                    self.subtab_row.clear_widgets()
+                Animation(opacity=0, duration=0.15,
+                          t='in_quad').start(self.subtab_row)
+                h_anim = Animation(height=0, duration=0.18, t='in_quad')
+                h_anim.bind(on_complete=_clear_subs)
+                h_anim.start(self.subtab_row)
+                Animation(height=collapsed_h, spacing=0,
+                          duration=0.18, t='in_quad').start(self.tab_panel)
+
+        def _build_snd_subtabs(self, row):
+            """Bygg Musikk/Ambient-toggle-knapper inn i sub-fane-raden."""
+            if not hasattr(self, '_sound_sub'):
+                self._sound_sub = 'mus'
+
+            b_mus = RToggle(
+                text='Musikk', group='sound_sub',
+                state='down' if self._sound_sub == 'mus' else 'normal',
+                bg_color=BTNH if self._sound_sub == 'mus' else BTN,
+                color=GOLD if self._sound_sub == 'mus' else DIM,
+                border_color=GOLD if self._sound_sub == 'mus' else GSOFT,
+                border_width=3.2 if self._sound_sub == 'mus' else 2.2,
+                accent_bar_alpha=0.48 if self._sound_sub == 'mus' else 0.0,
+                font_size=sp(12), bold=True)
+            b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
+            row.add_widget(b_mus)
+            self._snd_btn_mus = b_mus
+
+            b_amb = RToggle(
+                text='Ambient', group='sound_sub',
+                state='down' if self._sound_sub == 'amb' else 'normal',
+                bg_color=BTNH if self._sound_sub == 'amb' else BTN,
+                color=GOLD if self._sound_sub == 'amb' else DIM,
+                border_color=GOLD if self._sound_sub == 'amb' else GSOFT,
+                border_width=3.2 if self._sound_sub == 'amb' else 2.2,
+                accent_bar_alpha=0.48 if self._sound_sub == 'amb' else 0.0,
+                font_size=sp(12), bold=True)
+            b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
+            row.add_widget(b_amb)
+            self._snd_btn_amb = b_amb
+
+        def _build_cmb_subtabs(self, row):
+            """Bygg Initiativ/Kart-toggle-knapper inn i sub-fane-raden."""
+            self._init_tracker_init()
+            if not hasattr(self, '_cmb_sub'):
+                self._cmb_sub = 'init'
+
+            b_init = RToggle(
+                text='Initiativ', group='cmb_sub',
+                state='down' if self._cmb_sub == 'init' else 'normal',
+                bg_color=BTNH if self._cmb_sub == 'init' else BTN,
+                color=GOLD if self._cmb_sub == 'init' else DIM,
+                border_color=GOLD if self._cmb_sub == 'init' else GSOFT,
+                border_width=3.2 if self._cmb_sub == 'init' else 2.2,
+                accent_bar_alpha=0.48 if self._cmb_sub == 'init' else 0.0,
+                font_size=sp(12), bold=True)
+            b_init.bind(on_release=lambda b: self._cmb_switch('init'))
+            row.add_widget(b_init)
+            self._cmb_btn_init = b_init
+
+            b_map = RToggle(
+                text='Kart', group='cmb_sub',
+                state='down' if self._cmb_sub == 'map' else 'normal',
+                bg_color=BTNH if self._cmb_sub == 'map' else BTN,
+                color=GOLD if self._cmb_sub == 'map' else DIM,
+                border_color=GOLD if self._cmb_sub == 'map' else GSOFT,
+                border_width=3.2 if self._cmb_sub == 'map' else 2.2,
+                accent_bar_alpha=0.48 if self._cmb_sub == 'map' else 0.0,
+                font_size=sp(12), bold=True)
+            b_map.bind(on_release=lambda b: self._cmb_switch('map'))
+            row.add_widget(b_map)
+            self._cmb_btn_map = b_map
+
+        def _build_tool_subtabs(self, row):
+            """Build Character/Weapons/Scenario/Madness tabs into sub-tab row."""
+            self._scen_init()
+            if not hasattr(self, '_tool_sub') or self._tool_sub == 'init':
+                self._tool_sub = 'chars'
+
+            self._sub_btn_chars = RToggle(
+                text='Characters', group='tool_sub',
+                state='down' if self._tool_sub == 'chars' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'chars' else BTN,
+                color=GOLD if self._tool_sub == 'chars' else DIM,
+                border_color=GOLD if self._tool_sub == 'chars' else GSOFT,
+                border_width=3.2 if self._tool_sub == 'chars' else 2.2,
+                accent_bar_alpha=0.48 if self._tool_sub == 'chars' else 0.0,
+                font_size=sp(11), bold=True)
+            self._sub_btn_chars.bind(on_release=lambda b: self._tool_switch('chars'))
+            row.add_widget(self._sub_btn_chars)
+
+            self._sub_btn_weap = RToggle(
+                text='Weapons', group='tool_sub',
+                state='down' if self._tool_sub == 'weap' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'weap' else BTN,
+                color=GOLD if self._tool_sub == 'weap' else DIM,
+                border_color=GOLD if self._tool_sub == 'weap' else GSOFT,
+                border_width=3.2 if self._tool_sub == 'weap' else 2.2,
+                accent_bar_alpha=0.48 if self._tool_sub == 'weap' else 0.0,
+                font_size=sp(11), bold=True)
+            self._sub_btn_weap.bind(on_release=lambda b: self._tool_switch('weap'))
+            row.add_widget(self._sub_btn_weap)
+
+            self._sub_btn_scen = RToggle(
+                text='Scenario', group='tool_sub',
+                state='down' if self._tool_sub == 'scen' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'scen' else BTN,
+                color=GOLD if self._tool_sub == 'scen' else DIM,
+                border_color=GOLD if self._tool_sub == 'scen' else GSOFT,
+                border_width=3.2 if self._tool_sub == 'scen' else 2.2,
+                accent_bar_alpha=0.48 if self._tool_sub == 'scen' else 0.0,
+                font_size=sp(11), bold=True)
+            self._sub_btn_scen.bind(on_release=lambda b: self._tool_switch('scen'))
+            row.add_widget(self._sub_btn_scen)
+
+            self._sub_btn_mad = RToggle(
+                text='Galskap', group='tool_sub',
+                state='down' if self._tool_sub == 'mad' else 'normal',
+                bg_color=BTNH if self._tool_sub == 'mad' else BTN,
+                color=GOLD if self._tool_sub == 'mad' else DIM,
+                border_color=GOLD if self._tool_sub == 'mad' else GSOFT,
+                border_width=3.2 if self._tool_sub == 'mad' else 2.2,
+                accent_bar_alpha=0.48 if self._tool_sub == 'mad' else 0.0,
+                font_size=sp(11), bold=True)
+            self._sub_btn_mad.bind(on_release=lambda b: self._tool_switch('mad'))
+            row.add_widget(self._sub_btn_mad)
+
         # ---------- BILDER ----------
         def _mk_img(self):
-            p = BoxLayout(orientation='vertical', spacing=dp(6))
-            # Svart bakgrunn bak preview-bildet
-            preview_box = RBox(size_hint_y=0.4, bg_color=BLK, radius=dp(12))
+            p = BoxLayout(orientation='vertical', spacing=dp(10),
+                          padding=[0, dp(10), 0, dp(6)])
+            preview_box = PreviewFrame(size_hint_y=0.4, padding=dp(10))
             self.preview = Image(allow_stretch=True, keep_ratio=True,
                                  color=[1, 1, 1, 0] if not self.sel_img else [1, 1, 1, 1])
             if self.sel_img:
                 self.preview.source = self.sel_img
             preview_box.add_widget(self.preview)
             p.add_widget(preview_box)
-            p.add_widget(Label(text="ELDRITCH PORTALS", font_size=sp(18), color=GDIM,
-                               bold=True, size_hint_y=None, height=dp(28)))
+            p.add_widget(Label(text="ELDRITCH PORTAL", font_size=sp(18), color=GDIM,
+                               font_name=FONT_TITLE, bold=True,
+                               size_hint_y=None, height=dp(28)))
             self.img_lbl = Label(text="", font_size=sp(12), color=DIM,
                                  size_hint_y=None, height=dp(20))
             p.add_widget(self.img_lbl)
-            nav = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6), padding=[dp(6), 0])
+            nav = BoxLayout(size_hint_y=None, height=dp(46), spacing=dp(6),
+                            padding=[dp(6), dp(3)])
             self.path_lbl = Label(text="", font_size=sp(10), color=DIM, size_hint_x=0.35)
             nav.add_widget(self.path_lbl)
             nav.add_widget(mkbtn("Opp", self.folder_up, small=True, size_hint_x=0.2))
             self.ac_btn = mkbtn("AC:PA", self._toggle_ac, accent=True, small=True, size_hint_x=0.25)
             nav.add_widget(self.ac_btn)
-            nav.add_widget(mkbtn("Refresh", self._load_imgs, small=True, size_hint_x=0.2))
+            nav.add_widget(mkbtn("Oppdater", self._load_imgs, small=True, size_hint_x=0.2))
             p.add_widget(nav)
             scroll = ScrollView(size_hint_y=0.4)
             self.img_grid = GridLayout(cols=3, spacing=dp(6), padding=dp(6), size_hint_y=None)
@@ -1747,11 +2562,11 @@ try:
             self.path_lbl.text = f"/{rel}" if rel else "/"
             try:
                 if not os.path.exists(f):
-                    self.img_lbl.text = "Folder not found"
+                    self.img_lbl.text = "Mappe ikke funnet"
                     self.img_grid.add_widget(
-            mklbl("The folder does not exist yet.\n"
-                "Restart the app after\n"
-                              "godtatt tillatelser.",
+                        mklbl("Folder does not exist yet.\n"
+                              "Restart the app after\n"
+                              "granting permissions.",
                               color=DIM, size=11, wrap=True))
                     return
                 items = sorted(os.listdir(f))
@@ -1761,10 +2576,10 @@ try:
                 if not dirs and not imgs:
                     self.img_grid.add_widget(
                         mklbl("No images found.\n\n"
-                              "Place images in:\n"
-                              "Documents/EldritchPortals/images/\n\n"
-                              "Tip: create subfolders\n"
-                              "to organize by scenario,\n"
+                              "Add images to:\n"
+                              "Documents/EldritchPortal/images/\n\n"
+                              "Tip: create subfolders to\n"
+                              "organise by scenario,\n"
                               "e.g. images/Slow Boat/\n\n"
                               "Supported formats:\n"
                               ".png  .jpg  .jpeg  .webp",
@@ -1809,10 +2624,10 @@ try:
                 self.preview.source = path
                 Animation(opacity=1, duration=0.4).start(self.preview)
                 if self.auto_cast and self.cast.mc:
-                    self.img_lbl.text = "Casting..."
+                    self.img_lbl.text = "Caster..."
                     self.cast.cast_img(self.server.url(path),
                                        cb=lambda ok: setattr(self.img_lbl, 'text',
-                                                             "Cast!" if ok else "Failed"))
+                                                             "Castet!" if ok else "Feilet"))
             fade_out.bind(on_complete=_swap)
             self.preview.color = [1, 1, 1, 1]
             fade_out.start(self.preview)
@@ -1823,51 +2638,21 @@ try:
 
         # ---------- KAMP (Initiativ + Kart i sub-tabs) ----------
         def _mk_combat(self):
-            """Kamp-fane med sub-tabs: Initiativ og Kart."""
+            """Kamp-fane med sub-tabs: Initiativ og Kart.
+
+            Sub-tabs are now built in the global tab panel by
+            _build_cmb_subtabs(). Denne metoden returnerer kun
+            the content area.
+            """
             self._init_tracker_init()
             if not hasattr(self, '_cmb_sub'):
                 self._cmb_sub = 'init'
 
-            p = BoxLayout(orientation='vertical', spacing=dp(6))
-
-            # Sub-tab-rad
-            sub_bar = RBox(size_hint_y=None, height=dp(42),
-                           spacing=dp(4), padding=[dp(6), dp(4)],
-                           bg_color=BTN, radius=dp(10))
-
-            b_init = RToggle(
-                text='Initiative', group='cmb_sub',
-                state='down' if self._cmb_sub == 'init' else 'normal',
-                bg_color=BTNH if self._cmb_sub == 'init' else BTN,
-                color=GOLD if self._cmb_sub == 'init' else DIM,
-                border_color=GOLD if self._cmb_sub == 'init' else GDIM,
-                border_width=2.5 if self._cmb_sub == 'init' else 1.0,
-                font_size=sp(12), bold=True)
-            b_init.bind(on_release=lambda b: self._cmb_switch('init'))
-            sub_bar.add_widget(b_init)
-            self._cmb_btn_init = b_init
-
-            b_map = RToggle(
-                text='Map', group='cmb_sub',
-                state='down' if self._cmb_sub == 'map' else 'normal',
-                bg_color=BTNH if self._cmb_sub == 'map' else BTN,
-                color=GOLD if self._cmb_sub == 'map' else DIM,
-                border_color=GOLD if self._cmb_sub == 'map' else GDIM,
-                border_width=2.5 if self._cmb_sub == 'map' else 1.0,
-                font_size=sp(12), bold=True)
-            b_map.bind(on_release=lambda b: self._cmb_switch('map'))
-            sub_bar.add_widget(b_map)
-            self._cmb_btn_map = b_map
-
-            p.add_widget(sub_bar)
-
-            # Content area — functions as "tool_area" for init-tracker
+            # Content area — acts as "tool_area" for init-tracker
             # og som vert for kart-visningen.
             self._cmb_area = BoxLayout()
-            p.add_widget(self._cmb_area)
-
             self._cmb_render()
-            return p
+            return self._cmb_area
 
         def _cmb_switch(self, which):
             self._cmb_sub = which
@@ -1877,8 +2662,9 @@ try:
                 btn.state    = 'down' if active else 'normal'
                 btn.bg_color = BTNH   if active else BTN
                 btn.color    = GOLD   if active else DIM
-                btn.border_color = GOLD if active else GDIM
-                btn.border_width = 2.5 if active else 1.0
+                btn.border_color = GOLD if active else GSOFT
+                btn.border_width = 3.2 if active else 2.2
+                btn.accent_bar_alpha = 0.48 if active else 0.0
             self._cmb_render()
 
         def _cmb_render(self):
@@ -1912,7 +2698,7 @@ try:
             n_npc = sum(1 for e in self._init_list
                         if e.get('type') == 'NPC')
             n_fiende = sum(1 for e in self._init_list
-                           if e.get('type') == 'Enemy')
+                           if e.get('type') == 'Fiende')
             n_s = sum(1 for e in self._init_list
                       if e.get('type') == 'S')
 
@@ -1932,7 +2718,7 @@ try:
             if n_s:
                 summary.append(f"{n_s} skapning(er)")
             info_box.add_widget(mklbl(
-                "  •  ".join(summary) if summary else "No participants",
+                "  •  ".join(summary) if summary else "Ingen deltakere",
                 color=TXT, size=12, wrap=True))
 
             act_name = (self._init_list[0].get('name', '')
@@ -1944,8 +2730,8 @@ try:
                     color=DIM, size=11, wrap=True))
             else:
                 info_box.add_widget(mklbl(
-                        "Go to the Initiative tab and press 'Complete' "
-                        "to start round order.",
+                    "Go to the Initiative tab and tap 'Finish' "
+                    "to start round order.",
                     color=DIM, size=10, wrap=True))
             p.add_widget(info_box)
 
@@ -1955,8 +2741,8 @@ try:
                                size_hint_y=None, height=dp(56)))
 
             p.add_widget(mklbl(
-                        "The map opens as an overlay in full screen width. "
-                        "Use 'Close' to return here.",
+                "Map opens as overlay in full screen width. "
+                "Use 'Close' to return here.",
                 color=DIM, size=10, wrap=True, h=40))
 
             p.add_widget(Widget())
@@ -1964,49 +2750,18 @@ try:
 
         # ---------- LYD (kombinert Musikk + Ambient) ----------
         def _mk_sound(self):
-            """Lyd-fane med toggle mellom Musikk og Ambient."""
+            """Lyd-fane med toggle mellom Musikk og Ambient.
+
+            Sub-tabs are now built in the global tab panel by
+            _build_snd_subtabs(). Denne metoden returnerer kun
+            the content area.
+            """
             if not hasattr(self, '_sound_sub'):
                 self._sound_sub = 'mus'
 
-            p = BoxLayout(orientation='vertical', spacing=dp(6))
-
-            # Sub-tab-rad
-            sub_bar = RBox(size_hint_y=None, height=dp(42),
-                           spacing=dp(4), padding=[dp(6), dp(4)],
-                           bg_color=BTN, radius=dp(10))
-
-            b_mus = RToggle(
-                text='Music', group='sound_sub',
-                state='down' if self._sound_sub == 'mus' else 'normal',
-                bg_color=BTNH if self._sound_sub == 'mus' else BTN,
-                color=GOLD if self._sound_sub == 'mus' else DIM,
-                border_color=GOLD if self._sound_sub == 'mus' else GDIM,
-                border_width=2.5 if self._sound_sub == 'mus' else 1.0,
-                font_size=sp(12), bold=True)
-            b_mus.bind(on_release=lambda b: self._sound_switch('mus'))
-            sub_bar.add_widget(b_mus)
-            self._snd_btn_mus = b_mus
-
-            b_amb = RToggle(
-                text='Ambient', group='sound_sub',
-                state='down' if self._sound_sub == 'amb' else 'normal',
-                bg_color=BTNH if self._sound_sub == 'amb' else BTN,
-                color=GOLD if self._sound_sub == 'amb' else DIM,
-                border_color=GOLD if self._sound_sub == 'amb' else GDIM,
-                border_width=2.5 if self._sound_sub == 'amb' else 1.0,
-                font_size=sp(12), bold=True)
-            b_amb.bind(on_release=lambda b: self._sound_switch('amb'))
-            sub_bar.add_widget(b_amb)
-            self._snd_btn_amb = b_amb
-
-            p.add_widget(sub_bar)
-
-            # Content area
             self._sound_area = BoxLayout()
-            p.add_widget(self._sound_area)
-
             self._sound_render()
-            return p
+            return self._sound_area
 
         def _sound_switch(self, which):
             self._sound_sub = which
@@ -2016,8 +2771,9 @@ try:
                 btn.state    = 'down' if active else 'normal'
                 btn.bg_color = BTNH   if active else BTN
                 btn.color    = GOLD   if active else DIM
-                btn.border_color = GOLD if active else GDIM
-                btn.border_width = 2.5 if active else 1.0
+                btn.border_color = GOLD if active else GSOFT
+                btn.border_width = 3.2 if active else 2.2
+                btn.accent_bar_alpha = 0.48 if active else 0.0
             self._sound_render()
 
         def _sound_render(self):
@@ -2030,14 +2786,14 @@ try:
         # ---------- MUSIKK ----------
         def _mk_mus(self):
             p = BoxLayout(orientation='vertical', spacing=dp(6))
-            self.trk_lbl = Label(text="Pick a track", font_size=sp(14), color=DIM,
+            self.trk_lbl = Label(text="Select a track", font_size=sp(14), color=DIM,
                                  size_hint_y=None, height=dp(34), bold=True)
             p.add_widget(self.trk_lbl)
             ctrl = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
             ctrl.add_widget(mkbtn("<<", self.prev_track, small=True))
             ctrl.add_widget(mkbtn("Play", self.toggle_play, accent=True))
             ctrl.add_widget(mkbtn(">>", self.next_track, small=True))
-            ctrl.add_widget(mkbtn("Stop", self.stop_music, danger=True, small=True))
+            ctrl.add_widget(mkbtn("Stopp", self.stop_music, danger=True, small=True))
             p.add_widget(ctrl)
             p.add_widget(mkvol(self.player.vol, 0.7))
             scroll = ScrollView()
@@ -2057,19 +2813,19 @@ try:
                 if not os.path.exists(MUSIC_DIR):
                     self.trk_lbl.text = "Folder not found"
                     self.trk_grid.add_widget(
-            mklbl("The music folder does not exist yet.\n"
-                "Restart the app after\n"
-                              "godtatt tillatelser.",
+                        mklbl("Music folder does not exist yet.\n"
+                              "Restart the app after\n"
+                              "granting permissions.",
                               color=DIM, size=11, wrap=True))
                     return
                 fl = sorted([f for f in os.listdir(MUSIC_DIR)
                              if f.lower().endswith(('.mp3','.ogg','.wav','.flac'))])
-                self.trk_lbl.text = f"{len(fl)} tracks"
+                self.trk_lbl.text = f"{len(fl)} spor"
                 if not fl:
                     self.trk_grid.add_widget(
-                        mklbl("No music files found.\n\n"
-                              "Place audio files in:\n"
-                              "Documents/EldritchPortals/music/\n\n"
+                        mklbl("Ingen musikkfiler funnet.\n\n"
+                              "Legg lydfiler i:\n"
+                              "Dokumenter/EldritchPortal/music/\n\n"
                               "Supported formats:\n"
                               ".mp3  .ogg  .wav  .flac",
                               color=DIM, size=11, wrap=True))
@@ -2108,8 +2864,8 @@ try:
         def stop_music(self):
             self.player.stop()
             self.mp_btn.text = "Play"
-            self.mp_lbl.text = "Stopped"
-            self.trk_lbl.text = "Stopped"
+            self.mp_lbl.text = "Stoppet"
+            self.trk_lbl.text = "Stoppet"
 
         def next_track(self):
             if self.tracks:
@@ -2122,6 +2878,29 @@ try:
         # ---------- AMBIENT ----------
         def _mk_amb(self):
             p = BoxLayout(orientation='vertical', spacing=dp(6))
+            p.add_widget(mklbl("Custom ambient – seamless loop", color=GDIM,
+                               size=11, bold=True, h=24))
+            custom_ctrl = BoxLayout(size_hint_y=None, height=dp(44),
+                                    spacing=dp(6))
+            custom_ctrl.add_widget(
+                mkbtn("Choose custom sound", self._amb_pick_custom,
+                      accent=True, small=True))
+            self._amb_toggle_btn = mkbtn("Choose sound first",
+                                         self._amb_toggle_custom,
+                                         small=True)
+            custom_ctrl.add_widget(self._amb_toggle_btn)
+            custom_ctrl.add_widget(
+                mkbtn("Stop ambient", self._sa, danger=True, small=True))
+            p.add_widget(custom_ctrl)
+            self.amb_custom_lbl = mklbl(
+                "Select a local audio file to loop it seamlessly.",
+                color=DIM, size=10, wrap=True, h=34)
+            p.add_widget(self.amb_custom_lbl)
+            p.add_widget(mklbl(
+                "Supports .mp3, .ogg, .wav and .flac via Android file picker.",
+                color=DIM, size=10, wrap=True, h=28))
+            p.add_widget(mklbl("Online Sounds", color=GDIM,
+                               size=11, bold=True, h=22))
             scroll = ScrollView()
             g = GridLayout(cols=1, spacing=dp(4), padding=dp(6), size_hint_y=None)
             g.bind(minimum_height=g.setter('height'))
@@ -2135,40 +2914,107 @@ try:
                               small=True, size_hint_y=None, height=dp(40)))
             scroll.add_widget(g)
             p.add_widget(scroll)
-            p.add_widget(mkbtn("Stopp ambient", self._sa, danger=True,
-                               size_hint_y=None, height=dp(44)))
             p.add_widget(mkvol(self.streamer.vol, 0.5))
             self.amb_lbl = mklbl("", color=DIM, size=11, h=20)
             p.add_widget(self.amb_lbl)
             p.add_widget(Widget(size_hint_y=1))
+            self._amb_refresh_custom_btn()
             return p
 
+        def _amb_refresh_custom_btn(self):
+            if not hasattr(self, '_amb_toggle_btn'):
+                return
+            if self._ambient_source == 'custom' and self.streamer.is_playing:
+                self._amb_toggle_btn.text = "Stop selected sound"
+            elif self._ambient_custom_uri:
+                self._amb_toggle_btn.text = "Loop selected sound"
+            else:
+                self._amb_toggle_btn.text = "Choose sound first"
+
+        def _amb_pick_custom(self, *_):
+            if platform != 'android':
+                self.amb_lbl.text = "Custom ambient upload is supported on Android"
+                self.amb_lbl.color = RED
+                return
+            self.amb_lbl.text = "Opening file picker for ambient sound..."
+            self.amb_lbl.color = DIM
+            Clock.schedule_once(
+                lambda dt: self.file_picker.pick_uri(
+                    self._amb_on_custom_picked,
+                    mime_type='audio/*'),
+                0.2)
+
+        def _amb_on_custom_picked(self, ok, data_or_err):
+            if not ok:
+                if data_or_err != "Avbrutt":
+                    self.amb_lbl.text = data_or_err
+                    self.amb_lbl.color = RED
+                self._amb_refresh_custom_btn()
+                return
+            self._ambient_custom_uri = data_or_err.get('uri')
+            self._ambient_custom_name = (
+                data_or_err.get('name') or CUSTOM_AMBIENT_NAME)
+            self.amb_custom_lbl.text = f"Valgt: {self._ambient_custom_name}"
+            self.amb_custom_lbl.color = GOLD
+            self.amb_lbl.text = "Tap to start seamless loop"
+            self.amb_lbl.color = DIM
+            if self._ambient_source == 'custom' and self.streamer.is_playing:
+                self.streamer.stop()
+                self._ambient_source = None
+            self._amb_refresh_custom_btn()
+
+        def _amb_toggle_custom(self, *_):
+            if self._ambient_source == 'custom' and self.streamer.is_playing:
+                self._sa()
+                return
+            if not self._ambient_custom_uri:
+                self._amb_pick_custom()
+                return
+            self._ambient_name = (
+                self._ambient_custom_name or CUSTOM_AMBIENT_NAME)
+            self._ambient_source = 'custom'
+            self.amb_lbl.text = f"Starter loop: {self._ambient_name}"
+            self.amb_lbl.color = DIM
+            if self.streamer.play_uri(self._ambient_custom_uri, loop=True):
+                self.amb_lbl.text = f"Looper: {self._ambient_name}"
+                self.amb_lbl.color = GRN
+            else:
+                self.amb_lbl.text = "Custom ambient upload is supported on Android"
+                self.amb_lbl.color = RED
+                self._ambient_source = None
+            self._amb_refresh_custom_btn()
+
         def _pa(self, url, name):
-            self._an = name
+            self._ambient_name = name
             self._ac = 0
+            self._ambient_source = 'stream'
             self.amb_lbl.text = f"Laster: {name}..."
+            self.amb_lbl.color = DIM
+            self._amb_refresh_custom_btn()
             if self.streamer.play_url(url):
                 Clock.schedule_interval(self._poll, 2)
 
         def _poll(self, dt):
             self._ac += 1
             if self.streamer.is_playing:
-                self.amb_lbl.text = f"Playing: {self._an}"
+                self.amb_lbl.text = f"Spiller: {self._ambient_name}"
                 self.amb_lbl.color = GRN
                 return False
             if self._ac >= 10:
-                self.amb_lbl.text = f"Failed: {self._an}"
+                self.amb_lbl.text = f"Feilet: {self._ambient_name}"
                 self.amb_lbl.color = RED
                 return False
-            self.amb_lbl.text = f"Loading: {self._an} ({self._ac*2}s)..."
+            self.amb_lbl.text = f"Laster: {self._ambient_name} ({self._ac*2}s)..."
             return True
 
         def _sa(self):
             self.streamer.stop()
-            self.amb_lbl.text = "Stopped"
+            self._ambient_source = None
+            self.amb_lbl.text = "Stoppet"
             self.amb_lbl.color = DIM
+            self._amb_refresh_custom_btn()
 
-        # ---------- RULES ----------
+        # ---------- REGLER ----------
         def _mk_rules(self):
             """Sammenleggbar mappe-visning med overlay for innhold."""
             p = BoxLayout(orientation='vertical', spacing=dp(4), padding=dp(4))
@@ -2177,29 +3023,29 @@ try:
 
             # Header
             hdr = BoxLayout(size_hint_y=None, height=dp(34))
-            hdr.add_widget(mklbl("RULES & REFERENCE", color=GOLD, size=15, bold=True))
+            hdr.add_widget(mklbl("REGLER & REFERANSE", color=GOLD, size=15, bold=True))
             p.add_widget(hdr)
             p.add_widget(mksep(2))
 
-            # Mappe-liste
+            # Folder list
             scroll = ScrollView()
             self._rules_tree = GridLayout(cols=1, spacing=dp(2), padding=dp(4), size_hint_y=None)
             self._rules_tree.bind(minimum_height=self._rules_tree.setter('height'))
             scroll.add_widget(self._rules_tree)
             p.add_widget(scroll)
 
-            # Overlay container (invisible until content is opened)
+            # Overlay container (invisible until content opens)
             self._rules_main = p
             self._rules_build_tree()
             return p
 
         def _rules_build_tree(self):
-            """Build the folder tree with open/closed folders."""
+            """Build folder tree with open/closed folders."""
             self._rules_tree.clear_widgets()
             for i, (cat_name, icon, subs) in enumerate(RULES):
                 expanded = i in self._rules_expanded
                 arrow = "[-]" if expanded else "[+]"
-                # Mappe-knapp
+                # Folder button
                 fbtn = RBtn(
                     text=f"  {arrow}  {cat_name}",
                     bg_color=BTNH if expanded else BTN,
@@ -2233,7 +3079,7 @@ try:
             cat_name, icon, subs = RULES[cat_idx]
             sub_name, content = subs[sub_idx]
 
-            # Remove evt. eksisterende overlay
+            # Fjern evt. eksisterende overlay
             self._rules_close_overlay()
 
             # Bygg overlay
@@ -2296,7 +3142,7 @@ try:
             scroll.add_widget(g)
             overlay.add_widget(scroll)
 
-            # Lay overlay over the entire content area
+            # Add overlay over the entire content area
             # Bruk FloatLayout-wrapperen (root)
             root = self._rules_main
             while root.parent and not isinstance(root.parent, FloatLayout):
@@ -2339,7 +3185,7 @@ try:
             p.add_widget(self.cast_lbl)
             p.add_widget(mkbtn("Sok etter enheter", self._scan, accent=True,
                                size_hint_y=None, height=dp(46)))
-            self.cast_sp = Spinner(text="Pick device...", values=[],
+            self.cast_sp = Spinner(text="Select device...", values=[],
                                    size_hint_y=None, height=dp(46),
                                    background_color=BTN, color=TXT)
             p.add_widget(self.cast_sp)
@@ -2358,78 +3204,33 @@ try:
             if n:
                 self.cast_sp.values = n
                 self.cast_sp.text = n[0]
-            self.cast_lbl.text = f"Fant {len(n)}" if n else "None"
+            self.cast_lbl.text = f"Fant {len(n)}" if n else "Ingen"
 
         def _cn(self):
             n = self.cast_sp.text
-            if not n or n == "Pick device...":
+            if not n or n == "Select device...":
                 return
             self.cast.connect(n, cb=lambda ok: setattr(
-                self.cast_lbl, 'text', "Connected!" if ok else "Failed"))
+                self.cast_lbl, 'text', "Tilkoblet!" if ok else "Feilet"))
 
         def _dc(self):
             self.cast.disconnect()
-            self.cast_lbl.text = "Disconnected"
+            self.cast_lbl.text = "Frakoblet"
 
         # ---------- CHARACTERS / TOOLS ----------
         def _mk_tool(self):
-            """Tools tab with sub-tabs: Characters, Weapons, Scenario."""
+            """Tools tab with sub-tabs: Characters, Weapons, Scenario, Madness.
+
+            Sub-tabs are now built in the global tab panel by
+            _build_tool_subtabs(). Denne metoden returnerer bare
+            the action bar + content area.
+            """
             self._scen_init()
             # Migrer bort fra gammel 'init'-sub-tab hvis det ligger igjen
             if not hasattr(self, '_tool_sub') or self._tool_sub == 'init':
                 self._tool_sub = 'chars'
 
             p = BoxLayout(orientation='vertical', spacing=dp(6))
-
-            # Sub-tab-rad
-            sub_bar = RBox(size_hint_y=None, height=dp(42),
-                           spacing=dp(4), padding=[dp(6), dp(4)],
-                           bg_color=BTN, radius=dp(10))
-            self._sub_btn_chars = RToggle(
-                text='Characters', group='tool_sub',
-                state='down' if self._tool_sub == 'chars' else 'normal',
-                bg_color=BTNH if self._tool_sub == 'chars' else BTN,
-                color=GOLD if self._tool_sub == 'chars' else DIM,
-                border_color=GOLD if self._tool_sub == 'chars' else GDIM,
-                border_width=2.5 if self._tool_sub == 'chars' else 1.0,
-                font_size=sp(11), bold=True)
-            self._sub_btn_chars.bind(on_release=lambda b: self._tool_switch('chars'))
-            sub_bar.add_widget(self._sub_btn_chars)
-
-            self._sub_btn_weap = RToggle(
-                text='Weapons', group='tool_sub',
-                state='down' if self._tool_sub == 'weap' else 'normal',
-                bg_color=BTNH if self._tool_sub == 'weap' else BTN,
-                color=GOLD if self._tool_sub == 'weap' else DIM,
-                border_color=GOLD if self._tool_sub == 'weap' else GDIM,
-                border_width=2.5 if self._tool_sub == 'weap' else 1.0,
-                font_size=sp(11), bold=True)
-            self._sub_btn_weap.bind(on_release=lambda b: self._tool_switch('weap'))
-            sub_bar.add_widget(self._sub_btn_weap)
-
-            self._sub_btn_scen = RToggle(
-                text='Scenario', group='tool_sub',
-                state='down' if self._tool_sub == 'scen' else 'normal',
-                bg_color=BTNH if self._tool_sub == 'scen' else BTN,
-                color=GOLD if self._tool_sub == 'scen' else DIM,
-                border_color=GOLD if self._tool_sub == 'scen' else GDIM,
-                border_width=2.5 if self._tool_sub == 'scen' else 1.0,
-                font_size=sp(11), bold=True)
-            self._sub_btn_scen.bind(on_release=lambda b: self._tool_switch('scen'))
-            sub_bar.add_widget(self._sub_btn_scen)
-
-            self._sub_btn_mad = RToggle(
-                text='Madness', group='tool_sub',
-                state='down' if self._tool_sub == 'mad' else 'normal',
-                bg_color=BTNH if self._tool_sub == 'mad' else BTN,
-                color=GOLD if self._tool_sub == 'mad' else DIM,
-                border_color=GOLD if self._tool_sub == 'mad' else GDIM,
-                border_width=2.5 if self._tool_sub == 'mad' else 1.0,
-                font_size=sp(11), bold=True)
-            self._sub_btn_mad.bind(on_release=lambda b: self._tool_switch('mad'))
-            sub_bar.add_widget(self._sub_btn_mad)
-
-            p.add_widget(sub_bar)
 
             # Handlings-rad
             self._tool_action_bar = BoxLayout(
@@ -2440,7 +3241,7 @@ try:
             self.tool_area = BoxLayout()
             p.add_widget(self.tool_area)
 
-            # When in the Tools tab the init tracker (if called)
+            # When we are in the Tools tab the init-tracker (if called)
             # bruke denne tool_area — men siden init-sub-tab er fjernet,
             # skal det ikke skje. Sett target til None for sikkerhets skyld.
             self._init_target_area = None
@@ -2459,25 +3260,26 @@ try:
                 btn.state    = 'down'   if active else 'normal'
                 btn.bg_color = BTNH     if active else BTN
                 btn.color    = GOLD     if active else DIM
-                btn.border_color = GOLD if active else GDIM
-                btn.border_width = 2.5  if active else 1.0
+                btn.border_color = GOLD if active else GSOFT
+                btn.border_width = 3.2 if active else 2.2
+                btn.accent_bar_alpha = 0.48 if active else 0.0
             self._tool_render_sub()
 
         def _tool_render_sub(self):
-            """Render the active sub-view."""
+            """Rendre riktig sub-visning."""
             self._tool_action_bar.clear_widgets()
             if self._tool_sub == 'chars':
                 self._tool_action_bar.add_widget(
-                    mkbtn("+ New", self._new_char, accent=True,
+                    mkbtn("+ Ny", self._new_char, accent=True,
                           size_hint_x=0.28))
                 self._tool_action_bar.add_widget(
-                    mkbtn("Import", self._chars_do_pick_file,
+                    mkbtn("Importer", self._chars_do_pick_file,
                           small=True, size_hint_x=0.28))
                 self._tool_action_bar.add_widget(
-                    mkbtn("Refresh", self._show_list,
+                    mkbtn("Oppdater", self._show_list,
                           small=True, size_hint_x=0.22))
                 self._tool_action_bar.add_widget(
-                    mklbl("Characters", color=GOLD, size=14, bold=True))
+                    mklbl("Karakterer", color=GOLD, size=14, bold=True))
                 self._show_list()
             elif self._tool_sub == 'scen':
                 self._mk_scenario()
@@ -2488,7 +3290,7 @@ try:
 
         # ---------- BOUT OF MADNESS ----------
         def _mk_madness(self):
-            """Bout of Madness sub-tab — two rolls (Real-Time / Summary)."""
+            """Bout of Madness sub-tab — to triller (Real-Time / Summary)."""
             self.tool_area.clear_widgets()
             wrap = BoxLayout(orientation='vertical', spacing=dp(8),
                              padding=dp(10))
@@ -2498,7 +3300,7 @@ try:
             wrap.add_widget(mklbl("Pulp Cthulhu", color=DIM, size=11, h=18))
             wrap.add_widget(mksep(8))
 
-            # Roll buttons
+            # Trill-knapper
             row = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(8))
             row.add_widget(mkbtn("Real-Time (1d10)",
                                  lambda: self._roll_madness('rt'),
@@ -2514,7 +3316,7 @@ try:
                                     bg_color=INPUT, radius=dp(10),
                                     padding=dp(12), spacing=dp(6))
             placeholder = mklbl(
-                "Press a button to roll…",
+                "Tap a button to roll…",
                 color=DIM, size=12, h=30)
             self._mad_result.add_widget(placeholder)
             wrap.add_widget(self._mad_result)
@@ -2522,14 +3324,14 @@ try:
             self.tool_area.add_widget(wrap)
 
         def _roll_madness(self, kind):
-            """Roll 1d10 on the right table and show the result."""
+            """Roll 1d10 on the correct table and show the result."""
             table = PULP_MADNESS_RT if kind == 'rt' else PULP_MADNESS_SUM
             label = "Real-Time" if kind == 'rt' else "Summary"
             roll = random.randint(1, 10)
             title, desc = table[roll - 1]
 
             self._mad_result.clear_widgets()
-            header = mklbl(f"{label}  —  roll: {roll}",
+            header = mklbl(f"{label}  —  trill: {roll}",
                            color=DIM, size=11, h=22)
             self._mad_result.add_widget(header)
             self._mad_result.add_widget(
@@ -2537,7 +3339,7 @@ try:
             self._mad_result.add_widget(
                 mklbl(desc, color=TXT, size=13, wrap=True))
 
-            # Roll-again button
+            # Trill-igjen knapp
             again = mkbtn(f"Roll {label} again",
                           lambda: self._roll_madness(kind),
                           small=True, size_hint_y=None, height=dp(38))
@@ -2550,7 +3352,7 @@ try:
             g = GridLayout(cols=1, spacing=dp(6), padding=dp(6), size_hint_y=None)
             g.bind(minimum_height=g.setter('height'))
             if not self.chars:
-                g.add_widget(mklbl("No characters yet.\nPress '+ New' to create one.",
+                g.add_widget(mklbl("No characters yet.\nTap '+ New' to create one.",
                                    color=DIM, size=12, h=50))
             else:
                 for i, ch in enumerate(self.chars):
@@ -2577,11 +3379,11 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(4), padding=dp(6))
             top = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
             _back = back_fn if back_fn is not None else self._show_list
-            top.add_widget(mkbtn("Back", _back, small=True, size_hint_x=0.3))
+            top.add_widget(mkbtn("Tilbake", _back, small=True, size_hint_x=0.3))
             if back_fn is None:
                 top.add_widget(mkbtn("Rediger", lambda: self._edit_char(idx),
                                      accent=True, small=True, size_hint_x=0.3))
-                top.add_widget(mkbtn("Delete", lambda: self._del_char(idx),
+                top.add_widget(mkbtn("Slett", lambda: self._del_char(idx),
                                      danger=True, small=True, size_hint_x=0.3))
             p.add_widget(top)
             scroll = ScrollView()
@@ -2621,16 +3423,16 @@ try:
             if not isinstance(sk, dict):
                 sk = {}
             g.add_widget(mksep(4))
-            g.add_widget(mklbl("SKILLS", color=GOLD, size=13,
+            g.add_widget(mklbl("FERDIGHETER", color=GOLD, size=13,
                                bold=True, h=24))
-            # 3-column grid for skills
+            # 3-kolonners grid for skills
             sk_grid = GridLayout(cols=3, spacing=dp(4),
                                  size_hint_y=None)
             sk_grid.bind(minimum_height=sk_grid.setter('height'))
             for sname, sdefault in SKILLS:
                 is_spec = sname.endswith(':')
                 user_val = str(sk.get(sname, '')).strip()
-                # Skip spec-skills if user hasn't filled them in
+                # Spec-skills hoppes over hvis brukeren ikke har spesifisert
                 if is_spec and not user_val:
                     continue
                 if is_spec:
@@ -2640,7 +3442,7 @@ try:
                     sk_txt = f"{sname}: {user_val}"
                     color = TXT
                 else:
-                    # Default value (not modified by user)
+                    # Default-verdi (ikke endret av brukeren)
                     display_val = sdefault if sdefault else '—'
                     sk_txt = f"{sname}: {display_val}"
                     color = DIM
@@ -2689,7 +3491,7 @@ try:
                 row.add_widget(Label(text=lbl, font_size=sp(10), color=DIM,
                                      size_hint_x=0.3, halign='right'))
                 if key == 'type':
-                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC', 'Enemy'],
+                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC', 'Fiende'],
                                 background_color=BTN, color=GOLD, font_size=sp(11), size_hint_x=0.7)
                 else:
                     w = TextInput(text=str(ch.get(key, '')), font_size=sp(12), multiline=False,
@@ -2754,7 +3556,7 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
             top.add_widget(mkbtn("Save skills", lambda: self._save_skills(idx),
                                  accent=True, small=True, size_hint_x=0.5))
-            top.add_widget(mkbtn("Back", lambda: self._edit_char(idx),
+            top.add_widget(mkbtn("Tilbake", lambda: self._edit_char(idx),
                                  small=True, size_hint_x=0.5))
             p.add_widget(top)
             p.add_widget(mklbl(f"Skills: {ch.get('name', '?')}",
@@ -2766,12 +3568,12 @@ try:
 
             self._sk_inputs = {}
 
-            # Regular skills in 3-column grid
+            # Vanlige skills i 3-kolonners grid
             sk_grid = GridLayout(cols=3, spacing=dp(6),
                                  size_hint_y=None)
             sk_grid.bind(minimum_height=sk_grid.setter('height'))
 
-            # Spec skills (ending with ':') in their own section
+            # Spec-skills (de som ender med ':') i egen seksjon
             spec_rows = []
 
             for sname, sdefault in SKILLS:
@@ -2783,7 +3585,7 @@ try:
                                          color=GDIM, size_hint_x=0.35,
                                          halign='right'))
                     w = TextInput(text=str(sk.get(sname, '')),
-                                  hint_text="Specify + value",
+                                  hint_text="Spesifiser + verdi",
                                   font_size=sp(11), multiline=False,
                                   background_color=BTN, foreground_color=TXT,
                                   size_hint_x=0.65, padding=[dp(6), dp(4)])
@@ -2791,7 +3593,7 @@ try:
                     self._sk_inputs[sname] = w
                     spec_rows.append(row)
                 else:
-                    # Vertical cell: name (default) over input
+                    # Vertikal celle: navn (default) over input
                     cell = BoxLayout(orientation='vertical',
                                      size_hint_y=None, height=dp(64),
                                      spacing=dp(2), padding=[0, dp(2)])
@@ -2824,7 +3626,7 @@ try:
 
             if spec_rows:
                 outer.add_widget(mksep(8))
-                outer.add_widget(mklbl("Specified skills:",
+                outer.add_widget(mklbl("Spesifiserte ferdigheter:",
                                        color=GOLD, size=11, bold=True, h=22))
                 spec_grid = GridLayout(cols=1, spacing=dp(4),
                                        size_hint_y=None)
@@ -2833,7 +3635,7 @@ try:
                     spec_grid.add_widget(r)
                 outer.add_widget(spec_grid)
 
-            # Extra space below so keyboard can scroll up
+            # A little extra space below so keyboard can scroll up
             outer.add_widget(Widget(size_hint_y=None, height=dp(80)))
 
             scroll.add_widget(outer)
@@ -2869,14 +3671,15 @@ try:
             """Open Android file picker for character import."""
             if platform != 'android':
                 self._chars_show_message(
-            "Not supported",
-            "File picker is only available on Android.",
+                    "Not supported",
+                    "File picker is only available on Android.",
                     is_error=True)
                 return
             self._chars_show_message(
                 "Opening file picker...",
-                "Pick a .json file with characters. You can browse to "
-                "Documents, Downloads, Drive, or wherever the file is.",
+                "Velg en .json-fil med karakterer. Du kan bla til "
+                "Documents, Downloads, Drive, eller hvor som helst "
+                "du har fila.",
                 is_error=False)
             Clock.schedule_once(
                 lambda dt: self._chars_close_overlay(), 0.8)
@@ -2887,9 +3690,9 @@ try:
                 1.0)
 
         def _chars_on_file_picked(self, ok, text_or_err):
-            """Callback when the file picker is done."""
+            """Callback when file picker is done."""
             if not ok:
-                if text_or_err != "Aborted":
+                if text_or_err != "Avbrutt":
                     self._chars_show_message(
                         "Kunne ikke lese fil",
                         text_or_err, is_error=True)
@@ -2911,7 +3714,7 @@ try:
             else:
                 self._chars_show_message(
                     "Feil format",
-                    "The file must contain either a list [...] or an "
+                    "File must contain either a list [...] or an "
                     "objekt med en \"characters\"-array "
                     "{ \"characters\": [...] }.",
                     is_error=True)
@@ -2929,8 +3732,8 @@ try:
                 normalized.append(self._chars_normalize_entry(entry))
             if not normalized:
                 self._chars_show_message(
-                    "No characters found",
-                    "The file contained no valid character entries "
+                    "Ingen karakterer funnet",
+                    "File contained no valid character entries "
                     "med navn.",
                     is_error=True)
                 return
@@ -2948,7 +3751,7 @@ try:
             for field in all_str_fields:
                 val = entry.get(field, '')
                 result[field] = str(val) if val != '' else ''
-            # Normalize type to one of 'PC', 'NPC', 'Enemy'
+            # Normalize type to one of 'PC', 'NPC', 'Fiende'
             raw_type = result.get('type', '').strip()
             if raw_type.lower() == 'pc':
                 result['type'] = 'PC'
@@ -2956,9 +3759,9 @@ try:
                 result['type'] = 'NPC'
             elif raw_type.lower() in ('fiende', 'enemy', 'fiend', 'foe',
                                       'villain', 'monster', 'creature'):
-                result['type'] = 'Enemy'
+                result['type'] = 'Fiende'
             else:
-                result['type'] = raw_type if raw_type in ('PC', 'NPC', 'Enemy') else 'PC'
+                result['type'] = raw_type if raw_type in ('PC', 'NPC', 'Fiende') else 'PC'
             # skills must be a dict
             sk = entry.get('skills', {})
             if not isinstance(sk, dict):
@@ -2978,7 +3781,7 @@ try:
             if count > 5:
                 names_text += f"\n… og {count - 5} til"
             skip_text = (
-                f"\n\n({skipped} entry"
+                f"\n\n({skipped} entr"
                 f"{'er' if skipped != 1 else ''} uten navn ble "
                 "hoppet over)"
             ) if skipped else ""
@@ -3017,7 +3820,7 @@ try:
                 lambda: self._chars_do_import(chars, replace=False),
                 accent=True, size_hint_x=0.35))
             btns.add_widget(mkbtn(
-                "Replace",
+                "Erstatt",
                 lambda: self._chars_do_import(chars, replace=True),
                 danger=True, size_hint_x=0.35))
             overlay.add_widget(btns)
@@ -3044,7 +3847,7 @@ try:
             fl.add_widget(overlay)
 
         def _chars_do_import(self, chars, replace):
-            """Perform import — replace existing or merge."""
+            """Execute import — replace existing or merge."""
             self._chars_close_overlay()
             if replace:
                 self.chars = list(chars)
@@ -3152,9 +3955,9 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn("+ Investigator", self._init_show_char_picker,
                                  accent=True, small=True, size_hint_x=0.37))
-            top.add_widget(mkbtn("+ Enemies", self._init_show_enemy_picker,
+            top.add_widget(mkbtn("+ Skapning", self._init_show_enemy_picker,
                                  small=True, size_hint_x=0.33))
-            top.add_widget(mkbtn("Empty", self._init_clear_list,
+            top.add_widget(mkbtn("Tom", self._init_clear_list,
                                  danger=True, small=True, size_hint_x=0.3))
             p.add_widget(top)
 
@@ -3169,13 +3972,13 @@ try:
 
             if not self._init_list:
                 g.add_widget(mklbl(
-                    "No participants. Use the buttons above.",
+                    "Ingen deltakere. Bruk knappene over.",
                     color=DIM, size=12, h=60))
             else:
                 # Header
                 hdr = BoxLayout(size_hint_y=None, height=dp(22),
                                 spacing=dp(4))
-                hdr.add_widget(mklbl("Name", color=GDIM, size=9, h=20))
+                hdr.add_widget(mklbl("Navn", color=GDIM, size=9, h=20))
                 hdr.add_widget(Label(text="DEX", font_size=sp(9),
                                      color=GDIM, size_hint_x=None,
                                      width=dp(50)))
@@ -3229,13 +4032,16 @@ try:
                         state='down' if entry.get('firearms') else 'normal',
                         color=GOLD if entry.get('firearms') else DIM,
                         bg_color=BTNH if entry.get('firearms') else INPUT,
+                        border_color=GOLD if entry.get('firearms') else GSOFT,
+                        border_width=3.2 if entry.get('firearms') else 2.2,
+                        accent_bar_alpha=0.52 if entry.get('firearms') else 0.16,
                         font_size=sp(11), bold=True,
                         size_hint_x=None, width=dp(34))
                     fa_tog._init_idx = i
                     fa_tog.bind(state=self._init_on_firearms_change)
                     row_box.add_widget(fa_tog)
 
-                    # Remove-knapp
+                    # Fjern-knapp
                     del_btn = RBtn(text='X', bg_color=BTN, color=RED,
                                    font_size=sp(11), bold=True,
                                    size_hint_x=None, width=dp(36))
@@ -3249,9 +4055,9 @@ try:
             p.add_widget(scroll)
 
             bottom = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
-            bottom.add_widget(mkbtn("Map", self._bm_open,
+            bottom.add_widget(mkbtn("Kart", self._bm_open,
                                     small=True, size_hint_x=0.4))
-            bottom.add_widget(mkbtn("Complete", self._init_finish,
+            bottom.add_widget(mkbtn("Finish", self._init_finish,
                                     accent=True, size_hint_x=0.6))
             p.add_widget(bottom)
 
@@ -3273,6 +4079,9 @@ try:
                 inst.text = 'X' if on else ''
                 inst.color = GOLD if on else DIM
                 inst.bg_color = BTNH if on else INPUT
+                inst.border_color = GOLD if on else GSOFT
+                inst.border_width = 3.2 if on else 2.2
+                inst.accent_bar_alpha = 0.52 if on else 0.16
 
         def _init_show_char_picker(self):
             """Vis Investigator-velger."""
@@ -3284,7 +4093,7 @@ try:
                     if ch.get('type', 'PC') == 'NPC'
                     and ch.get('name', '') not in already_in]
             fiender = [ch for ch in self.chars
-                       if ch.get('type', 'PC') == 'Enemy'
+                       if ch.get('type', 'PC') == 'Fiende'
                        and ch.get('name', '') not in already_in]
 
             area = self._init_area()
@@ -3292,9 +4101,9 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
-            top.add_widget(mkbtn("Back", self._mk_init_tracker,
+            top.add_widget(mkbtn("Tilbake", self._mk_init_tracker,
                                  small=True, size_hint_x=0.3))
-            top.add_widget(mklbl("Pick character", color=GOLD, size=13,
+            top.add_widget(mklbl("Velg karakter", color=GOLD, size=13,
                                  bold=True))
             p.add_widget(top)
 
@@ -3323,7 +4132,7 @@ try:
 
             if not pcs and not npcs and not fiender:
                 g.add_widget(mklbl(
-                    "No available characters.\n"
+                    "Ingen tilgjengelige karakterer.\n"
                     "Add characters under 'Tools > Characters' first.",
                     color=DIM, size=11, h=60))
 
@@ -3376,18 +4185,18 @@ try:
             ("Tyv", 70, 10),
             ("Brutal slager", 55, 14),
             ("Mystiker", 60, 10),
-            ("Necromancer", 55, 11),
-            ("Spy", 70, 11),
-            # --- Normal Animals ---
-            ("Dog (guard)", 60, 8),
-            ("Wolf", 75, 11),
-            ("Bear", 50, 19),
+            ("Nekromantiker", 55, 11),
+            ("Spion", 70, 11),
+            # --- Normale dyr ---
+            ("Hund (vakt)", 60, 8),
+            ("Ulv", 75, 11),
+            ("Bjorn", 50, 19),
             ("Puma", 85, 12),
-            ("Snake (venomous)", 85, 4),
-            ("Rat (large)", 60, 2),
-            ("Rat-fungus", 90, 35),
-            ("Crocodile", 50, 14),
-            ("Shark", 80, 18),
+            ("Slange (giftig)", 85, 4),
+            ("Rotte (stor)", 60, 2),
+            ("Rotte-svamp", 90, 35),
+            ("Krokodille", 50, 14),
+            ("Hai", 80, 18),
             # --- Undead ---
             ("Zombie", 45, 12),
             ("Ghoul", 65, 13),
@@ -3452,9 +4261,9 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
-            top.add_widget(mkbtn("Back", self._mk_init_tracker,
+            top.add_widget(mkbtn("Tilbake", self._mk_init_tracker,
                                  small=True, size_hint_x=0.3))
-            top.add_widget(mklbl("Choose enemy", color=GOLD, size=13,
+            top.add_widget(mklbl("Velg skapning", color=GOLD, size=13,
                                  bold=True))
             p.add_widget(top)
 
@@ -3462,11 +4271,11 @@ try:
             cust_box = RBox(orientation='vertical', bg_color=BG2,
                             size_hint_y=None, height=dp(110),
                             padding=dp(10), spacing=dp(6), radius=dp(10))
-            cust_box.add_widget(mklbl("Custom enemy",
+            cust_box.add_widget(mklbl("Egendefinert skapning",
                                       color=GOLD, size=11, bold=True, h=18))
 
             name_row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
-            name_row.add_widget(Label(text="Name:", font_size=sp(11),
+            name_row.add_widget(Label(text="Navn:", font_size=sp(11),
                                       color=DIM, size_hint_x=0.2,
                                       halign='right', valign='middle'))
             self._init_custom_name = TextInput(
@@ -3489,14 +4298,14 @@ try:
             stat_row.add_widget(self._init_custom_dex)
 
             stat_row.add_widget(Widget(size_hint_x=0.1))
-            add_btn = mkbtn("Add", self._init_add_custom,
+            add_btn = mkbtn("Legg til", self._init_add_custom,
                             accent=True, small=True, size_hint_x=0.5)
             stat_row.add_widget(add_btn)
             cust_box.add_widget(stat_row)
 
             p.add_widget(cust_box)
 
-            p.add_widget(mklbl("CoC & Pulp Cthulhu Enemies",
+            p.add_widget(mklbl("CoC & Pulp Cthulhu-skapninger",
                                color=GOLD, size=11, bold=True, h=22))
 
             scroll = ScrollView()
@@ -3564,7 +4373,7 @@ try:
             self._mk_init_tracker()
 
         def _init_finish(self):
-            """Transition from setup to active: sort by effective DEX."""
+            """Go from setup to active: sort by effective DEX."""
             # Effektiv DEX = DEX + 50 hvis firearms
             for entry in self._init_list:
                 base = entry.get('dex', 0)
@@ -3586,13 +4395,13 @@ try:
                                  danger=True, small=True, size_hint_x=0.3))
             top.add_widget(mkbtn("Rediger", self._init_back_to_setup,
                                  small=True, size_hint_x=0.25))
-            top.add_widget(mkbtn("Map", self._bm_open,
+            top.add_widget(mkbtn("Kart", self._bm_open,
                                  accent=True, small=True, size_hint_x=0.25))
             top.add_widget(mklbl("Tur", color=GOLD, size=12, bold=True))
             p.add_widget(top)
 
             p.add_widget(mklbl(
-                "Tap the active (topmost) to end their turn.",
+                "Tap active (top) to end their turn.",
                 color=DIM, size=10, h=18))
 
             scroll = ScrollView()
@@ -3665,7 +4474,7 @@ try:
             p.add_widget(scroll)
 
         def _init_on_card_touch(self, widget, touch, idx):
-            """Tap the topmost card = their turn is done."""
+            """Tap top card = their turn is done."""
             if not widget.collide_point(*touch.pos):
                 return False
             if idx == 0:
@@ -3682,7 +4491,7 @@ try:
             self._mk_init_tracker()
 
         def _init_back_to_setup(self):
-            """Return to setup — keep the list."""
+            """Return to setup - keep the list."""
             self._init_phase = 'setup'
             self._mk_init_tracker()
 
@@ -3691,7 +4500,7 @@ try:
         BM_SIZE = 15  # 15x15 rutenett
 
         def _bm_open(self):
-            """Open battlemap as overlay. Sync tokens from the init list."""
+            """Open battlemap as overlay. Sync tokens from init list."""
             if not self._init_list:
                 # No participants yet
                 return
@@ -3706,7 +4515,7 @@ try:
 
         def _bm_find_mov(self, name, tp):
             """Finn MOV for en karakter, default 8."""
-            if tp in ('PC', 'NPC', 'Enemy'):
+            if tp in ('PC', 'NPC', 'Fiende'):
                 for ch in self.chars:
                     if ch.get('name') == name:
                         try:
@@ -3761,7 +4570,7 @@ try:
             self._bm_active_lbl = mklbl(
                 "", color=GOLD, size=12, bold=True)
             hdr.add_widget(self._bm_active_lbl)
-            hdr.add_widget(mkbtn("Next", self._bm_next_turn,
+            hdr.add_widget(mkbtn("Neste", self._bm_next_turn,
                                  accent=True, small=True,
                                  size_hint_x=0.25))
             overlay.add_widget(hdr)
@@ -3788,13 +4597,14 @@ try:
             self._bm_grid = GridLayout(
                 cols=self.BM_SIZE, rows=self.BM_SIZE,
                 spacing=dp(1))
+            bm_btn_bg = UI_BG_TEXTURE_PATH if get_ui_bg_tex() else ''
             self._bm_cells = {}
             for y in range(self.BM_SIZE):
                 for x in range(self.BM_SIZE):
                     btn = Button(
                         text='',
-                        background_normal='',
-                        background_down='',
+                        background_normal=bm_btn_bg,
+                        background_down=bm_btn_bg,
                         background_color=BG2,
                         font_size=sp(9),
                         bold=True,
@@ -3808,7 +4618,7 @@ try:
 
             # Status og bunn-knapper
             self._bm_status = mklbl(
-                "Tap a token in 'To place' to begin.",
+                "Tap a token in 'To place' to start.",
                 color=DIM, size=10, h=22, wrap=True)
             overlay.add_widget(self._bm_status)
 
@@ -3822,7 +4632,7 @@ try:
                 danger=True, small=True, size_hint_x=0.5))
             overlay.add_widget(btm)
 
-            # Lay overlay on FloatLayout-root
+            # Add overlay to FloatLayout root
             root = self.content
             while root.parent and not isinstance(root.parent, FloatLayout):
                 root = root.parent
@@ -3864,11 +4674,11 @@ try:
 
         def _bm_token_color(self, tp, is_selected=False,
                             is_active_turn=False):
-            """Color for a token based on type and state."""
+            """Colour for a token based on type and state."""
             if tp == 'PC':
                 base = [0.25, 0.58, 0.32, 1]  # GRN
             elif tp == 'NPC':
-                base = [0.78, 0.60, 0.18, 1]  # muted gold
+                base = [0.78, 0.60, 0.18, 1]  # dempet gull
             else:
                 base = [0.60, 0.18, 0.20, 1]  # dark red
             if is_selected:
@@ -3885,7 +4695,7 @@ try:
 
         def _bm_render(self):
             """Draw the entire map based on state."""
-            # Refresh aktiv-label
+            # Oppdater aktiv-label
             act = self._bm_active_name()
             if act:
                 self._bm_active_lbl.text = f"Tur: {act}"
@@ -3914,15 +4724,16 @@ try:
 
             n_unp = len(self._bm_unplaced)
             if n_unp == 0 and not self._bm_placing:
-                self._bm_unp_label.text = "All placed."
+                self._bm_unp_label.text = "Alle plassert."
             elif placing_label:
                 self._bm_unp_label.text = (
-                    f"Holding: {placing_label} — "
-                    f"tap an empty tile to place.")
+                    f"Holder: {placing_label} — "
+                    f"tap a free cell to place.")
             else:
                 self._bm_unp_label.text = (
                     f"To place ({n_unp}): tap to select.")
-            # Calculate valid move tiles if a token is selected
+
+            # Beregn gyldig move-ruter om token er valgt
             valid_moves = set()
             sel = self._bm_selected
             if sel is not None:
@@ -3973,7 +4784,7 @@ try:
                 lb = self._bm_placing.get('label', '?')
                 nm = self._bm_placing.get('name', '?')
                 self._bm_status.text = (
-                    f"Placing {lb} ({nm}) — tap an empty tile.")
+                    f"Plasserer {lb} ({nm}) — trykk en ledig rute.")
             elif sel is not None:
                 tok = self._bm_tokens.get(sel)
                 if tok:
@@ -3986,13 +4797,13 @@ try:
                     hp_s = f" HP {hp}" if hp else ""
                     if remaining <= 0:
                         self._bm_status.text = (
-                            f"Selected: {lb} ({nm}) — MOV used up "
-                            f"({used}/{mv}). Tap 'Next' for new round."
+                            f"Valgt: {lb} ({nm}) — MOV brukt opp "
+                            f"({used}/{mv}). Trykk «Neste» for ny runde."
                             f"{hp_s}")
                     else:
                         self._bm_status.text = (
-                            f"Selected: {lb} ({nm}) — MOV {remaining} remaining "
-                            f"({used}/{mv} used).{hp_s}")
+                            f"Valgt: {lb} ({nm}) — MOV {remaining} igjen "
+                            f"({used}/{mv} brukt).{hp_s}")
                 else:
                     self._bm_status.text = ""
             else:
@@ -4000,8 +4811,8 @@ try:
                     "Tap a token to select and move.")
 
         def _bm_hold_for_place(self, tok):
-            """Pick a token for placement (from the unplaced row)."""
-            # Toggle: tap again = release
+            """Velg token for plassering (fra unplaced-raden)."""
+            # Toggle: trykk igjen = slipp
             if self._bm_placing and \
                self._bm_placing.get('label') == tok.get('label'):
                 self._bm_placing = None
@@ -4011,16 +4822,16 @@ try:
             self._bm_render()
 
         def _bm_tap(self, x, y):
-            """Handle a tap on a tile."""
+            """Handle tap on a cell."""
             cell = (x, y)
             tok_here = self._bm_tokens.get(cell)
 
-            # Modus 1: plasserer token fra unplaced
+            # Mode 1: placing token from unplaced
             if self._bm_placing:
                 if tok_here:
                     # Rute opptatt — ikke flytt, bare gi beskjed
                     self._bm_status.text = (
-                        "Tile is occupied. Pick an empty tile.")
+                        "Cell is occupied. Choose a free cell.")
                     return
                 # Plasser tokenen her
                 self._bm_tokens[cell] = self._bm_placing
@@ -4032,7 +4843,7 @@ try:
                 self._bm_render()
                 return
 
-            # Modus 2: ingen aktiv valgt — velg token her
+            # Mode 2: none selected — select token here
             if self._bm_selected is None:
                 if tok_here:
                     self._bm_selected = cell
@@ -4048,7 +4859,7 @@ try:
                 return
 
             if tok_here:
-                # Bytt valg til annen token
+                # Switch selection to other token
                 self._bm_selected = cell
                 self._bm_render()
                 return
@@ -4072,7 +4883,7 @@ try:
                 self._bm_status.text = (
                     f"Too far ({dist} > {remaining} remaining).")
                 return
-            # Perform move — and count usage
+            # Execute move — and count usage
             sel_tok['used_mov'] = used + dist
             del self._bm_tokens[sel]
             self._bm_tokens[cell] = sel_tok
@@ -4102,8 +4913,8 @@ try:
             self._bm_render()
 
         def _bm_next_turn(self):
-            """Move top init entry to bottom + reset used MOV.
-            Auto-select next participant's token if on the map.
+            """Move top init-entry to bottom + reset used MOV.
+            Auto-select next participant's token if on map.
             CoC: each new round everyone gets full movement again."""
             if self._init_list:
                 top = self._init_list.pop(0)
@@ -4113,7 +4924,7 @@ try:
                 tok['used_mov'] = 0
             for tok in self._bm_unplaced:
                 tok['used_mov'] = 0
-            # Auto-select the token belonging to the next active participant
+            # Auto-select token belonging to next active participant
             self._bm_selected = None
             self._bm_placing = None
             next_name = self._bm_active_name()
@@ -4130,10 +4941,10 @@ try:
             """Initialiser scenario-state."""
             if not hasattr(self, '_scen_data'):
                 self._scen_data = None
-                self._scen_view = 'clues'  # clues|timeline|beats|notes|pcs|sessions
-                # Session mode: 'list' | 'view' | 'edit'
+                self._scen_view = 'clues'  # clues | timeline | beats | notes | pcs | sessions
+                # Sesjons-modus: 'list' | 'view' | 'edit'
                 self._scen_sess_mode = 'list'
-                self._scen_sess_idx = None  # index in sessions list
+                self._scen_sess_idx = None  # indeks i sessions-lista
 
         def _scen_load(self):
             """Les scenario.json fra app-private storage."""
@@ -4173,19 +4984,19 @@ try:
                     json.dump(self._scen_data, f,
                               ensure_ascii=False, indent=2)
             except Exception as e:
-                log(f"Scenario-lagring feilet: {e}")
+                log(f"Scenario save failed: {e}")
 
         def _scen_try_import(self):
             """Try to copy scenario.json from the Documents folder to
-            app-private storage. Returner (ok, melding)."""
-            # Sjekk All Files Access-status
+            app-private storage. Return (ok, message)."""
+            # Check All Files Access status
             has_access = has_all_files_access()
             if not os.path.exists(EXTERNAL_SCENARIO):
                 hint = ""
                 if has_access is False:
-                    hint = ("\n\nHint: the app doesn't have 'All files "
-                "access' yet. Press 'Grant access' to open "
-                "the settings and turn it on.")
+                    hint = ("\n\nHint: the app does not yet have 'Access to all "
+                            "files'. Tap 'Grant access' to open "
+                            "settings and enable it.")
                 return False, (
                     f"No file found in Documents.\n\n"
                     f"Expected path:\n{EXTERNAL_SCENARIO}{hint}")
@@ -4195,30 +5006,33 @@ try:
                     data = json.load(f)
                 # Valider at det faktisk er et scenario
                 if not isinstance(data, dict):
-                    return False, "Filen er ikke et JSON-objekt."
+                    return False, "File is not a JSON object."
                 # Skriv til app-private
                 os.makedirs(os.path.dirname(self.SCENARIO_FILE),
                             exist_ok=True)
                 with open(self.SCENARIO_FILE, 'w',
                           encoding='utf-8') as f:
                     json.dump(data, f, ensure_ascii=False, indent=2)
-                log(f"Scenario importert: {data.get('title', '?')}")
-                return True, f"Importert: {data.get('title', '(uten tittel)')}"
+                log(f"Scenario imported: {data.get('title', '?')}")
+                return True, f"Imported: {data.get('title', '(untitled)')}"
             except PermissionError:
                 hint = ""
                 if has_access is False:
-                    hint = ("\n\nSolution: press 'Grant access' below "
+                    hint = ("\n\nSolution: tap 'Grant access' below "
                             "and enable 'Allow management of "
-                            "all files' for Eldritch Portals.")
+                            "all files' for Eldritch Portal.")
                 return False, (
                     "No access to Documents folder."
                     + hint)
             except json.JSONDecodeError as e:
                 return False, f"Invalid JSON in file:\n{e}"
+            except Exception as e:
+                return False, f"Error: {type(e).__name__}: {e}"
+
         def _mk_scenario(self):
-            """Bygg scenario-sub-tab UI."""
+            """Build scenario sub-tab UI."""
             self._scen_init()
-            # Load from disk if we do not have data yet
+            # Load from disk if we have no data yet
             if self._scen_data is None:
                 self._scen_load()
 
@@ -4229,7 +5043,7 @@ try:
                 mkbtn("Reload", self._scen_reload,
                       small=True, size_hint_x=0.25))
             self._tool_action_bar.add_widget(
-                mkbtn("Nullstill", self._scen_confirm_reset,
+                mkbtn("Reset", self._scen_confirm_reset,
                       danger=True, small=True, size_hint_x=0.25))
             title_text = "Scenario"
             if self._scen_data and '_error' not in self._scen_data:
@@ -4266,6 +5080,9 @@ try:
                     text=txt,
                     bg_color=BTNH if active else BTN,
                     color=GOLD if active else TXT,
+                    border_color=GOLD if active else GSOFT,
+                    border_width=3.2 if active else 2.4,
+                    accent_bar_alpha=0.48 if active else 0.0,
                     font_size=sp(10), bold=active,
                     size_hint_y=None, height=dp(36))
                 b.bind(on_release=lambda x, k=key:
@@ -4273,13 +5090,13 @@ try:
                 sel.add_widget(b)
             p.add_widget(sel)
 
-            # System info
+            # System-info
             sys_txt = self._scen_data.get('system', '')
             if sys_txt:
                 p.add_widget(mklbl(f"System: {sys_txt}",
                                    color=DIM, size=10, h=16))
 
-            # Content
+            # Innhold
             content = BoxLayout()
             if self._scen_view == 'clues':
                 self._scen_build_list(
@@ -4298,7 +5115,7 @@ try:
                     content,
                     self._scen_data.get('beats', []),
                     None, 'done',
-                    "No plot beats.")
+                    "No plot points.")
             elif self._scen_view == 'pcs':
                 self._scen_build_pcs(content)
             elif self._scen_view == 'sessions':
@@ -4318,7 +5135,7 @@ try:
             box.bind(minimum_height=box.setter('height'))
 
             box.add_widget(mklbl(
-                "No scenario loaded.",
+                "Ingen scenario lastet.",
                 color=GOLD, size=14, bold=True, h=28))
 
             # PRIMARY METHOD: SAF file picker (no permissions required)
@@ -4327,14 +5144,13 @@ try:
                 "ENKLEST — Velg fil",
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
-                "Press 'Choose file' to open Android's "
-                "filvelger. Bla til scenario.json hvor enn "
-                "du har den — Documents, Downloads, Google "
-                "Drive, minnekort. Krever ingen ekstra "
-                "tillatelser.",
+                "Tap 'Choose file' to open Android's "
+                "file picker. Browse to scenario.json wherever "
+                "you have it — Documents, Downloads, Google "
+                "Drive, SD card. No extra permissions required.",
                 color=TXT, size=11, wrap=True))
             box.add_widget(mkbtn(
-                "Choose file",
+                "Velg fil",
                 self._scen_do_pick_file, accent=True,
                 size_hint_y=None, height=dp(52)))
 
@@ -4347,25 +5163,25 @@ try:
 
             if access is True:
                 box.add_widget(mklbl(
-                    "All files access: ON",
+                    "Access to all files: ON",
                     color=GRN, size=11, bold=True, h=20))
                 box.add_widget(mklbl(
-                    f"Legg scenario.json i:\n{EXTERNAL_SCENARIO}\n\n"
-                    "Trykk deretter 'Import' nedenfor.",
+                    f"Place scenario.json in:\n{EXTERNAL_SCENARIO}\n\n"
+                    "Then tap 'Import' below.",
                     color=TXT, size=11, wrap=True))
                 box.add_widget(mkbtn(
-                    "Import from Documents",
+                    "Importer fra Documents",
                     self._scen_do_import,
                     size_hint_y=None, height=dp(44)))
             elif access is False:
                 box.add_widget(mklbl(
-                    "Tilgang til alle filer: AV",
+                    "Access to all files: OFF",
                     color=RED, size=11, bold=True, h=20))
                 box.add_widget(mklbl(
-                "To use the Import button you must turn "
-                "on 'All files access' for the app. "
-                    "Engangsjobb — men 'Choose file' over er "
-                    "enklere og trenger ikke dette.",
+                    "To use the Import button you need to enable "
+                    "'Access to all files' for the app. "
+                    "One-time job — but 'Choose file' above is "
+                    "simpler and does not need this.",
                     color=TXT, size=11, wrap=True))
                 box.add_widget(mkbtn(
                     "Grant access (opens settings)",
@@ -4385,7 +5201,7 @@ try:
                 self.SCENARIO_FILE,
                 color=GDIM, size=10, wrap=True))
             box.add_widget(mklbl(
-                "Press 'Reload' afterwards.",
+                "Then tap 'Reload'.",
                 color=DIM, size=10, wrap=True))
 
             box.add_widget(mksep(8))
@@ -4403,25 +5219,26 @@ try:
             if not ok:
                 self._scen_show_message(
                     "Could not open settings",
-                    "Try navigating manually to:\n"
-                    "Settings > Apps > Eldritch Portals > "
-                    "Permissions > All files",
+                    "Try going manually to:\n"
+                    "Innstillinger > Apper > Eldritch Portal > "
+                    "Tillatelser > Alle filer",
                     is_error=True)
 
         def _scen_do_pick_file(self):
-            """Open Android file picker and let the user choose scenario.json."""
+            """Open Android file picker and let user select scenario.json."""
             if platform != 'android':
                 self._scen_show_message(
-            "Not supported",
-            "File picker is only available on Android.",
+                    "Not supported",
+                    "File picker is only available on Android.",
                     is_error=True)
                 return
             self._scen_show_message(
                 "Opening file picker...",
-                "Pick a scenario.json file. You can browse to "
-                "Documents, Downloads, Drive, or wherever the file is.",
+                "Velg en scenario.json-fil. Du kan bla til "
+                "Documents, Downloads, Drive, eller hvor som "
+                "helst du har fila.",
                 is_error=False)
-            # Close the message after a short time so the file picker shows cleanly
+            # Close message after short time so file picker shows cleanly
             Clock.schedule_once(
                 lambda dt: self._scen_close_overlay(), 0.8)
             Clock.schedule_once(
@@ -4431,9 +5248,9 @@ try:
                 1.0)
 
         def _scen_on_file_picked(self, ok, text_or_err):
-            """Callback when the file picker is done."""
+            """Callback when file picker is done."""
             if not ok:
-                if text_or_err != "Aborted":
+                if text_or_err != "Avbrutt":
                     self._scen_show_message(
                         "Kunne ikke lese fil",
                         text_or_err, is_error=True)
@@ -4479,10 +5296,10 @@ try:
                 is_error=False)
 
         def _scen_do_import(self):
-            """Attempt to import scenario from the Documents folder."""
+            """Try to import scenario from Documents folder."""
             ok, msg = self._scen_try_import()
             if ok:
-                # Reload den nyimporterte fila
+                # Last inn den nyimporterte fila
                 self._scen_data = None
                 self._scen_load()
                 self._tool_render_sub()
@@ -4558,14 +5375,14 @@ try:
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
                 "• Filen er ikke gyldig JSON "
-                "(check on jsonlint.com)\n"
+                "(check at jsonlint.com)\n"
                 "• Manglende skriverettigheter\n"
                 "• Filen er tom eller korrupt",
                 color=TXT, size=11, wrap=True))
 
             box.add_widget(mksep(6))
             box.add_widget(mklbl(
-                "File path used:",
+                "Filsti som brukes:",
                 color=GOLD, size=11, bold=True, h=20))
             box.add_widget(mklbl(
                 self.SCENARIO_FILE,
@@ -4577,7 +5394,7 @@ try:
                 self._scen_reload, accent=True,
                 size_hint_y=None, height=dp(44)))
             box.add_widget(mkbtn(
-                "Import from Documents",
+                "Importer fra Documents",
                 self._scen_do_import,
                 size_hint_y=None, height=dp(40)))
 
@@ -4638,7 +5455,7 @@ try:
                      self._scen_toggle(it, fk))
             row.add_widget(tog)
 
-            # Text area (center)
+            # Text area (centre)
             mid = BoxLayout(orientation='vertical', spacing=dp(2))
             title_lb = Label(
                 text=item.get('title', '?'),
@@ -4752,12 +5569,12 @@ try:
                 padding=[dp(8), dp(8)])
             box.add_widget(self._scen_notes_input)
             box.add_widget(mkbtn(
-                "Save notes", self._scen_save_notes,
+                "Lagre notater", self._scen_save_notes,
                 accent=True, size_hint_y=None, height=dp(44)))
             container.add_widget(box)
 
         def _scen_save_notes(self):
-            """Save notes text."""
+            """Lagre notat-tekst."""
             if not self._scen_data or '_error' in self._scen_data:
                 return
             self._scen_data['notes'] = self._scen_notes_input.text
@@ -4770,7 +5587,7 @@ try:
             if not pcs:
                 container.add_widget(mklbl(
                     "No PC characters yet.\n"
-                    "Legg til karakterer under 'Characters'.",
+                    "Legg til karakterer under 'Karakterer'.",
                     color=DIM, size=11, wrap=True))
                 return
             scroll = ScrollView()
@@ -4789,7 +5606,7 @@ try:
                 b.halign = 'left'
                 row.add_widget(b)
                 row.add_widget(mkbtn(
-                    "Show",
+                    "Vis",
                     lambda idx=i: self._view_char(
                         idx, back_fn=lambda: self._scen_switch_view('pcs')),
                     accent=True, small=True, size_hint_x=0.28))
@@ -4797,9 +5614,9 @@ try:
             scroll.add_widget(g)
             container.add_widget(scroll)
 
-        # ---------- SESSION JOURNAL ----------
+        # ---------- SESJONSJOURNAL ----------
         def _scen_build_sessions(self, container):
-            """Build session journal view. Three modes: list, view, edit."""
+            """Bygg sesjonsjournal-visning. Tre moduser: list, view, edit."""
             mode = getattr(self, '_scen_sess_mode', 'list')
             if mode == 'edit':
                 self._scen_sessions_edit(container)
@@ -4809,20 +5626,20 @@ try:
                 self._scen_sessions_list(container)
 
         def _scen_sessions_list(self, container):
-            """List of all sessions in active scenario."""
+            """Liste over alle sesjoner i aktivt scenario."""
             sessions = self._scen_data.get('sessions', [])
 
             wrap = BoxLayout(orientation='vertical',
                              spacing=dp(6), padding=dp(4))
 
-            # Action row
+            # Handlings-rad
             row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
             row.add_widget(mkbtn(
-                "+ New session", self._scen_session_new,
+                "+ Ny sesjon", self._scen_session_new,
                 accent=True, size_hint_x=0.4))
             if sessions:
                 row.add_widget(mkbtn(
-                    "Export to text",
+                    "Eksporter til tekst",
                     self._scen_session_export,
                     small=True, size_hint_x=0.6))
             wrap.add_widget(row)
@@ -4830,12 +5647,12 @@ try:
             if not sessions:
                 wrap.add_widget(mklbl(
                     "No sessions yet.\n"
-                    "Press '+ New session' to log the first one.",
+                    "Tap '+ New session' to log the first session.",
                     color=DIM, size=12, wrap=True))
                 container.add_widget(wrap)
                 return
 
-            # Sessions list
+            # Sesjons-liste
             scroll = ScrollView()
             g = GridLayout(cols=1, spacing=dp(6), padding=dp(4),
                            size_hint_y=None)
@@ -4843,7 +5660,7 @@ try:
             for i, s in enumerate(sessions):
                 num = s.get('num', i + 1)
                 date = s.get('date', '?')
-                title = s.get('title', '').strip() or '(untitled)'
+                title = s.get('title', '').strip() or '(uten tittel)'
                 btn_txt = f"S{num}  •  {date}  •  {title}"
                 rrow = BoxLayout(size_hint_y=None, height=dp(46),
                                  spacing=dp(6))
@@ -4854,7 +5671,7 @@ try:
                 b.halign = 'left'
                 rrow.add_widget(b)
                 rrow.add_widget(mkbtn(
-                    "Delete",
+                    "Slett",
                     lambda idx=i: self._scen_session_confirm_delete(idx),
                     danger=True, small=True, size_hint_x=0.22))
                 g.add_widget(rrow)
@@ -4863,7 +5680,7 @@ try:
             container.add_widget(wrap)
 
         def _scen_sessions_view(self, container):
-            """Detail view of a single session (read-only)."""
+            """Detaljvisning av én sesjon (read-only)."""
             sessions = self._scen_data.get('sessions', [])
             idx = self._scen_sess_idx
             if idx is None or idx < 0 or idx >= len(sessions):
@@ -4875,17 +5692,17 @@ try:
             wrap = BoxLayout(orientation='vertical',
                              spacing=dp(6), padding=dp(4))
 
-            # Top row
+            # Topp-rad
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn(
-                "< Back", self._scen_session_back,
+                "< Tilbake", self._scen_session_back,
                 small=True, size_hint_x=0.32))
             top.add_widget(mkbtn(
-                "Edit",
+                "Rediger",
                 lambda: self._scen_session_edit(idx),
                 accent=True, small=True, size_hint_x=0.34))
             top.add_widget(mkbtn(
-                "Delete",
+                "Slett",
                 lambda: self._scen_session_confirm_delete(idx),
                 danger=True, small=True, size_hint_x=0.34))
             wrap.add_widget(top)
@@ -4893,10 +5710,10 @@ try:
             # Header
             num = s.get('num', idx + 1)
             wrap.add_widget(mklbl(
-                f"Session {num}", color=GOLD, size=18,
+                f"Sesjon {num}", color=GOLD, size=18,
                 bold=True, h=30))
             wrap.add_widget(mklbl(
-                f"Date: {s.get('date', '?')}", color=DIM, size=11, h=18))
+                f"Dato: {s.get('date', '?')}", color=DIM, size=11, h=18))
             t = s.get('title', '').strip()
             if t:
                 wrap.add_widget(mklbl(
@@ -4908,12 +5725,12 @@ try:
             g.bind(minimum_height=g.setter('height'))
 
             for key, label in [
-                ('players',     'Players'),
-                ('summary',     'Summary'),
-                ('clues_found', 'Clues found'),
-                ('sanity',      'Sanity loss'),
-                ('rolls',       'XP / Improvement checks'),
-                ('cliffhanger', 'Cliffhanger / next time'),
+                ('players',     'Deltakere'),
+                ('summary',     'Sammendrag'),
+                ('clues_found', 'Clues Found'),
+                ('sanity',      'Sanity-tap'),
+                ('rolls',       'XP / Forbedringssjekker'),
+                ('cliffhanger', 'Cliffhanger / til neste gang'),
             ]:
                 v = s.get(key, '').strip()
                 if not v:
@@ -4930,7 +5747,7 @@ try:
             container.add_widget(wrap)
 
         def _scen_sessions_edit(self, container):
-            """Edit or create a session."""
+            """Rediger eller opprett sesjon."""
             sessions = self._scen_data.get('sessions', [])
             idx = self._scen_sess_idx
             is_new = (idx is None)
@@ -4962,7 +5779,7 @@ try:
             wrap.add_widget(top)
 
             wrap.add_widget(mklbl(
-                f"Session {s['num']}",
+                f"Sesjon {s['num']}",
                 color=GOLD, size=16, bold=True, h=28))
 
             scroll = ScrollView()
@@ -4986,15 +5803,15 @@ try:
                 g.add_widget(ti)
                 self._scen_sess_inputs[key] = ti
 
-            _add_field('date',        'Date (YYYY-MM-DD)', False, 44)
-            _add_field('title',       'Title',             False, 44)
-            _add_field('players',     'Players',           False, 44)
-            _add_field('summary',     'Summary',           True, 180)
-            _add_field('clues_found', 'Clues found',       True, 120)
-            _add_field('sanity',      'Sanity loss',       True, 100)
-            _add_field('rolls',       'XP / Improvement checks',
+            _add_field('date',        'Dato (YYYY-MM-DD)', False, 44)
+            _add_field('title',       'Tittel',            False, 44)
+            _add_field('players',     'Deltakere',         False, 44)
+            _add_field('summary',     'Sammendrag',        True, 180)
+            _add_field('clues_found', 'Clues Found', True, 120)
+            _add_field('sanity',      'Sanity-tap',        True, 100)
+            _add_field('rolls',       'XP / Forbedringssjekker',
                                                            True, 100)
-            _add_field('cliffhanger', 'Cliffhanger / next time',
+            _add_field('cliffhanger', 'Cliffhanger / til neste gang',
                                                            True, 100)
 
             scroll.add_widget(g)
@@ -5003,7 +5820,7 @@ try:
 
             self._scen_sess_pending_num = s['num']
 
-        # ---- Session actions ----
+        # ---- Sesjons-handlinger ----
         def _scen_session_new(self):
             self._scen_sess_mode = 'edit'
             self._scen_sess_idx = None
@@ -5057,13 +5874,13 @@ try:
             self._tool_render_sub()
 
         def _scen_session_confirm_delete(self, idx):
-            """Confirm session deletion (overlay)."""
+            """Bekreft sletting av sesjon (overlay)."""
             sessions = self._scen_data.get('sessions', [])
             if idx < 0 or idx >= len(sessions):
                 return
             s = sessions[idx]
             num = s.get('num', idx + 1)
-            title = s.get('title', '').strip() or '(untitled)'
+            title = s.get('title', '').strip() or '(uten tittel)'
 
             overlay = RBox(
                 bg_color=BG, radius=dp(16),
@@ -5072,10 +5889,10 @@ try:
                 size_hint=(0.8, 0.4),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Delete session?",
+                "Slette sesjon?",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
-                f"S{num} — {title}\n\nThis cannot be undone.",
+                f"S{num} — {title}\n\nDette kan ikke angres.",
                 color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44),
                              spacing=dp(6))
@@ -5083,7 +5900,7 @@ try:
                 "Cancel", self._scen_close_overlay,
                 small=True, size_hint_x=0.5))
             btns.add_widget(mkbtn(
-                "Delete",
+                "Slett",
                 lambda: self._scen_session_do_delete(idx),
                 danger=True, size_hint_x=0.5))
             overlay.add_widget(btns)
@@ -5117,7 +5934,7 @@ try:
             self._tool_render_sub()
 
         def _scen_session_export(self):
-            """Export all sessions to a clean text file in Documents."""
+            """Eksporter alle sesjoner til pen tekstfil i Documents."""
             if not self._scen_data:
                 return
             sessions = self._scen_data.get('sessions', [])
@@ -5128,11 +5945,11 @@ try:
                            else '_' for c in scen_title).strip()
             safe = safe.replace(' ', '_') or 'scenario'
             out_path = os.path.join(BASE_DIR,
-                                    f"sessions_{safe}.txt")
+                                    f"sesjoner_{safe}.txt")
 
             lines = []
             lines.append("=" * 60)
-            lines.append(f"SESSION JOURNAL — {scen_title}")
+            lines.append(f"SESJONSJOURNAL — {scen_title}")
             sys_txt = self._scen_data.get('system', '')
             if sys_txt:
                 lines.append(f"System: {sys_txt}")
@@ -5142,18 +5959,18 @@ try:
             for s in sessions:
                 num = s.get('num', '?')
                 date = s.get('date', '?')
-                title = s.get('title', '').strip() or '(untitled)'
+                title = s.get('title', '').strip() or '(uten tittel)'
                 lines.append("-" * 60)
-                lines.append(f"SESSION {num}  —  {date}  —  {title}")
+                lines.append(f"SESJON {num}  —  {date}  —  {title}")
                 lines.append("-" * 60)
 
                 for key, label in [
-                    ('players',     'Players'),
-                    ('summary',     'Summary'),
-                    ('clues_found', 'Clues found'),
-                    ('sanity',      'Sanity loss'),
-                    ('rolls',       'XP / Improvement checks'),
-                    ('cliffhanger', 'Cliffhanger / next time'),
+                    ('players',     'Deltakere'),
+                    ('summary',     'Sammendrag'),
+                    ('clues_found', 'Clues Found'),
+                    ('sanity',      'Sanity-tap'),
+                    ('rolls',       'XP / Forbedringssjekker'),
+                    ('cliffhanger', 'Cliffhanger / til neste gang'),
                 ]:
                     v = s.get(key, '').strip()
                     if not v:
@@ -5167,13 +5984,13 @@ try:
                 os.makedirs(BASE_DIR, exist_ok=True)
                 with open(out_path, 'w', encoding='utf-8') as f:
                     f.write("\n".join(lines))
-                msg = f"Exported to:\n{out_path}"
-                log(f"Session export OK: {out_path}")
+                msg = f"Eksportert til:\n{out_path}"
+                log(f"Sesjons-eksport OK: {out_path}")
             except Exception as e:
-                msg = f"Export failed:\n{type(e).__name__}: {e}"
-                log(f"Session export failed: {e}")
+                msg = f"Eksport feilet:\n{type(e).__name__}: {e}"
+                log(f"Sesjons-eksport feilet: {e}")
 
-            # Show confirmation as overlay
+            # Vis bekreftelse som overlay
             overlay = RBox(
                 bg_color=BG, radius=dp(16),
                 orientation='vertical', spacing=dp(8),
@@ -5181,7 +5998,7 @@ try:
                 size_hint=(0.85, 0.35),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Export", color=GOLD, size=14, bold=True, h=28))
+                "Eksport", color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(msg, color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44))
             btns.add_widget(mkbtn(
@@ -5270,7 +6087,7 @@ try:
 
         # ---------- WEAPONS ----------
         def _mk_weapons(self):
-            """Main view for the weapon table."""
+            """Main view for the weapons table."""
             data = self.weapons_data
             cats = data.get("categories", {})
 
@@ -5288,19 +6105,17 @@ try:
                 err = getattr(self, '_weap_last_error', None)
                 if err:
                     msg_box.add_widget(mklbl(
-                        "Error:", color=RED, size=12, bold=True, h=22))
+                        "Feil:", color=RED, size=12, bold=True, h=22))
                     msg_box.add_widget(mklbl(
                         err, color=TXT, size=11, wrap=True))
                 else:
                     msg_box.add_widget(mklbl(
                         "Legg weapons.json i:\n"
-                        "/sdcard/Documents/EldritchPortals/",
+                        "/sdcard/Documents/EldritchPortal/",
                         color=DIM, size=11, wrap=True))
 
                 msg_box.add_widget(mklbl(
-                    "Paths checked:\n"
-                    f"{BUNDLED_WEAPONS}\n"
-                    f"{EXTERNAL_WEAPONS}",
+                    f"Sti som sjekkes:\n{WEAPONS_FILE}",
                     color=DIM, size=10, wrap=True))
 
                 msg_box.add_widget(mkbtn(
@@ -5311,7 +6126,7 @@ try:
                 self.tool_area.add_widget(msg_box)
                 return
 
-            # Action-bar: search + era + favourite toggle
+            # Action bar: search + era + favourite toggle
             search_inp = TextInput(
                 text=self._weap_search,
                 hint_text='Search…',
@@ -5338,6 +6153,9 @@ try:
                 state='down' if self._weap_fav_only else 'normal',
                 bg_color=BTNH if self._weap_fav_only else BTN,
                 color=GOLD if self._weap_fav_only else DIM,
+                border_color=GOLD if self._weap_fav_only else GSOFT,
+                border_width=3.2 if self._weap_fav_only else 2.2,
+                accent_bar_alpha=0.52 if self._weap_fav_only else 0.18,
                 font_size=sp(14), bold=True,
                 size_hint_x=0.2)
             fav_tog.bind(on_release=self._weap_toggle_fav_filter)
@@ -5363,6 +6181,9 @@ try:
                     text=lbl,
                     bg_color=BTNH if active else BTN,
                     color=GOLD if active else TXT,
+                    border_color=GOLD if active else GSOFT,
+                    border_width=3.2 if active else 2.4,
+                accent_bar_alpha=0.48 if active else 0.0,
                     font_size=sp(11), bold=active,
                     size_hint_x=None, width=dp(90),
                     size_hint_y=None, height=dp(36))
@@ -5373,7 +6194,7 @@ try:
             cat_scroll.add_widget(cat_row)
             p.add_widget(cat_scroll)
 
-            # Character selector: shows which character weapon is added to
+            # Character selector: shows which character weapons are added to
             if self.chars:
                 char_names = [ch.get('name', f'#{i}')
                               for i, ch in enumerate(self.chars)]
@@ -5410,7 +6231,7 @@ try:
                 char_row.add_widget(char_sp)
                 p.add_widget(char_row)
 
-            # Weapon list
+            # Weapons list
             scroll = ScrollView()
             self._weap_list_grid = GridLayout(
                 cols=1, spacing=dp(4),
@@ -5425,7 +6246,7 @@ try:
             self._weap_render_list()
 
         def _weap_reload(self):
-            """Reload weapons.json from disk."""
+            """Reload weapons.json."""
             self._weap_do_load()
             self._tool_render_sub()
 
@@ -5456,10 +6277,13 @@ try:
             self._weap_fav_only = (inst.state == 'down')
             inst.bg_color = BTNH if self._weap_fav_only else BTN
             inst.color = GOLD if self._weap_fav_only else DIM
+            inst.border_color = GOLD if self._weap_fav_only else GSOFT
+            inst.border_width = 3.2 if self._weap_fav_only else 2.2
+            inst.accent_bar_alpha = 0.52 if self._weap_fav_only else 0.18
             self._weap_render_list()
 
         def _weap_filter(self):
-            """Return filtered weapon list."""
+            """Return filtered weapons list."""
             weapons = self.weapons_data.get("weapons", [])
             out = []
             for w in weapons:
@@ -5472,7 +6296,7 @@ try:
                     eras = w.get('era', [])
                     if 'all' not in eras and self._weap_era not in eras:
                         continue
-                # Favorite
+                # Favoritt
                 if self._weap_fav_only:
                     if w.get('id') not in self.weap_favorites:
                         continue
@@ -5488,7 +6312,7 @@ try:
             return out
 
         def _weap_render_list(self):
-            """Build weapon-row list based on filter."""
+            """Build weapon row list based on filter."""
             if not hasattr(self, '_weap_list_grid'):
                 return
             self._weap_list_grid.clear_widgets()
@@ -5497,7 +6321,7 @@ try:
 
             if not filtered:
                 self._weap_list_grid.add_widget(mklbl(
-                    "No matches with current filter.",
+                    "Ingen treff med gjeldende filter.",
                     color=DIM, size=12, h=40))
                 return
 
@@ -5506,7 +6330,7 @@ try:
                     self._weap_make_row(w, subs))
 
         def _weap_make_row(self, w, subs):
-            """Build a compact weapon row (78dp tall, clickable)."""
+            """Build a compact weapon row (78dp high, clickable)."""
             wid = w.get('id', '')
             is_fav = wid in self.weap_favorites
 
@@ -5604,7 +6428,7 @@ try:
                          self._weap_toggle_fav(_id))
             row.add_widget(fav_btn)
 
-            # Entire row (except fav button and add button) clickable = open detail
+            # Whole row (except fav-button and add-button) clickable = open detail
             def _on_touch(widget, touch, weap=w):
                 if not widget.collide_point(*touch.pos):
                     return False
@@ -5629,7 +6453,7 @@ try:
             self._weap_render_list()
 
         def _weap_add_to_char(self, w):
-            """Add weapon to selected character's weapons field and save."""
+            """Add weapon to selected character's weapon field and save."""
             idx = self._weap_char_target
             if idx < 0 or idx >= len(self.chars):
                 return
@@ -5724,69 +6548,69 @@ try:
                     color=TXT, bold=True))
                 stats_box.add_widget(framed)
 
-            _stat(labels.get('skill', 'Skill'),
+            _stat(labels.get('skill', 'Ferdighet'),
                   w.get('skill', '—'))
-            _stat(labels.get('damage', 'Damage'),
+            _stat(labels.get('damage', 'Skade'),
                   w.get('damage', '—'))
 
             db = w.get('uses_db')
             if db is True:
-                db_text = 'Yes'
+                db_text = 'Ja'
             elif db == 'half':
-                db_text = 'Half'
+                db_text = 'Halv'
             else:
-                db_text = 'No'
-            _stat(labels.get('uses_db', 'Uses DB'), db_text)
+                db_text = 'Nei'
+            _stat(labels.get('uses_db', 'Bruker DB'), db_text)
 
-            _stat(labels.get('can_impale', 'Can impale'),
-                  'Yes' if w.get('can_impale') else 'No')
-            _stat(labels.get('range', 'Range'),
+            _stat(labels.get('can_impale', 'Kan spidde'),
+                  'Ja' if w.get('can_impale') else 'Nei')
+            _stat(labels.get('range', 'Rekkevidde'),
                   w.get('range', '—'))
-            _stat(labels.get('attacks', 'Attacks / round'),
+            _stat(labels.get('attacks', 'Angrep / runde'),
                   w.get('attacks', '—'))
-            _stat(labels.get('ammo', 'Magazine'),
+            _stat(labels.get('ammo', 'Magasin'),
                   w.get('ammo', '—'))
-            _stat(labels.get('malfunction', 'Malfunction'),
+            _stat(labels.get('malfunction', 'Feiling'),
                   w.get('malfunction', '—'))
 
             g.add_widget(stats_box)
 
-            # Era and price
+            # Epoke og pris
             g.add_widget(mksep(6))
             meta = []
             eras = w.get('era', [])
             if eras:
-                era_map = {'all': 'All', 'gaslight': 'Gaslight',
-                           '1920s': '1920s',
-                           'modern': 'Modern'}
+                era_map = {'all': 'Alle', 'gaslight': 'Gaslight',
+                           '1920s': '1920-tallet',
+                           'modern': 'Moderne'}
                 era_txt = ', '.join(era_map.get(e, e) for e in eras)
-                meta.append(f"Era: {era_txt}")
+                meta.append(f"Epoke: {era_txt}")
             cost = w.get('cost_1920s')
             if cost:
-                meta.append(f"Price (1920): {cost}")
+                meta.append(f"Pris (1920): {cost}")
             avail = w.get('availability')
             if avail:
-                meta.append(f"Availability: {avail}")
+                meta.append(f"Tilgjengelighet: {avail}")
             if meta:
                 g.add_widget(mklbl(
                     '   •   '.join(meta),
                     color=DIM, size=11, wrap=True))
 
-            # Description
+            # Beskrivelse
             desc = w.get('description', '')
             if desc:
                 g.add_widget(mksep(6))
                 g.add_widget(mklbl(
-                    labels.get('description', 'Description'),
+                    labels.get('description', 'Beskrivelse'),
                     color=GOLD, size=12, bold=True, h=22))
                 g.add_widget(mklbl(desc, color=TXT, size=12, wrap=True))
 
-            # Pulp notes
+            # Pulp-notater
             pulp = w.get('pulp_notes', '')
             if pulp:
                 g.add_widget(mksep(6))
                 g.add_widget(mklbl(
-                    labels.get('pulp_notes', 'Pulp notes'),
+                    labels.get('pulp_notes', 'Pulp-notater'),
                     color=GOLD, size=12, bold=True, h=22))
                 g.add_widget(mklbl(pulp, color=TXT, size=12, wrap=True))
 
@@ -5802,7 +6626,7 @@ try:
             scroll.add_widget(g)
             overlay.add_widget(scroll)
 
-            # Lay overlay on FloatLayout-root (same pattern as rules)
+            # Add overlay to FloatLayout root (same pattern as rules)
             root = self.content
             while root.parent and not isinstance(root.parent, FloatLayout):
                 root = root.parent

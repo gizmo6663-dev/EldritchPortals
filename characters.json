@@ -227,8 +227,8 @@
     "dodge": "30%",
     "weapons": "Brawl 60% (30/12) skade 1D3+1D4; .38 revolver 40% (20/8) skade 1D10",
     "talents": "",
-    "backstory": "Kritthvitt hår, velstelt bart, meget fast håndtrykk. Listig, skarpsindig, velmanert. Norsk, oppvokst på Martinique - snakker utmerket kolonifransk og engelsk. Ivrig pokerspiller.",
-    "notes": "Psychology 70%, Fast Talk 95%. Lite unnslipper oppmerksomheten hans. Helter som prøver å lure ham kan bli fulgt av stewards.",
+    "backstory": "Chalk-white hair, well-groomed moustache, very firm handshake. Shrewd, sharp-minded, well-mannered. Norwegian, grew up on Martinique - speaks excellent colonial French and English. Keen poker player.",
+    "notes": "Psychology 70%, Fast Talk 95%. Little escapes his attention. Heroes who try to deceive him may be followed by stewards.",
     "skills": {
       "Art/Craft (Music)": "20",
       "Charm": "40",
@@ -249,7 +249,7 @@
   {
     "name": "Hugo Schramm",
     "type": "NPC",
-    "occ": "Førsteoffiser",
+    "occ": "First Officer",
     "age": "46",
     "residence": "SS President Coolidge",
     "birthplace": "",
@@ -271,8 +271,8 @@
     "dodge": "30%",
     "weapons": "Brawl 75% (37/15) skade 1D3+1D4; .38 revolver 60% (30/12) skade 1D10",
     "talents": "",
-    "backstory": "Lysebrunt hår, tynt ansikt, blyantsmal bart. Smiler og nikker mye. Opptatt med passasjersaker og skipsfunksjoner. Trekker seg ofte til kontoret.",
-    "notes": "Forvirret over forsvinningene, men under ordre om å holde dem hemmelig.",
+    "backstory": "Light-brown hair, thin face, pencil-slim moustache. Smiles and nods a lot. Busy with passenger matters and ship functions. Often retreats to his office.",
+    "notes": "Confused about the disappearances, but under orders to keep them secret.",
     "skills": {
       "Art/Craft (Painting)": "40",
       "Charm": "80",
@@ -314,7 +314,7 @@
     "weapons": "Brawl 35% (17/7) skade 1D3",
     "talents": "",
     "backstory": "Skipets lege, dansk/tysktalende. Profesjonell, godt medisinsk grunnlag.",
-    "notes": "Undersøker Peterson-kabinen sammen med Hugo Schramm.",
+    "notes": "Investigating the Peterson cabin together with Hugo Schramm.",
     "skills": {
       "Charm": "60",
       "First Aid": "70",
@@ -335,7 +335,7 @@
   {
     "name": "Martin Aimesworthy",
     "type": "NPC",
-    "occ": "Førsteklasse-steward",
+    "occ": "First-class Steward",
     "age": "38",
     "residence": "SS President Coolidge",
     "birthplace": "",
@@ -357,8 +357,8 @@
     "dodge": "35%",
     "weapons": "Brawl 50% (25/10) skade 1D3",
     "talents": "",
-    "backstory": "Høy, blondt hår, glatt barbert. Lojal og oppmerksom. Pålitelig, ærlig og pliktoppfyllende.",
-    "notes": "Hvis Bunny Bates tas eller dør, kaster Crawling One Dominate på Aimesworthy og bruker ham i stedet for Bates. Finner selvmordsbrevet fra Peterson.",
+    "backstory": "Tall, blond hair, clean-shaven. Loyal and attentive. Reliable, honest and dutiful.",
+    "notes": "If Bunny Bates is taken or dies, Crawling One casts Dominate on Aimesworthy and uses him instead of Bates. Finds the suicide note from Peterson.",
     "skills": {
       "Art/Craft (Sewing)": "40",
       "Charm": "70",
@@ -379,7 +379,7 @@
   {
     "name": "Albert Hallander",
     "type": "NPC",
-    "occ": "Sjømann 1. klasse",
+    "occ": "Able Seaman",
     "age": "28",
     "residence": "SS President Coolidge",
     "birthplace": "Indonesia (nederlandske foreldre)",
@@ -401,8 +401,8 @@
     "dodge": "30%",
     "weapons": "Brawl 60% skade 1D3+1D4 (batong 1D6+1D4)",
     "talents": "",
-    "backstory": "Blond og sterk, grønne øyne. Indonesisk-født. Snikende, pompøs, ganske god løgner. Småtyv.",
-    "notes": "Brøt seg inn i Peterson-kabinen for å rane den, fant kun kakkerlakker. Sto i korridoren da Virginia oppdaget det tomme dressen. Lyver om å ha hørt en lyd.",
+    "backstory": "Blond and strong, green eyes. Indonesian-born. Sneaky, pompous, quite a good liar. Petty thief.",
+    "notes": "Broke into the Peterson cabin to rob it, found only cockroaches. Was in the corridor when Virginia discovered the empty suit. Lies about having heard a sound.",
     "skills": {
       "Electrical Repair": "40",
       "Fast Talk": "40",
@@ -442,7 +442,7 @@
     "weapons": "",
     "talents": "",
     "backstory": "Skipets chief purser. Drept og konsumert av Crawling One helt i begynnelsen av scenariet.",
-    "notes": "Gikk for å konfrontere den uregistrerte passasjeren (Almacan) og ble drept. Hans forsvinning er den første ledetråden. Ryktes å ha hatt ekteskapsproblemer.",
+    "notes": "Went to confront the unregistered passenger (Almacan) and was killed. His disappearance is the first clue. Rumoured to have had marital problems.",
     "skills": {}
   },
   {
@@ -470,8 +470,8 @@
     "dodge": "30%",
     "weapons": "Brawl 25% skade 1D3; 12g shotgun (pump) 75% skade 4D6/2D6/1D6",
     "talents": "",
-    "backstory": "Kastanjefarget hår, kurvete, farlig svai. Flørtende, liker våpen og spenning, god danser. Født i Shanghai, oppvokst med kinesisk amah.",
-    "notes": "Spiste med Peterson kl 19:00 den 5. des. Fant et ekte kjærlighetsbrev fra Chad om morgenen den 6. des. Etter forsvinningen skyter hun lerduer fra hekken.",
+    "backstory": "Chestnut hair, curvy, dangerously swaying. Flirtatious, likes weapons and excitement, good dancer. Born in Shanghai, raised with a Chinese amah.",
+    "notes": "Dined with Peterson at 19:00 on 5 Dec. Found a genuine love letter from Chad on the morning of 6 Dec. After the disappearance she shoots clay pigeons from the stern.",
     "skills": {
       "Art/Craft (Piano)": "20",
       "Lore (New York City)": "80",
@@ -512,8 +512,8 @@
     "dodge": "30%",
     "weapons": "Brawl 60% skade 1D3; .303 rifle 60% skade 2D6+4",
     "talents": "",
-    "backstory": "Gode tenner, spiss hake, gråblandet hår. Påståelig, falsk, forteller skitne vitser, kan skyte og jakte. 'New York Astor' - arvet formuen.",
-    "notes": "Reiser med sønnen James (25), butleren Walker (38), og datteren Elizabeth Anne (19). Etter Honolulu tilbyr han $1000 i belønning for informasjon om Peterson.",
+    "backstory": "Good teeth, pointed chin, salt-and-pepper hair. Assertive, fake, tells dirty jokes, can shoot and hunt. 'New York Astor' - inherited the fortune.",
+    "notes": "Travelling with son James (25), butler Walker (38), and daughter Elizabeth Anne (19). After Honolulu he offers $1000 reward for information about Peterson.",
     "skills": {
       "Accounting": "50",
       "Credit Rating": "90",
@@ -555,7 +555,7 @@
     "dodge": "35%",
     "weapons": "Brawl 70% (kniv 1D8+1D4); .45 rifle 80% skade 4D6/2D6/1D6; .44 revolver 65% skade 1D10+2",
     "talents": "",
-    "backstory": "Overvektig, skallet, muskuløs. Hensynsløs, historieforteller, pratsom, territorial.",
+    "backstory": "Overweight, bald, muscular. Ruthless, storyteller, talkative, territorial.",
     "notes": "Jakter svart pygmé-neshorn i Siam. Bagasjen inneholder Winchester-rifle, hagle, og Baedeker's guide. Har fattet interesse for Virginia Ridley.",
     "skills": {
       "Climb": "45",
@@ -598,8 +598,8 @@
     "dodge": "40% (med vifte 80%)",
     "weapons": "Brawl 55% (nunchaku 1D8-1)",
     "talents": "Stout Constitution, Outmaneuver",
-    "backstory": "Hvitt hår og skjegg, skrøpelig, litt lutrygget. Seriøs, lærd, morbid, og meget, meget smart. Tidligere kommunist. Nasjonalistiske bøller drepte kona og to sønner.",
-    "notes": "Eier Book of Red Jade. Ber om heltenes hjelp etter tyveriet 7. des. Kan fortelle at han så Chad Peterson forlate kabinen sin etter hans 'selvmord'. Spells: Cloud Memory, Enchant Knife, Flesh Ward, Wrack. Magical Item: Harmonic Reflecting Fan (+40% Dodge).",
+    "backstory": "White hair and beard, frail, slightly stooped. Serious, learned, morbid, and very, very smart. Former communist. Nationalist thugs killed his wife and two sons.",
+    "notes": "Owns the Book of Red Jade. Asks the heroes for help after the theft on 7 Dec. Can reveal that he saw Chad Peterson leave his cabin after his 'suicide'. Spells: Cloud Memory, Enchant Knife, Flesh Ward, Wrack. Magical Item: Harmonic Reflecting Fan (+40% Dodge).",
     "skills": {
       "Art (Music)": "20",
       "Charm": "50",
@@ -620,7 +620,7 @@
   {
     "name": "Chad Peterson",
     "type": "NPC",
-    "occ": "Velstående forlovet",
+    "occ": "Wealthy Fiancé",
     "age": "",
     "residence": "SS President Coolidge",
     "birthplace": "New York",
@@ -643,13 +643,13 @@
     "weapons": "",
     "talents": "",
     "backstory": "Ung og velkledd, men full ved innsjekking. Virginia Ridleys forlovede. Utadvendt, livlig.",
-    "notes": "Konsumert av Crawling One umiddelbart etter avreise. Crawling One forlater hans form dagen etter (kan ikke snakke). Et falskt selvmordsbrev plasseres i kabinen. Hans 'empty suit' finnes av Virginia den 6. des. Ingen stats - Crawling One bruker sine egne når den tar hans form.",
+    "notes": "Consumed by Crawling One immediately after departure. Crawling One leaves his form the next day (cannot speak). A false suicide note is placed in the cabin. His 'empty suit' is found by Virginia on 6 Dec. No stats - Crawling One uses its own when taking his form.",
     "skills": {}
   },
   {
     "name": "Phyllis Barnes",
     "type": "NPC",
-    "occ": "Musikklærer",
+    "occ": "Music Teacher",
     "age": "58",
     "residence": "SS President Coolidge (Special Class)",
     "birthplace": "",
@@ -671,8 +671,8 @@
     "dodge": "35%",
     "weapons": "Brawl 25% skade 1D3",
     "talents": "",
-    "backstory": "Kraftig bygg, hår i knute, tindrende øyne, korte negler. Rødbrunt hår, lyst smil. Rasistisk og fremmedfiendtlig (spesielt mot kinesere), men også gjennomreligiøs kristen. Nysgjerrig.",
-    "notes": "Spiller piano, orgel, harpe, fløyte. Gir impromptu-konserter og lærer barn musikk. Hevder å ha sett Peterson etter forsvinningen hans. Forsvinner 13. des - kroppen dumpes i en ballasttank.",
+    "backstory": "Sturdy build, hair in a bun, sparkling eyes, short nails. Reddish-brown hair, bright smile. Racist and xenophobic (especially towards Chinese), but also deeply religious Christian. Curious.",
+    "notes": "Plays piano, organ, harp, flute. Gives impromptu concerts and teaches children music. Claims to have seen Peterson after his disappearance. Disappears 13 Dec - body dumped in a ballast tank.",
     "skills": {
       "Art/Craft (Piano)": "80",
       "Charm": "50",
@@ -710,8 +710,8 @@
     "dodge": "30%",
     "weapons": "Brawl 35% skade 1D3+1D4",
     "talents": "",
-    "backstory": "Muskuløs men slank kropp, bredt smil, begeistrede øyne. Liker å vite andres saker, litt sladrete. Handler i smykker.",
-    "notes": "Skulle gå av i Honolulu 10. des. Forsvinner samme dag - fanget av Bunny Bates, tappet for blod av Crawling One, tømt gjennom koøye.",
+    "backstory": "Muscular but slim build, broad smile, enthusiastic eyes. Likes to know others' business, slightly gossipy. Deals in jewellery.",
+    "notes": "Was due to disembark in Honolulu 10 Dec. Disappears the same day - caught by Bunny Bates, drained of blood by Crawling One, emptied through a porthole.",
     "skills": {
       "Accounting": "60",
       "Credit Rating": "55",
@@ -730,7 +730,7 @@
   {
     "name": "Father Raphael Alvarez",
     "type": "NPC",
-    "occ": "Jesuittisk misjonærprest",
+    "occ": "Jesuit Missionary Priest",
     "age": "31",
     "residence": "SS President Coolidge (Third Class)",
     "birthplace": "Mexico",
@@ -752,8 +752,8 @@
     "dodge": "25%",
     "weapons": "Brawl 35% skade 1D3+1D4",
     "talents": "",
-    "backstory": "Svart hår og bart, grov hud, valkede hender fra år i kirkehagene. Snill, logisk, nysgjerrig, skarpsindig, hjemsøkt. Fra Mexico, god bakgrunn i etterforskning av det paranormale.",
-    "notes": "Reassignert til Peking for å etterforske kristne og i hemmelighet søke etter fruktbarhetskulter. Hører Bunny Bates' tilståelse 17. des. Potensiell alliert.",
+    "backstory": "Black hair and moustache, rough skin, calloused hands from years in the churchyards. Kind, logical, curious, sharp-minded, haunted. From Mexico, good background in investigating the paranormal.",
+    "notes": "Reassigned to Peking to investigate Christians and secretly seek out fertility cults. Hears Bunny Bates' confession 17 Dec. Potential ally.",
     "skills": {
       "Art/Craft (Poetry)": "50",
       "Charm": "40",
@@ -799,8 +799,8 @@
     "dodge": "30%",
     "weapons": "Brawl 40% skade 1D3+1D4",
     "talents": "",
-    "backstory": "Brylkremt bakoverglattet hår, spinkel, gjennomtrengende øyne. Nysgjerrig, sladrete, og ganske påtrengende. Fra San Francisco Chronicle.",
-    "notes": "Reporter ombord for å skrive historie om reisen og USA-Kina handelsmuligheter. Forsvinner 12. des - lokket til Almacans kabin, tappet for blod og tømt gjennom koøye.",
+    "backstory": "Brilliantined hair combed back, slight, penetrating eyes. Curious, gossipy, and quite intrusive. From the San Francisco Chronicle.",
+    "notes": "Reporter on board to write a story about the voyage and US-China trade opportunities. Disappears 12 Dec - lured to Almacan's cabin, drained of blood and emptied through a porthole.",
     "skills": {
       "Accounting": "20",
       "Fast Talk": "65",
@@ -837,8 +837,8 @@
     "dodge": "32%",
     "weapons": "Brawl 50% (kniv 1D8); Blowgun 45% (1D2 + gift, CON-roll for lammelse)",
     "talents": "",
-    "backstory": "Bredt bryst, blek hud, ondskapsfullt glis. Kort, stygg. Stødig, modig, mistenksom.",
-    "notes": "Wang Ma drepes 7. des når Crawling One stjeler Book of Red Jade. Erstattes av Lo Mai (samme stats). Liten flokk tcho-tcho booket i Steerage. SAN-loss: 0/1D3 for tcho-tcho.",
+    "backstory": "Broad chest, pale skin, malicious grin. Short, ugly. Steady, brave, suspicious.",
+    "notes": "Wang Ma is killed 7 Dec when Crawling One steals the Book of Red Jade. Replaced by Lo Mai (same stats). Small flock of tcho-tcho booked in Steerage. SAN-loss: 0/1D3 for tcho-tcho.",
     "skills": {
       "Art/Craft (Cooking)": "10",
       "Intimidate": "40",
@@ -876,8 +876,8 @@
     "dodge": "40%",
     "weapons": "Brawl 80% (kniv 1D4+1); .32 auto 45%; Thompson SMG 65%",
     "talents": "Tough Guy, Rapid Fire",
-    "backstory": "Kastanjefarget hår, store hender, nese brukket flere ganger. Bestemt, ambisiøs, kynisk. Tidligere Capone-gjengen.",
-    "notes": "Dominert av Crawling One fra 7. des. Brukt som håndlanger. Bryter fri kort 17. des og tilstår til Father Alvarez. Faller i galskap. Tar gissel i First Class spisesalen 19. des som distraksjon.",
+    "backstory": "Chestnut hair, large hands, nose broken several times. Determined, ambitious, cynical. Former Capone gang member.",
+    "notes": "Dominated by Crawling One from 7 Dec. Used as a henchman. Breaks free shortly on 17 Dec and confesses to Father Alvarez. Falls into madness. Takes hostages in the First Class dining room 19 Dec as a distraction.",
     "skills": {
       "Climb": "50",
       "Fast Talk": "65",
@@ -914,7 +914,7 @@
     "weapons": "Fighting 80% (kniv 1D8+1D4); .45 auto 40% skade 1D10+2",
     "talents": "Weird Science, Alert",
     "backstory": "En svermende masse av kakkerlakker, skorpioner, fluer og graveugler formet som en menneskelig figur. Kan ta forskjellige konsumerte skikkelser. Snakker Navaho, gammelspansk, mandarin, Wu-kinesisk, engelsk.",
-    "notes": "Armor: Normale våpen gir minimumsskade, kuler kun 1 poeng (hagle minimum). Kan oppløses til insekter og flykte. SAN-loss: 1D3/2D6. Mål: bygge Pipes of Leng. Forms konsumert: Almacan, Haseye Adikai, Du Zeming, Martin Dungass, Chad Peterson.",
+    "notes": "Armor: Normal weapons deal minimum damage, bullets only 1 point (shotgun minimum). Can dissolve into insects and flee. SAN-loss: 1D3/2D6. Goal: build Pipes of Leng. Forms consumed: Almacan, Haseye Adikai, Du Zeming, Martin Dungass, Chad Peterson.",
     "skills": {
       "Climb": "80",
       "Jump": "80",
@@ -977,7 +977,7 @@
     "build": "1",
     "move": "6",
     "dodge": "—",
-    "weapons": "Fighting 40% skade 1D3 (+1D4) eller våpen",
+    "weapons": "Fighting 40% damage 1D3 (+1D4) or weapon",
     "talents": "",
     "backstory": "Vandrende lik reanimert av Crawling Ones 'Graveyard Kiss'-variant. Ignorerer skade unntatt mot hodet (penalty).",
     "notes": "SAN-loss: 0/1D8. Crawling One har 5 zombier fra ofrene.",
@@ -1006,10 +1006,10 @@
     "build": "6",
     "move": "8/12 (flygende)",
     "dodge": "30%",
-    "weapons": "2D6 tentakler (85% skade 1D10 direkte mot HP, ignorerer rustning); vindblåst 70% (20 yards, skade lik DB); fixing attack (motstående STR vs POW)",
+    "weapons": "2D6 tentacles (85% damage 1D10 direct to HP, ignores armour); wind blast 70% (20 yards, damage equal to DB); fixing attack (opposed STR vs POW)",
     "talents": "",
     "backstory": "Gruvekrolig skapning fra havets dyp. Tilkalles av Pipes of Leng. Halvveis ikke-materiell.",
-    "notes": "Armor: 4, får minimum skade fra fysiske våpen. Usynlighet (1 MP/runde). SAN-loss: 1D3/1D20. Kan stoppes ved å ødelegge Pipes of Leng (50 HP, 3 armor).",
+    "notes": "Armor: 4, takes minimum damage from physical weapons. Invisibility (1 MP/round). SAN-loss: 1D3/1D20. Can be stopped by destroying the Pipes of Leng (50 HP, 3 armor).",
     "skills": {}
   },
   {
