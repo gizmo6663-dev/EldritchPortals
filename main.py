@@ -89,8 +89,8 @@ try:
     # first launch — avoids Android 13+ scoped storage problem.
     EXTERNAL_CHAR_FILE = os.path.join(BASE_DIR, "characters.json")
     # CHAR_FILE is set in build() when user_data_dir is available.
-    CHAR_FILE = EXTERNAL_CHAR_FILE  # midlertidig; overstyres i build()
-    # Scenario file: primær lagring i user_data_dir (app-private,
+    CHAR_FILE = EXTERNAL_CHAR_FILE  # temporary; overridden in build()
+    # Scenario file: primary storage in user_data_dir (app-private,
     # always writable). External import path is tried on
     # "Import" — avoids Android 13+ scoped storage-problem.
     EXTERNAL_SCENARIO = os.path.join(BASE_DIR, "scenario.json")
@@ -127,52 +127,52 @@ try:
          "Mistenker alle og alt; ser konspirasjoner overalt "
          "i 1d10 runder."),
         ("Significant Person",
-         "Forveksler en tilstedeværende med en viktig person fra "
-         "fortiden; oppfører seg deretter i 1d10 runder."),
+         "Mistakes someone present for an important person from "
+         "the past; behaves accordingly for 1d10 rounds."),
         ("Fainting",
          "Collapses unconscious from the shock for 1d10 rounds."),
         ("Flight",
          "Flees in blind panic away from the threat for 1d10 rounds."),
-        ("Physical Hysteriaa",
-         "Gråter, ler eller skriker ukontrollert i 1d10 runder; "
-         "ute av stand til å handle."),
+        ("Physical Hysteria",
+         "Cries, laughs, or screams uncontrollably for 1d10 rounds; "
+         "unable to act."),
         ("Phobia",
-         "Utvikler en ny fobi knyttet til kilden av sjokket; "
-         "varer i 1d10 runder."),
-        ("Maniaa",
-         "Utvikler en ny mani knyttet til kilden av sjokket; "
-         "varer i 1d10 runder."),
+         "Develops a new phobia linked to the source of the shock; "
+         "lasts for 1d10 rounds."),
+        ("Mania",
+         "Develops a new mania linked to the source of the shock; "
+         "lasts for 1d10 rounds."),
     ]
 
     PULP_MADNESS_SUM = [
         ("Memory Loss",
-         "Våkner et trygt sted uten minne om hva som hendte de siste "
-         "1d10 timene."),
+         "Wakes in a safe place with no memory of what happened in the last "
+         "1d10 hours."),
         ("Stolen Hours",
-         "Forsvinner i 1d10 dager; ingen — heller ikke karakteren "
-         "selv — vet hvor han har vært."),
+         "Disappears for 1d10 days; no one — not even the character "
+         "themselves — knows where they have been."),
         ("Violent Behaviour",
-         "Begår voldelige handlinger i 1d10 dager; må forklare seg "
-         "for myndighetene etterpå."),
+         "Commits violent acts for 1d10 days; must explain themselves "
+         "to the authorities afterwards."),
         ("Paranoia",
-         "Sterk paranoia i 1d10 dager; ser fiender i skygger og "
-         "venner."),
+         "Strong paranoia for 1d10 days; sees enemies in shadows and among "
+         "friends."),
         ("Significant Person",
-         "Identifiserer noen som ekstremt betydningsfull og følger "
-         "eller jakter dem i 1d10 dager."),
+         "Identifies someone as extremely significant and follows "
+         "or pursues them for 1d10 days."),
         ("Committed",
-         "Våkner i et sykehus, asyl eller fengsel uten å vite "
-         "hvordan; 1d10 dagers opphold."),
+         "Wakes in a hospital, asylum, or prison without knowing "
+         "how; 1d10 days' stay."),
         ("Flight Home",
          "Drar instinktivt mot hjemmet eller barndomstedet; reisen "
          "tar 1d10 dager."),
         ("Hysteriaa",
-         "Overveldende emosjonell tilstand i 1d10 dager; må "
-         "stabiliseres av andre."),
+         "Overwhelming emotional state for 1d10 days; must "
+         "be stabilised by others."),
         ("Phobia",
-         "Utvikler en ny vedvarende fobi som varer 1d10 måneder."),
-        ("Maniaa",
-         "Utvikler en ny vedvarende mani som varer 1d10 måneder."),
+         "Develops a new persistent phobia lasting 1d10 months."),
+        ("Mania",
+         "Develops a new persistent mania lasting 1d10 months."),
     ]
 
     # === FONTER ===
@@ -323,13 +323,13 @@ try:
         return _GRADIENT_CACHE[key]
 
     def make_glow_bar_tex(rgb, width=256, height=12):
-        """En horisontal lys-stripe med myk falloff på begge akser.
-        Brukt som indikator for aktive faner — ser ut som et lysskjær
-        i stedet for en hard stripe.
+        """A horizontal light stripe with soft falloff on both axes.
+        Used as indicator for active tabs — looks like a light glow
+        instead of a hard stripe.
 
-        - rgb: 3-tuple (r, g, b) 0..1 (alpha bygges fra falloff).
-        - Horisontal: sterk fade på begge ender (~sin^1.35).
-        - Vertikal: bred lys-kjerne med litt mykere topp/bunn (~sin^0.45).
+        - rgb: 3-tuple (r, g, b) 0..1 (alpha built from falloff).
+        - Horizontal: strong fade on both ends (~sin^1.35).
+        - Vertical: wide bright core with slightly softer top/bottom (~sin^0.45).
         """
         import math
         width = max(2, int(width))
@@ -357,9 +357,9 @@ try:
     def get_glow_bar_tex():
         key = 'glow_bar'
         if key not in _GRADIENT_CACHE:
-            # Varm amber-gull — midt mellom GOLD og pale-gold.
-            # Lysere enn det rene GOLD-en, men fortsatt tydelig gull
-            # snarere enn nesten-hvit.
+            # Warm amber-gold — midway between GOLD and pale-gold.
+            # Brighter than pure GOLD, but still clearly gold
+            # rather than near-white.
             _GRADIENT_CACHE[key] = make_glow_bar_tex(
                 (0.96, 0.83, 0.55),
                 width=256,
@@ -368,18 +368,18 @@ try:
         return _GRADIENT_CACHE[key]
 
     def make_pulse_glow_tex(rgb, size=128, inset_ratio=0.32):
-        """Generer en 2D glow-tekstur for puls-effekten på faner.
+        """Generate a 2D glow texture for the pulse effect on tabs.
 
-        Strukturen er en distansefelt-basert "blurret avrundet
-        rektangel":
-        - Et indre kjerne-rektangel (inset_ratio * size fra kantene)
-          har full alpha.
-        - Utenfor kjernen faller alpha kontinuerlig av med en cosine-
-          falloff til 0 ved teksturens kant.
+        The structure is a distance-field-based "blurred rounded
+        rectangle":
+        - An inner core rectangle (inset_ratio * size from edges)
+          has full alpha.
+        - Outside the core, alpha falls off continuously with a cosine
+          falloff to 0 at the texture edge.
 
-        Cosine gir mykere fall enn ren gaussian — vi treffer nøyaktig
-        alpha=0 ved kantene, slik at det IKKE er en synlig "klipping"
-        der teksturen ender. Tilsvarende metode som lysstripen.
+        Cosine gives a softer falloff than pure gaussian — we hit exactly
+        alpha=0 at the edges so there is NO visible "clipping"
+        where the texture ends. Same method as the light stripe.
         """
         import math
         size = max(16, int(size))
@@ -392,7 +392,7 @@ try:
         inset = int(size * inset_ratio * 0.5)
         rect_min = inset
         rect_max = size - inset
-        # Maks distanse fra kjernen til teksturens kant
+        # Max distance from core to texture edge
         max_dist = float(inset) if inset > 0 else 1.0
 
         for y in range(size):
@@ -897,109 +897,109 @@ try:
           "  Regular: resultat \u2264 skill",
           "  Failure: resultat > skill",
           "",
-          "Automatisk suksess: 01 alltid suksess.",
+          "Automatic success: 01 always succeeds.",
           "Fumble (based on THRESHOLD, not base skill):",
           "  Krav \u2265 50: kun 100 er fumble",
           "  Krav < 50: 96\u2013100 er fumble",
-          "  Eks: skill 60, Hard diff (krav 30)",
-          "    -> fumble på 96\u2013100",
+          "  E.g.: skill 60, Hard diff (threshold 30)",
+          "    -> fumble on 96\u2013100",
         ]),
-        ("Vanskelighetsgrad", [
-          "Keeper setter vanskelighetsgrad:",
-          "  Regular: skill-verdi (standard)",
-          "  Hard: halv skill-verdi",
-          "  Extreme: femtedel av skill-verdi",
+        ("Difficulty", [
+          "Keeper sets difficulty:",
+          "  Regular: skill value (standard)",
+          "  Hard: half skill value",
+          "  Extreme: one fifth of skill value",
           "",
-          "Mot levende motstandere:",
-          "  Motstanders skill < 50: Regular",
+          "Against living opponents:",
+          "  Opponent's skill < 50: Regular",
           "  Motstanders skill \u2265 50: Hard",
           "  Motstanders skill \u2265 90: Extreme",
         ]),
         ("Bonus & Penalty", [
-          "Bonus die: rull 2 tier-terninger,",
-          "  bruk den LAVESTE.",
-          "Penalty die: rull 2 tier-terninger,",
+          "Bonus die: roll 2 tens dice,",
+          "  use the LOWEST.",
+          "Penalty die: roll 2 tens dice,",
           "  use the HIGHEST.",
           "",
-          "Maks 2 bonus ELLER 2 penalty.",
-          "Bonus og penalty kansellerer 1:1.",
+          "Max 2 bonus OR 2 penalty.",
+          "Bonus and penalty cancel 1:1.",
           "",
           "Given by Keeper based on circumstances:",
           "  Advantage: bonus (good light, time, tools)",
           "  Disadvantage: penalty (stress, poor visibility)",
         ]),
         ("Pushed Rolls", [
-          "Spiller kan pushe ETT mislykket kast.",
+          "Player may push ONE failed roll.",
           "Must describe WHAT they do differently.",
           "Keeper must approve the push.",
           "",
-          "Mislykket push = ALVORLIG konsekvens",
-          "(verre enn vanlig feil).",
+          "Failed push = SERIOUS consequence",
+          "(worse than ordinary failure).",
           "",
-          "KAN IKKE pushes:",
-          "  SAN-sjekker",
-          "  Luck-sjekker",
-          "  Kamp-kast",
-          "  Allerede pushede kast",
+          "CANNOT be pushed:",
+          "  SAN checks",
+          "  Luck checks",
+          "  Combat rolls",
+          "  Already pushed rolls",
         ]),
         ("Opposed Rolls", [
-          "Begge parter ruller sine skills.",
+          "Both parties roll their skills.",
           "Highest success level wins.",
           "Tied level: highest skill value wins.",
-          "Ingen suksess: status quo.",
+          "No success: status quo.",
           "",
-          "Vanlige opposed rolls:",
+          "Common opposed rolls:",
           "  Sneak vs Listen",
           "  Fast Talk vs Psychology",
           "  Charm vs POW",
-          "  STR vs STR (bryte, holde)",
-          "  DEX vs DEX (gripe, unnvike)",
+          "  STR vs STR (break, hold)",
+          "  DEX vs DEX (grab, evade)",
           "  Disguise vs Spot Hidden",
         ]),
         ("Luck", [
-          "Luck-verdi: 3d6 x 5 (ved opprettelse).",
+          "Luck value: 3d6 x 5 (at creation).",
           "Luck-sjekk: d100 \u2264 Luck.",
           "",
           "Spending Luck:",
-          "  Etter et skill-kast: trekk Luck-poeng",
+          "  After a skill roll: spend Luck points",
           "  1:1 to lower the result.",
-          "  Eks: kast 55, skill 50 -> spend 5 Luck.",
+          "  E.g.: roll 55, skill 50 -> spend 5 Luck.",
           "",
-          "Luck regenereres IKKE i standard CoC.",
-          "Pulp: regenerer 2d10 Luck per sesjon.",
+          "Luck does NOT regenerate in standard CoC.",
+          "Pulp: regenerate 2d10 Luck per session.",
           "",
-          "Group Luck: laveste Luck i gruppen",
-          "  brukes for tilfeldige hendelser.",
+          "Group Luck: lowest Luck in the group",
+          "  used for random events.",
         ]),
-        ("Erfaring & utvikling", [
-          "Etter scenario: marker brukte skills.",
-          "Rull d100 for hver markert skill:",
-          "  Resultat > skill = +1d10 til skill.",
-          "  Resultat \u2264 skill = ingen økning.",
+        ("Experience & Development", [
+          "After scenario: mark used skills.",
+          "Roll d100 for each marked skill:",
+          "  Result > skill = +1d10 to skill.",
+          "  Result \u2264 skill = no increase.",
           "",
-          "Skill-maks: 99 (unntatt CM: 99).",
-          "Alderseffekter kan senke stats.",
+          "Skill max: 99 (except CM: 99).",
+          "Age effects can lower stats.",
         ]),
       ]),
-      ("Kamp", "", [
-        ("Kampflyt", [
+      ("Combat", "", [
+        ("Combat Flow", [
           "1. All act in DEX order",
           "   (highest first).",
           "",
           "2. Each participant gets 1 action:",
-          "   - Angripe (melee eller ranged)",
-          "   - Flee (trekke seg ut)",
+          "   - Attack (melee or ranged)",
+          "   - Flee (withdraw)",
           "   - Manoeuvre (trip, disarm, etc.)",
-          "   - Kaste besvergelse",
-          "   - Bruke gjenstand / First Aid",
-          "   - Annet (snakke, lete, etc.)",
+          "   - Cast a spell",
+          "   - Use item / First Aid",
+          "   - Other (talk, search, etc.)",
           "",
           "3. Defender chooses reaction:",
           "   - Dodge (avoid)",
           "   - Fight Back (motangrep, kun melee)",
           "   - Nothing (takes full damage)",
           "",
-          "4. Gjenta til kamp er over.",
+          "4. Repeat until combat ends.",
         ]),
         ("Melee", [
           "Attacker: roll Fighting skill.",
@@ -1008,7 +1008,7 @@ try:
           "DODGE (opposed vs Dodge-skill):",
           "  Attacker wins -> full damage",
           "  Defender wins -> avoids the attack",
-          "  Begge feiler -> ingenting skjer",
+          "  Both fail -> nothing happens",
           "",
           "FIGHT BACK (opposed vs Fighting):",
           "  Attacker wins -> full damage",
@@ -1021,44 +1021,44 @@ try:
           "OUTNUMBERED:",
           "  When defender has already dodged",
           "  or fought back this round:",
-          "  -> alle etterfølgende angrep får",
+          "  -> all subsequent attacks get",
           "     +1 bonus die.",
           "  Exception: creatures with multiple attacks/round",
-          "  kan dodge/fight back like mange ganger.",
-          "  Gjelder IKKE skytevåpen.",
+          "  can dodge/fight back the same number of times.",
+          "  Does NOT apply to firearms.",
         ]),
-        ("Skytevåpen", [
-          "Rull Firearms-skill. INGEN opposed roll.",
-          "Forsvarer kan KUN dodge ved point-blank.",
-          "Ellers: bare dekke/bevege seg ut.",
+        ("Firearms", [
+          "Roll Firearms skill. NO opposed roll.",
+          "Defender can ONLY dodge at point-blank.",
+          "Otherwise: only take cover/move away.",
           "",
-          "Rekkevidde-modifikatorer:",
+          "Range modifiers:",
           "  Point-blank (\u2264 1/5 range): +1 bonus",
-          "  Mellomdistanse (base range): normal",
-          "  Lang (inntil 2x base): +1 penalty",
-          "  Ekstrem (inntil 4x base): +2 penalty",
+          "  Medium range (base range): normal",
+          "  Long (up to 2x base): +1 penalty",
+          "  Extreme (up to 4x base): +2 penalty",
           "",
-          "Andre modifikatorer:",
+          "Other modifiers:",
           "  Moving target: +1 penalty",
           "  Large target: +1 bonus",
           "  Small target: +1 penalty",
-          "  Sikte (bruker handling): +1 bonus",
+          "  Aim (uses action): +1 bonus",
           "",
-          "Impale: Extreme suksess med",
+          "Impale: Extreme success with",
           "  impaling weapon",
           "  = max weapon damage + extra roll.",
         ]),
-        ("Manøvrer", [
+        ("Manoeuvres", [
           "Fighting manoeuvre (instead of damage):",
           "  Trip/knockdown: target falls",
-          "  Disarm: mål mister våpen",
+          "  Disarm: target loses weapon",
           "  Hold/grapple: target is held",
-          "  Kaste: dytte/kaste motstanderen",
+          "  Throw: push/throw the opponent",
           "",
-          "Krever: vinn opposed Fighting-sjekk.",
-          "Build-differanse kan gi bonus/penalty:",
-          "  Angriper Build \u2265 mål + 2: +1 bonus",
-          "  Angriper Build \u2264 mål - 2: +1 penalty",
+          "Requires: win opposed Fighting check.",
+          "Build difference can give bonus/penalty:",
+          "  Attacker Build \u2265 target + 2: +1 bonus",
+          "  Attacker Build \u2264 target - 2: +1 penalty",
         ]),
         ("Damage Bonus (DB)", [
           "DB based on STR + SIZ:",
@@ -1070,7 +1070,7 @@ try:
           "  205\u2013284: +2d6",
           "  285\u2013364: +3d6",
           "",
-          "Build-verdi:",
+          "Build value:",
           "  DB -2: Build -2",
           "  DB -1: Build -1",
           "  DB 0:  Build 0",
@@ -1078,239 +1078,239 @@ try:
           "  DB +1d6: Build 2",
           "  DB +2d6: Build 3",
         ]),
-        ("Skade & heling", [
-          "SKADENIVÅER:",
+        ("Damage & Healing", [
+          "DAMAGE LEVELS:",
           "  Minor wound: tap < halve maks HP",
           "  Major wound: tap \u2265 halve maks HP",
           "",
-          "MAJOR WOUND-konsekvenser:",
-          "  CON-sjekk eller besvime",
+          "MAJOR WOUND consequences:",
+          "  CON check or fall unconscious",
           "  First Aid/Medicine within 1 round",
-          "  Må stabiliseres ellers dør",
+          "  Must be stabilised or dies",
           "",
           "DYING (0 HP):",
           "  CON-check per round",
-          "  Feil = død",
+          "  Failure = death",
           "  Success = lasts 1 more round",
           "",
-          "HELING:",
+          "HEALING:",
           "  First Aid: +1 HP (1 attempt/wound)",
           "  Medicine: +1d3 HP (etter First Aid)",
-          "  Naturlig: 1 HP/uke (minor)",
-          "  Major wound: 1d3 HP/uke m/pleie",
+          "  Natural: 1 HP/week (minor)",
+          "  Major wound: 1d3 HP/week with care",
         ]),
-        ("Automatiske våpen", [
+        ("Automatic Weapons", [
           "Burst: 3 bullets, +1 bonus die to damage.",
-          "Full auto: velg antall mål,",
-          "  fordel kuler, rull for hvert mål.",
-          "  1 bonus die per 10 kuler på målet.",
+          "Full auto: choose number of targets,",
+          "  distribute bullets, roll for each target.",
+          "  1 bonus die per 10 bullets on target.",
           "",
           "Suppressive fire:",
-          "  Dekker et område, alle i området",
-          "  må Dodge eller ta 1 treff.",
+          "  Covers an area, all in the area",
+          "  must Dodge or take 1 hit.",
           "  Uses half the magazine.",
         ]),
       ]),
       ("Sanity", "", [
-        ("SAN-sjekk", [
-          "Rull d100 \u2264 nåværende SAN.",
+        ("SAN Check", [
+          "Roll d100 \u2264 current SAN.",
           "",
           "Format: 'X/Y'",
-          "  Suksess: tap = X",
-          "  Feil: tap = Y",
-          "  Eks: '1/1d6' = suksess taper 1,",
-          "    feil taper 1d6 SAN.",
+          "  Success: lose = X",
+          "  Failure: lose = Y",
+          "  E.g.: '1/1d6' = success loses 1,",
+          "    failure loses 1d6 SAN.",
           "",
           "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
           "",
-          "SAN fumble: automatisk maks SAN-tap.",
+          "SAN fumble: automatic max SAN loss.",
         ]),
         ("Temporary Insanity", [
-          "TRIGGER: 5+ SAN tapt i ETT kast.",
+          "TRIGGER: 5+ SAN lost in ONE roll.",
           "",
-          "Keeper krever INT-sjekk:",
-          "  INT suksess = investigator innser",
-          "    sannheten -> MIDLERTIDIG GAL",
-          "  INT feil = fortrengt minne,",
-          "    investigator forblir ved sine fulle fem",
+          "Keeper requires INT check:",
+          "  INT success = investigator realises",
+          "    the truth -> TEMPORARILY INSANE",
+          "  INT failure = repressed memory,",
+          "    investigator remains sane",
           "",
-          "Midlertidig insanity varer 1d10 timer.",
-          "Begynner med Bout of Madness.",
-          "Etterfølges av Underlying Insanity.",
+          "Temporary insanity lasts 1d10 hours.",
+          "Begins with Bout of Madness.",
+          "Followed by Underlying Insanity.",
         ]),
         ("Bout of Madness", [
           "Occurs on temporary insanity.",
-          "Keeper velger Real-Time eller Summary.",
+          "Keeper chooses Real-Time or Summary.",
           "",
           "REAL-TIME (lasting 1d10 rounds):",
-          "  1: Amnesi (husker ingenting)",
-          "  2: Psykosomatisk (blind/døv/lam)",
-          "  3: Vold (angrip nærmeste)",
-          "  4: Paranoia (alle er fiender)",
-          "  5: Fysisk (kvalme/besvimelse)",
-          "  6: Flight (løp i panikk)",
-          "  7: Hallusinasjoner",
-          "  8: Ekko (gjenta handlinger meningsløst)",
-          "  9: Phobia (ny eller eksisterende)",
-          "  10: Katatoni (stivner helt)",
+          "  1: Amnesia (remembers nothing)",
+          "  2: Psychosomatic (blind/deaf/lame)",
+          "  3: Violence (attack nearest)",
+          "  4: Paranoia (everyone is an enemy)",
+          "  5: Physical (nausea/fainting)",
+          "  6: Flight (run in panic)",
+          "  7: Hallucinations",
+          "  8: Echo (repeat actions meaninglessly)",
+          "  9: Phobia (new or existing)",
+          "  10: Catatonia (completely rigid)",
         ]),
-        ("Summary (1d10 timer)", [
-          "Etter real-time bout, varig effekt:",
-          "  1: Amnesi for hele hendelsen",
-          "  2: Tvangstanker / ritualer",
-          "  3: Hallusinasjoner (vedvarende)",
-          "  4: Irrasjonelt hat/frykt",
-          "  5: Phobia (spesifikk, ny eller forsterket)",
-          "  6: Mania (kompulsiv adferd)",
-          "  7: Paranoia (stoler på ingen)",
-          "  8: Dissosiasjon (fjern, uvirkelig)",
-          "  9: Spiseforstyrrelse / søvnløshet",
-          "  10: Mythos-besettelse (studerer forbudt)",
+        ("Summary (1d10 hours)", [
+          "After real-time bout, lasting effect:",
+          "  1: Amnesia for the entire event",
+          "  2: Obsessive thoughts / rituals",
+          "  3: Hallucinations (persistent)",
+          "  4: Irrational hatred/fear",
+          "  5: Phobia (specific, new or intensified)",
+          "  6: Mania (compulsive behaviour)",
+          "  7: Paranoia (trusts no one)",
+          "  8: Dissociation (distant, unreal)",
+          "  9: Eating disorder / insomnia",
+          "  10: Mythos obsession (studies forbidden)",
         ]),
-        ("Phobiaer (utvalg)", [
-          "Acrophobia \u2013 høydefobi",
-          "Agoraphobia \u2013 åpne plasser",
+        ("Phobias (selection)", [
+          "Acrophobia \u2013 heights",
+          "Agoraphobia \u2013 open spaces",
           "Arachnophobia \u2013 edderkopper",
           "Claustrophobia \u2013 trange rom",
           "Demophobia \u2013 folkemengder",
           "Hemophobia \u2013 blod",
           "Hydrophobia \u2013 vann",
           "Mysophobia \u2013 smitte/skitt",
-          "Necrophobia \u2013 døde/lik",
-          "Nyctophobia \u2013 mørke",
+          "Necrophobia \u2013 the dead/corpses",
+          "Nyctophobia \u2013 darkness",
           "Pyrophobia \u2013 ild",
           "Thalassophobia \u2013 havet/dypt vann",
           "Xenophobia \u2013 fremmede/ukjente",
           "Zoophobia \u2013 dyr",
         ]),
-        ("Maniaer (utvalg)", [
+        ("Manias (selection)", [
           "Dipsomania \u2013 trang til alkohol",
-          "Kleptomania \u2013 trang til å stjele",
+          "Kleptomania \u2013 urge to steal",
           "Megalomania \u2013 storhetstanker",
-          "Mythomania \u2013 tvangsløgner",
-          "Necromania \u2013 besettelse med døden",
+          "Mythomania \u2013 compulsive lying",
+          "Necromania \u2013 obsession with death",
           "Pyromania \u2013 brannstifting",
-          "Thanatomania \u2013 dødslengsel",
+          "Thanatomania \u2013 death wish",
           "Xenomania \u2013 besettelse med fremmede",
         ]),
         ("Indefinite Insanity", [
-          "Trigges når investigator har tapt",
-          "  1/5 av nåværende SAN totalt.",
+          "Triggered when investigator has lost",
+          "  1/5 of current SAN in total.",
           "",
-          "Effekt: langvarig galskap.",
-          "  Spiller mister kontroll over karakter.",
-          "  Keeper bestemmer adferd.",
-          "  Varer måneder/år.",
+          "Effect: prolonged insanity.",
+          "  Player loses control of character.",
+          "  Keeper determines behaviour.",
+          "  Lasts months/years.",
           "",
-          "Behandling:",
-          "  Institusjonalisering",
-          "  Psychoanalysis over tid",
-          "  +1d3 SAN per måned (maks)",
-          "  Mislykket behandling: -1d6 SAN",
+          "Treatment:",
+          "  Institutionalisation",
+          "  Psychoanalysis over time",
+          "  +1d3 SAN per month (max)",
+          "  Failed treatment: -1d6 SAN",
         ]),
-        ("SAN-gjenoppretting", [
-          "Psychoanalysis: +1d3 SAN (1/måned)",
-          "  Mislykket: -1d6 SAN!",
-          "Self-help: forbedre skill = +1d3 SAN",
-          "Fullføre scenario: Keeper-belønning",
+        ("SAN Recovery", [
+          "Psychoanalysis: +1d3 SAN (1/month)",
+          "  Failed: -1d6 SAN!",
+          "Self-help: improve skill = +1d3 SAN",
+          "Complete scenario: Keeper reward",
           "",
           "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
-          "Permanent SAN-tap kan ikke gjenopprettes",
-          "  utover denne grensen.",
+          "Permanent SAN loss cannot be recovered",
+          "  beyond this limit.",
         ]),
       ]),
-      ("Forfølgelse", "", [
-        ("Oppsett", [
-          "1. Type: fot eller kjøretøy.",
+      ("Chase", "", [
+        ("Setup", [
+          "1. Type: on foot or vehicle.",
           "2. Antall locations: 5\u201310 (Keeper velger).",
-          "3. Deltakere:",
-          "   Fot: MOV basert på DEX, STR, SIZ.",
-          "   Bil: speed-rating.",
-          "4. Speed Roll (CON-sjekk):",
-          "   Extreme suksess: +1 MOV for chasen",
-          "   Suksess: ingen endring",
-          "   Feil: -1 MOV for chasen",
-          "   (kjøretøy: Drive Auto i stedet)",
-          "5. Sammenlign MOV: høyere MOV flykter",
-          "   umiddelbart. Ellers -> full chase.",
-          "6. Sett startposisjoner på tracken.",
-          "7. Plasser barrierer/farer på locations.",
+          "3. Participants:",
+          "   On foot: MOV based on DEX, STR, SIZ.",
+          "   Vehicle: speed rating.",
+          "4. Speed Roll (CON check):",
+          "   Extreme success: +1 MOV for the chased",
+          "   Success: no change",
+          "   Failure: -1 MOV for the chased",
+          "   (vehicle: Drive Auto instead)",
+          "5. Compare MOV: higher MOV escapes",
+          "   immediately. Otherwise -> full chase.",
+          "6. Set starting positions on the track.",
+          "7. Place barriers/hazards on locations.",
           "",
           "MOV (Movement Rate):",
-          "  Hvis DEX & STR begge > SIZ: MOV 9",
-          "  Hvis enten DEX eller STR > SIZ: MOV 8",
+          "  If DEX & STR both > SIZ: MOV 9",
+          "  If either DEX or STR > SIZ: MOV 8",
           "  Hvis begge \u2264 SIZ: MOV 7",
           "  Alder 40\u201349: MOV -1",
           "  Alder 50\u201359: MOV -2 (etc.)",
         ]),
-        ("Bevegelse & handlinger", [
-          "Runder i DEX-rekkefølge (høy først).",
+        ("Movement & Actions", [
+          "Rounds in DEX order (high first).",
           "",
           "Each round a participant can:",
-          "  - Bevege seg (MOV locations)",
-          "  - Utføre 1 handling:",
-          "    Speed: CON-sjekk for +1 location",
-          "    Angrep: Fighting/Firearms",
-          "    Barriere: skill-sjekk for å passere",
-          "    Hinder: lag barriere for forfølger",
+          "  - Move (MOV locations)",
+          "  - Perform 1 action:",
+          "    Speed: CON check for +1 location",
+          "    Attack: Fighting/Firearms",
+          "    Barrier: skill check to pass",
+          "    Hinder: create barrier for pursuer",
           "",
-          "Hazard-handling koster handling OG",
+          "Hazard action costs action AND",
           "  movement that round.",
         ]),
-        ("Barrierer", [
-          "Keeper plasserer barrierer på locations.",
-          "Skill-sjekk for å passere:",
+        ("Barriers", [
+          "Keeper places barriers on locations.",
+          "Skill check to pass:",
           "",
-          "  Hopp over gjerde: Jump / Climb",
-          "  Trang passasje: DEX / Dodge",
-          "  Folkemengde: STR / Charm / Intimidate",
-          "  Gjørme/glatt: DEX / Luck",
-          "  Låst dør: Locksmith / STR",
-          "  Trafikkert gate: Drive Auto / DEX",
+          "  Jump over fence: Jump / Climb",
+          "  Narrow passage: DEX / Dodge",
+          "  Crowd: STR / Charm / Intimidate",
+          "  Mud/slippery: DEX / Luck",
+          "  Locked door: Locksmith / STR",
+          "  Busy street: Drive Auto / DEX",
           "",
-          "Feil: mist 1 location bevegelse.",
+          "Failure: lose 1 location of movement.",
           "Fumble: fall, damage, stuck, etc.",
         ]),
-        ("Seier & tap", [
-          "FLUKT lykkes når:",
-          "  Avstand mellom = antall locations + 1",
-          "  (forfølger kan ikke se målet).",
+        ("Victory & Defeat", [
+          "ESCAPE succeeds when:",
+          "  Distance = number of locations + 1",
+          "  (pursuer cannot see the target).",
           "",
-          "FANGET når:",
-          "  Forfølger er på SAMME location.",
-          "  Kamp eller interaksjon kan begynne.",
+          "CAUGHT when:",
+          "  Pursuer is on the SAME location.",
+          "  Combat or interaction can begin.",
           "",
-          "UTMATTELSE:",
+          "EXHAUSTION:",
           "  CON-check per round etter runde 5.",
-          "  Feil: MOV reduseres med 1.",
-          "  MOV 0: kan ikke bevege seg.",
+          "  Failure: MOV reduced by 1.",
+          "  MOV 0: cannot move.",
         ]),
       ]),
-      ("Magi & Tomer", "", [
-        ("Besvergelse", [
-          "Kostnader varierer per spell:",
-          "  Magic Points (MP): vanligst",
-          "  SAN: nesten alltid",
-          "  HP: noen kraftige spells",
-          "  POW: permanent offer (sjeldent)",
+      ("Magic & Tomes", "", [
+        ("Spells", [
+          "Costs vary per spell:",
+          "  Magic Points (MP): most common",
+          "  SAN: almost always",
+          "  HP: some powerful spells",
+          "  POW: permanent sacrifice (rare)",
           "",
           "Casting time: 1 round to several hours.",
-          "Noen krever komponenter/ritualer.",
+          "Some require components/rituals.",
           "",
-          "MP regenereres: 1 per 2 timer hvile.",
-          "MP = 0: bevisstløs i 1d8 timer.",
-          "POW-offer: permanent, gjenopprettes IKKE.",
+          "MP regenerates: 1 per 2 hours rest.",
+          "MP = 0: unconscious for 1d8 hours.",
+          "POW sacrifice: permanent, NOT recovered.",
         ]),
-        ("Mythos-tomer", [
-          "Lesing av Mythos-tome:",
-          "  Initial reading: uker til måneder",
-          "  Full study: måneder til år",
+        ("Mythos Tomes", [
+          "Reading a Mythos tome:",
+          "  Initial reading: weeks to months",
+          "  Full study: months to years",
           "",
-          "Belønning: +Cthulhu Mythos skill.",
-          "Kostnad: SAN-tap (varierer per tome).",
-          "Kan også lære spells fra tomen.",
+          "Reward: +Cthulhu Mythos skill.",
+          "Cost: SAN loss (varies per tome).",
+          "Can also learn spells from the tome.",
           "",
-          "EKSEMPLER (CM-gevinst / SAN-tap):",
+          "EXAMPLES (CM gain / SAN loss):",
           "  Necronomicon (latin): +15 / -2d10",
           "  Necronomicon (original): +22 / -3d10",
           "  De Vermis Mysteriis: +10 / -1d8",
@@ -1321,8 +1321,8 @@ try:
           "  Revelations of Glaaki: +7 / -1d4",
           "  Book of Dzyan: +5 / -1d4",
         ]),
-        ("Mythos-vesener (SAN)", [
-          "Vesen: suksess / feil SAN-tap",
+        ("Mythos Creatures (SAN)", [
+          "Creature: success / failure SAN loss",
           "",
           "  Byakhee: 1/1d6",
           "  Dark Young: 0/1d8",
@@ -1347,95 +1347,95 @@ try:
       ]),
       ("Pulp Cthulhu", "", [
         ("Pulp-regler", [
-          "Helter er TØFFERE enn standard CoC.",
+          "Heroes are TOUGHER than standard CoC.",
           "",
           "HP: (CON + SIZ) / 5 (rounded down)",
           "  Standard CoC: (CON+SIZ) / 10",
-          "  Effektivt DOBBEL HP.",
-          "  Valgfritt lavnivå: (CON+SIZ)/10",
+          "  Effectively DOUBLE HP.",
+          "  Optional low-power: (CON+SIZ)/10",
           "",
-          "Luck: 2d6+6 x 5 (høyere enn standard)",
+          "Luck: 2d6+6 x 5 (higher than standard)",
           "  Standard CoC: 3d6 x 5",
-          "  Regenerer 2d10 Luck per sesjon.",
+          "  Regenerate 2d10 Luck per session.",
           "",
           "First Aid: +1d4 HP (standard: +1 HP)",
-          "  Extreme suksess: automatisk 4 HP.",
+          "  Extreme success: automatic 4 HP.",
           "Medicine: +1d4 HP (standard: +1d3)",
           "",
-          "Pulp Talents: 2 stk (standard).",
-          "  Lavnivå pulp: 1 talent",
-          "  Høynivå pulp: 3 talents",
+          "Pulp Talents: 2 (standard).",
+          "  Low-power pulp: 1 talent",
+          "  High-power pulp: 3 talents",
           "",
-          "Kampkast kan IKKE pushes (som standard).",
-          "Spending Luck: kan også brukes til:",
-          "  - Unngå dying (5 Luck = stabiliser)",
+          "Combat rolls CANNOT be pushed (as standard).",
+          "Spending Luck: can also be used to:",
+          "  - Avoid dying (5 Luck = stabilise)",
           "  - Reduce damage (after roll)",
         ]),
-        ("Arketyper", [
+        ("Archetypes", [
           "Choose 1 archetype at creation.",
-          "Gir bonuser og Pulp Talents.",
+          "Gives bonuses and Pulp Talents.",
           "",
-          "  Adventurer: allsidig eventyrer",
-          "  Beefcake: fysisk sterk, ekstra HP",
-          "  Bon Vivant: sjarmerende, sosialt dyktig",
-          "  Cold Blooded: hensynsløs, presist",
-          "  Dreamer: kreativ, Mythos-sensitiv",
-          "  Egghead: intellektuell, kunnskapsrik",
-          "  Explorer: utforsker, overlevelse",
-          "  Femme/Homme Fatale: forførende",
-          "  Grease Monkey: mekaniker, oppfinnsom",
-          "  Hard Boiled: tøff, utholdende",
-          "  Harlequin: entertainer, distraherende",
-          "  Hunter: jeger, naturkyndig",
-          "  Mystic: spirituell, spådomsevne",
-          "  Outsider: ensom, selvlært",
-          "  Reckless: våghals, risikotaker",
-          "  Sidekick: lojal, støttende",
+          "  Adventurer: versatile adventurer",
+          "  Beefcake: physically strong, extra HP",
+          "  Bon Vivant: charming, socially skilled",
+          "  Cold Blooded: ruthless, precise",
+          "  Dreamer: creative, Mythos-sensitive",
+          "  Egghead: intellectual, knowledgeable",
+          "  Explorer: explorer, survival",
+          "  Femme/Homme Fatale: seductive",
+          "  Grease Monkey: mechanic, resourceful",
+          "  Hard Boiled: tough, enduring",
+          "  Harlequin: entertainer, distracting",
+          "  Hunter: hunter, nature-wise",
+          "  Mystic: spiritual, prescient",
+          "  Outsider: lone, self-taught",
+          "  Reckless: daredevil, risk-taker",
+          "  Sidekick: loyal, supportive",
           "  Swashbuckler: akrobatisk fighter",
-          "  Thrill Seeker: adrenalinjansen",
+          "  Thrill Seeker: adrenaline-junkie",
           "  Two-Fisted: nevekamp-spesialist",
         ]),
-        ("Pulp Talents (utvalg)", [
+        ("Pulp Talents (selection)", [
           "FYSISK:",
           "  Brawler: +1d6 melee damage",
-          "  Iron Jaw: ignorer 1 K.O. per sesjon",
-          "  Quick Healer: dobbel heling",
-          "  Tough Guy: +1d6 ekstra HP",
+          "  Iron Jaw: ignore 1 K.O. per session",
+          "  Quick Healer: double healing",
+          "  Tough Guy: +1d6 extra HP",
           "",
           "MENTAL:",
           "  Arcane Insight: +2 Cthulhu Mythos",
-          "  Gadget: lag improvisert gjenstand",
-          "  Photographic Memory: husk alt",
-          "  Psychic Power: sjette sans",
+          "  Gadget: create improvised item",
+          "  Photographic Memory: remember everything",
+          "  Psychic Power: sixth sense",
           "",
           "SOSIAL:",
-          "  Smooth Talker: re-roll 1 sosial sjekk",
+          "  Smooth Talker: re-roll 1 social check",
           "  Master of Disguise: +1 bonus Disguise",
-          "  Lucky: +1d10 ekstra Luck-regen",
+          "  Lucky: +1d10 extra Luck regen",
           "",
-          "KAMP:",
-          "  Rapid Fire: ekstra skudd uten penalty",
-          "  Outmaneuver: +1 bonus på manøvrer",
+          "COMBAT:",
+          "  Rapid Fire: extra shots without penalty",
+          "  Outmaneuver: +1 bonus on manoeuvres",
           "  Fleet Footed: +1 MOV i chase",
         ]),
       ]),
       ("Tabeller", "", [
-        ("Våpentabell \u2013 melee", [
+        ("Weapon Table \u2013 melee", [
           "Weapon: damage / attacks",
           "",
-          "  Unarmed (knytneve): 1d3+DB / 1",
+          "  Unarmed (fist): 1d3+DB / 1",
           "  Head butt: 1d4+DB / 1",
           "  Kick: 1d4+DB / 1",
           "  Grapple: special / 1",
-          "  Kniv (liten): 1d4+DB / 1",
-          "  Kniv (stor): 1d6+DB / 1",
-          "  Klubbe/kølle: 1d8+DB / 1",
+          "  Knife (small): 1d4+DB / 1",
+          "  Knife (large): 1d6+DB / 1",
+          "  Club/mace: 1d8+DB / 1",
           "  Sverd/sabel: 1d8+DB / 1",
-          "  Øks (stor): 1d8+2+DB / 1",
+          "  Axe (large): 1d8+2+DB / 1",
           "  Spyd: 1d8+1+DB / 1",
           "  Motorsag: 2d8 / 1",
         ]),
-        ("Våpentabell \u2013 skytevåpen", [
+        ("Weapon Table \u2013 firearms", [
           "Weapon: damage / range / shots",
           "",
           "  Derringer (.41): 1d8 / 10y / 1",
@@ -1451,26 +1451,26 @@ try:
           "  Dynamitt: 5d6 / thrown / 1",
           "    (radius 5 yard)",
         ]),
-        ("SAN-tap oversikt", [
-          "HENDELSE: suksess / feil",
+        ("SAN Loss Overview", [
+          "EVENT: success / failure",
           "",
-          "  Se et lik: 0/1d3",
-          "  Se en venn dø: 0/1d4",
-          "  Se noe uforklarlig: 0/1d2",
-          "  Se et grusomt drap: 1/1d4+1",
-          "  Se massedrap: 1d3/1d6+1",
-          "  Finne en grusomhet: 0/1d3",
+          "  See a corpse: 0/1d3",
+          "  See a friend die: 0/1d4",
+          "  See something inexplicable: 0/1d2",
+          "  See a gruesome murder: 1/1d4+1",
+          "  See mass murder: 1d3/1d6+1",
+          "  Find an atrocity: 0/1d3",
           "",
-          "  Oppdage Mythos-bevis: 0/1d2",
-          "  Lese Mythos-tome: 1/1d4",
-          "  Se Mythos-ritual: 1/1d6",
-          "  Bli utsatt for besvergelse: 1/1d6",
+          "  Discover Mythos evidence: 0/1d2",
+          "  Read Mythos tome: 1/1d4",
+          "  See Mythos ritual: 1/1d6",
+          "  Be subjected to a spell: 1/1d6",
         ]),
-        ("Alderseffekter", [
-          "Alder påvirker stats ved opprettelse:",
+        ("Age Effects", [
+          "Age affects stats at creation:",
           "",
           "  15\u201319: -5 SIZ/STR, -5 EDU,",
-          "    Luck: rull 2x, bruk best",
+          "    Luck: roll 2x, use best",
           "  20\u201339: EDU-forbedring: +1",
           "  40\u201349: EDU +2, -5 fritt STR/CON/DEX,",
           "    APP -5, MOV -1",
@@ -1484,12 +1484,12 @@ try:
           "    APP -25, MOV -5",
         ]),
         ("Credit Rating", [
-          "Credit Rating = formue/sosial status:",
+          "Credit Rating = wealth/social status:",
           "",
-          "  0: fattig, hjemløs",
-          "  1\u20139: fattig, kun nødvendig",
+          "  0: poor, homeless",
+          "  1\u20139: poor, necessities only",
           "  10\u201349: gjennomsnittlig",
-          "  50\u201389: velstående",
+          "  50\u201389: wealthy",
           "  90\u201398: rik",
           "  99: enormt rik",
           "",
@@ -1532,18 +1532,18 @@ try:
             from jnius import autoclass
             Environment = autoclass('android.os.Environment')
             Build = autoclass('android.os.Build$VERSION')
-            # Kun relevant på Android 11 (API 30) og nyere
+            # Only relevant on Android 11 (API 30) and newer
             if Build.SDK_INT < 30:
                 return None
             return bool(Environment.isExternalStorageManager())
         except Exception as e:
-            log(f"has_all_files_access sjekk feilet: {e}")
+            log(f"has_all_files_access check failed: {e}")
             return None
 
     def request_all_files_access():
-        """Åpne Android-innstillinger hvor brukeren kan gi appen
-        'All files access'. Krever Android 11+ og at appen
-        deklarerer MANAGE_EXTERNAL_STORAGE i manifestet."""
+        """Open Android settings where the user can grant the app
+        'All files access'. Requires Android 11+ and that the app
+        declares MANAGE_EXTERNAL_STORAGE in the manifest."""
         if platform != 'android':
             return False
         try:
@@ -1736,12 +1736,12 @@ try:
             self.mc = None
 
     class FilePicker:
-        """Android Storage Access Framework-filvelger.
+        """Android Storage Access Framework file picker.
 
-        Åpner systemets filvelger og leser valgt fil via URI —
-        krever ingen storage-tillatelser, fungerer på alle
-        Android-versjoner, og brukeren kan velge fra hvor som
-        helst (Documents, Downloads, Google Drive, osv).
+        Opens the system file picker and reads the selected file via URI —
+        requires no storage permissions, works on all
+        Android versions, and the user can choose from anywhere
+        (Documents, Downloads, Google Drive, etc).
         """
         REQUEST_CODE = 7331
 
@@ -1752,7 +1752,7 @@ try:
             self._return_mode = 'text'
 
         def _ensure_bound(self):
-            """Koble på Android activity-result-listener."""
+            """Attach Android activity-result listener."""
             if self._bound or platform != 'android':
                 return
             try:
@@ -1760,34 +1760,34 @@ try:
                 PythonActivity = autoclass(
                     'org.kivy.android.PythonActivity')
                 self._activity = PythonActivity.mActivity
-                # Registrer callback for activity result
+                # Register callback for activity result
                 from android import activity as android_activity
                 android_activity.bind(
                     on_activity_result=self._on_result)
                 self._bound = True
-                log("FilePicker bundet til Android activity")
+                log("FilePicker bound to Android activity")
             except Exception as e:
-                log(f"FilePicker bind-feil: {e}")
+                log(f"FilePicker bind error: {e}")
 
         def pick(self, callback, mime_type='application/json'):
-            """Åpne filvelger. callback(ok, text_or_err) kalles
-            når brukeren har valgt (eller avbrutt)."""
+            """Open file picker. callback(ok, text_or_err) is called
+            when user has selected (or cancelled)."""
             self._return_mode = 'text'
             self._pick(callback, mime_type)
 
         def pick_uri(self, callback, mime_type='audio/*'):
-            """Åpne filvelger og returner URI/meta for valgt fil."""
+            """Open file picker and return URI/meta for selected file."""
             self._return_mode = 'uri'
             self._pick(callback, mime_type)
 
         def _pick(self, callback, mime_type):
-            """Intern åpning av Android filvelger."""
+            """Internal opening of Android file picker."""
             if platform != 'android':
-                callback(False, "Filvelger kun tilgjengelig på Android")
+                callback(False, "File picker only available on Android")
                 return
             self._ensure_bound()
             if not self._activity:
-                callback(False, "Fikk ikke tilgang til Android activity")
+                callback(False, "Could not access Android activity")
                 return
             self.callback = callback
             try:
@@ -1802,7 +1802,7 @@ try:
                     intent, self.REQUEST_CODE)
             except Exception as e:
                 log(f"FilePicker pick-feil: {e}")
-                callback(False, f"Kunne ikke åpne filvelger: {e}")
+                callback(False, f"Could not open file picker: {e}")
 
         def _on_result(self, request_code, result_code, intent):
             """Mottatt resultat fra filvelgeren."""
@@ -1855,7 +1855,7 @@ try:
                     Clock.schedule_once(
                         lambda dt, data=payload: cb(True, data), 0)
                     return
-                # Åpne input stream via content resolver
+                # Open input stream via content resolver
                 stream = resolver.openInputStream(uri)
                 # Les innhold (byte-vis gjennom InputStreamReader)
                 BufferedReader = autoclass(
@@ -2030,7 +2030,7 @@ try:
         def build(self):
             log("=== BUILD (v0.4.0 Necronomicon) ===")
             Window.clearcolor = (0, 0, 0, 1)
-            # Skroll innholdet opp så tastaturet ikke dekker aktivt input
+            # Scroll content up so keyboard does not cover active input
             Window.softinput_mode = 'below_target'
             self.title = "Eldritch Portal"
             self.tracks = []
@@ -2049,11 +2049,11 @@ try:
             self.chars = load_json(CHAR_FILE, [])
             self.edit_idx = None
 
-            # Våpen: favoritt-fil går i app-private storage (alltid skrivbar)
+            # Weapons: favourite file goes in app-private storage (always writable)
             self.WEAPONS_FAV_FILE = os.path.join(
                 self.user_data_dir, "weapons_favorites.json")
-            # Scenario: også app-private (unngår scoped storage-feil
-            # ved lesing av .json i /sdcard/Documents/ på Android 13+)
+            # Scenario: also app-private (avoids scoped storage errors
+            # when reading .json in /sdcard/Documents/ on Android 13+)
             self.SCENARIO_FILE = os.path.join(
                 self.user_data_dir, "scenario.json")
             self.weapons_data = {
@@ -2070,7 +2070,7 @@ try:
             self._weap_last_error = None
             self._weap_char_target = -1
 
-            # FloatLayout som rot – lar oss legge splash oppå
+            # FloatLayout as root – lets us layer splash on top
             wrapper = FloatLayout()
 
             background_image_path = os.path.join(_BUNDLE_DIR, 'background.png')
@@ -2090,13 +2090,13 @@ try:
             main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
             # === TAB-PANEL ===
-            # Et samlet panel for hovedfaner + sub-faner. Når man bytter
-            # til en fane med sub-faner (Lyd/Kamp/Verktøy) utvides
-            # panelet nedover for å gi plass til sub-faner. Når man
-            # bytter til en fane uten sub-faner, kollapser det igjen.
-            # NB: spacing starter på 0 og animeres til dp(4) når panelet
-            # utvides — ellers ville den 4dp mellomraden tatt plass selv
-            # når sub-raden er tom, og dyttet hovedfanene ut av panelet.
+            # A combined panel for main tabs + sub-tabs. When switching
+            # to a tab with sub-tabs (Sound/Combat/Tools) the panel expands
+            # downward to make room for sub-tabs. When
+            # switching to a tab without sub-tabs, it collapses again.
+            # NB: spacing starts at 0 and animates to dp(4) when the panel
+            # expands — otherwise the 4dp gap row would take space even
+            # when the sub-row is empty, pushing main tabs out of the panel.
             self.tab_panel = RBox(
                 orientation='vertical',
                 size_hint_y=None,
@@ -2122,11 +2122,11 @@ try:
             )
             tab_specs = [
                 ('img', 'Bilder'),
-                ('snd', 'Lyd'),
-                ('cmb', 'Kamp'),
+                ('snd', 'Sound'),
+                ('cmb', 'Combat'),
                 None,
-                ('tool', 'Verktøy'),
-                ('rules', 'Regler'),
+                ('tool', 'Tools'),
+                ('rules', 'Rules'),
                 ('cast', 'Cast'),
             ]
             for spec in tab_specs:
@@ -2150,8 +2150,8 @@ try:
                 self._tabs[key] = b
             self.tab_panel.add_widget(main_tab_row)
 
-            # Sub-fane-rad (kollapset i utgangspunktet, fylles dynamisk
-            # av _update_subtabs når aktiv tab har sub-faner).
+            # Sub-tab row (collapsed initially, filled dynamically
+            # by _update_subtabs when active tab has sub-tabs).
             self.subtab_row = BoxLayout(
                 orientation='horizontal',
                 size_hint_y=None,
@@ -2275,45 +2275,45 @@ try:
             self._load_imgs()
             self._load_tracks()
             self._weap_do_load()
-            self.status.text = f"IP: {MediaServer.ip()}  |  Cast: {'Ja' if CAST_AVAILABLE else 'Nei'}"
+            self.status.text = f"IP: {MediaServer.ip()}  |  Cast: {'Yes' if CAST_AVAILABLE else 'No'}"
 
         def _weap_do_load(self):
-            """Last våpendata. Prøv ekstern først (brukerens egen),
-            fall tilbake til bundlet versjon."""
-            # Forsøk 1: ekstern fil i /sdcard/Documents/EldritchPortal/
+            """Load weapon data. Try external first (user's own),
+            fall back to bundled version."""
+            # Attempt 1: external file in /sdcard/Documents/EldritchPortal/
             if os.path.exists(EXTERNAL_WEAPONS):
                 try:
                     with open(EXTERNAL_WEAPONS, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                     if isinstance(data, dict) and 'weapons' in data:
                         n = len(data.get('weapons', []))
-                        log(f"_weap_do_load: ekstern OK, {n} våpen")
+                        log(f"_weap_do_load: external OK, {n} weapons")
                         self.weapons_data = data
                         self._weap_last_error = None
                         return
                 except PermissionError:
-                    log("_weap_do_load: ekstern finnes men ingen tilgang, bruker bundlet")
+                    log("_weap_do_load: external exists but no access, using bundled")
                 except Exception as e:
-                    log(f"_weap_do_load: ekstern feil ({e}), bruker bundlet")
-            # Forsøk 2: bundlet fil (pakket inn i APK)
+                    log(f"_weap_do_load: external error ({e}), using bundled")
+            # Attempt 2: bundled file (packed into APK)
             if os.path.exists(BUNDLED_WEAPONS):
                 try:
                     with open(BUNDLED_WEAPONS, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                     n = len(data.get('weapons', []))
-                    log(f"_weap_do_load: bundlet OK, {n} våpen")
+                    log(f"_weap_do_load: bundled OK, {n} weapons")
                     self.weapons_data = data
                     self._weap_last_error = None
                     return
                 except Exception as e:
-                    err = f"Bundlet fil: {type(e).__name__}: {e}"
+                    err = f"Bundled file: {type(e).__name__}: {e}"
                     log(f"_weap_do_load: {err}")
                     self._weap_last_error = err
                     return
-            # Ingen kilder fungerte
-            err = (f"Fant ingen weapons.json.\n"
-                   f"Bundlet sti: {BUNDLED_WEAPONS}\n"
-                   f"Ekstern sti: {EXTERNAL_WEAPONS}")
+            # No sources worked
+            err = (f"No weapons.json found.\n"
+                   f"Bundled path: {BUNDLED_WEAPONS}\n"
+                   f"External path: {EXTERNAL_WEAPONS}")
             log(f"_weap_do_load: {err}")
             self._weap_last_error = err
 
@@ -2337,30 +2337,30 @@ try:
                 Animation(opacity=1, duration=0.18,
                           t='out_quad').start(new_w)
 
-            # Første render: ingen fade-out
+            # First render: no fade-out
             if not self.content.children:
                 _swap_in()
                 return
 
-            # Fade ut nåværende, deretter swap inn nytt
+            # Fade out current, then swap in new
             cur = self.content.children[0]
             Animation.cancel_all(cur)
             fade_out = Animation(opacity=0, duration=0.12, t='in_quad')
             fade_out.bind(on_complete=_swap_in)
             fade_out.start(cur)
 
-        # ---------- SUB-FANER (felles panel) ----------
+        # ---------- SUB-TABS (shared panel) ----------
         def _update_subtabs(self, k):
-            """Animer sub-fane-rad inn/ut basert på aktiv hovedfane.
+            """Animate sub-tab row in/out based on active main tab.
 
-            - Faner med sub-faner (snd/cmb/tool): panelet utvides
-              nedover og sub-fanene fades inn.
-            - Faner uten sub-faner (img/rules/cast): panelet kollapser.
+            - Tabs with sub-tabs (snd/cmb/tool): panel expands
+              downward and sub-tabs fade in.
+            - Tabs without sub-tabs (img/rules/cast): panel collapses.
 
-            spacing animeres sammen med høyden (0 ↔ dp(4)) slik at
-            geometrien stemmer i begge tilstander. Uten dette ville den
-            4dp mellomraden tatt plass i kollapset tilstand og dyttet
-            hovedfanene ut av panelet.
+            spacing animates together with height (0 ↔ dp(4)) so that
+            geometry is consistent in both states. Without this the
+            4dp gap row would take space in collapsed state and push
+            main tabs out of the panel.
             """
             builders = {
                 'snd':  self._build_snd_subtabs,
@@ -2378,11 +2378,11 @@ try:
             Animation.cancel_all(self.subtab_row, 'height', 'opacity')
 
             if k in builders:
-                # Bygg sub-faner først
+                # Build sub-tabs first
                 self.subtab_row.clear_widgets()
                 builders[k](self.subtab_row)
-                # Animer åpning + fade-inn (alle bruker samme varighet/easing
-                # så geometrien holder seg konsistent gjennom animasjonen)
+                # Animate opening + fade-in (all use same duration/easing
+                # so geometry stays consistent through animation)
                 Animation(height=sub_h, duration=0.22,
                           t='out_quad').start(self.subtab_row)
                 Animation(opacity=1, duration=0.22,
@@ -2391,7 +2391,7 @@ try:
                           duration=0.22, t='out_quad').start(self.tab_panel)
             else:
                 # Animate closing. Remove children first when animation is done
-                # så de ikke flimrer mens raden krymper.
+                # so they do not flicker while row shrinks.
                 def _clear_subs(*_a):
                     self.subtab_row.clear_widgets()
                 Animation(opacity=0, duration=0.15,
@@ -2466,13 +2466,13 @@ try:
             self._cmb_btn_map = b_map
 
         def _build_tool_subtabs(self, row):
-            """Bygg Karakter/Våpen/Scenario/Galskap-faner inn i sub-fane-raden."""
+            """Build Character/Weapons/Scenario/Madness tabs into sub-tab row."""
             self._scen_init()
             if not hasattr(self, '_tool_sub') or self._tool_sub == 'init':
                 self._tool_sub = 'chars'
 
             self._sub_btn_chars = RToggle(
-                text='Karakterer', group='tool_sub',
+                text='Characters', group='tool_sub',
                 state='down' if self._tool_sub == 'chars' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'chars' else BTN,
                 color=GOLD if self._tool_sub == 'chars' else DIM,
@@ -2484,7 +2484,7 @@ try:
             row.add_widget(self._sub_btn_chars)
 
             self._sub_btn_weap = RToggle(
-                text='Våpen', group='tool_sub',
+                text='Weapons', group='tool_sub',
                 state='down' if self._tool_sub == 'weap' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'weap' else BTN,
                 color=GOLD if self._tool_sub == 'weap' else DIM,
@@ -2564,24 +2564,24 @@ try:
                 if not os.path.exists(f):
                     self.img_lbl.text = "Mappe ikke funnet"
                     self.img_grid.add_widget(
-                        mklbl("Mappen finnes ikke ennå.\n"
-                              "Start appen på nytt etter å ha\n"
-                              "godtatt tillatelser.",
+                        mklbl("Folder does not exist yet.\n"
+                              "Restart the app after\n"
+                              "granting permissions.",
                               color=DIM, size=11, wrap=True))
                     return
                 items = sorted(os.listdir(f))
                 dirs = [d for d in items if os.path.isdir(os.path.join(f, d)) and not d.startswith('.')]
                 imgs = [x for x in items if x.lower().endswith(IMG_EXT)]
-                self.img_lbl.text = f"{len(dirs)} mapper, {len(imgs)} bilder"
+                self.img_lbl.text = f"{len(dirs)} folders, {len(imgs)} images"
                 if not dirs and not imgs:
                     self.img_grid.add_widget(
-                        mklbl("Ingen bilder funnet.\n\n"
-                              "Legg bilder i:\n"
-                              "Dokumenter/EldritchPortal/images/\n\n"
-                              "Tips: lag undermapper for\n"
-                              "å organisere etter scenario,\n"
-                              "f.eks. images/Slow Boat/\n\n"
-                              "Støttede formater:\n"
+                        mklbl("No images found.\n\n"
+                              "Add images to:\n"
+                              "Documents/EldritchPortal/images/\n\n"
+                              "Tip: create subfolders to\n"
+                              "organise by scenario,\n"
+                              "e.g. images/Slow Boat/\n\n"
+                              "Supported formats:\n"
                               ".png  .jpg  .jpeg  .webp",
                               color=DIM, size=11, wrap=True))
                     return
@@ -2640,15 +2640,15 @@ try:
         def _mk_combat(self):
             """Kamp-fane med sub-tabs: Initiativ og Kart.
 
-            Sub-fanene bygges nå i det globale tab-panelet av
+            Sub-tabs are now built in the global tab panel by
             _build_cmb_subtabs(). Denne metoden returnerer kun
-            innholds-området.
+            the content area.
             """
             self._init_tracker_init()
             if not hasattr(self, '_cmb_sub'):
                 self._cmb_sub = 'init'
 
-            # Innholds-område — fungerer som "tool_area" for init-tracker
+            # Content area — acts as "tool_area" for init-tracker
             # og som vert for kart-visningen.
             self._cmb_area = BoxLayout()
             self._cmb_render()
@@ -2678,7 +2678,7 @@ try:
                 self._mk_cmb_map()
 
         def _mk_cmb_map(self):
-            """Kart-sub-tab: åpne battlemap eller vis info om tom liste."""
+            """Map sub-tab: open battlemap or show info about empty list."""
             p = BoxLayout(orientation='vertical',
                           spacing=dp(10), padding=dp(12))
 
@@ -2686,7 +2686,7 @@ try:
                 p.add_widget(Widget())
                 p.add_widget(mklbl(
                     "Legg til deltakere i Initiativ-fanen\n"
-                    "for å bruke kartet.",
+                    "to use the map.",
                     color=DIM, size=13, wrap=True))
                 p.add_widget(Widget())
                 self._cmb_area.add_widget(p)
@@ -2726,22 +2726,22 @@ try:
                         and self._init_list else '')
             if act_name:
                 info_box.add_widget(mklbl(
-                    f"Nåværende tur: {act_name}",
+                    f"Current turn: {act_name}",
                     color=DIM, size=11, wrap=True))
             else:
                 info_box.add_widget(mklbl(
-                    "Gå til Initiativ-fanen og trykk 'Fullfør' "
+                    "Go to the Initiative tab and tap 'Finish' "
                     "to start round order.",
                     color=DIM, size=10, wrap=True))
             p.add_widget(info_box)
 
-            # Åpne-knapp
-            p.add_widget(mkbtn("Åpne kart (fullskjerm)",
+            # Open button
+            p.add_widget(mkbtn("Open map (fullscreen)",
                                self._bm_open, accent=True,
                                size_hint_y=None, height=dp(56)))
 
             p.add_widget(mklbl(
-                "Kartet åpnes som overlay i full skjermbredde. "
+                "Map opens as overlay in full screen width. "
                 "Use 'Close' to return here.",
                 color=DIM, size=10, wrap=True, h=40))
 
@@ -2752,9 +2752,9 @@ try:
         def _mk_sound(self):
             """Lyd-fane med toggle mellom Musikk og Ambient.
 
-            Sub-fanene bygges nå i det globale tab-panelet av
+            Sub-tabs are now built in the global tab panel by
             _build_snd_subtabs(). Denne metoden returnerer kun
-            innholds-området.
+            the content area.
             """
             if not hasattr(self, '_sound_sub'):
                 self._sound_sub = 'mus'
@@ -2811,11 +2811,11 @@ try:
             self.tracks = []
             try:
                 if not os.path.exists(MUSIC_DIR):
-                    self.trk_lbl.text = "Mappe ikke funnet"
+                    self.trk_lbl.text = "Folder not found"
                     self.trk_grid.add_widget(
-                        mklbl("Musikkmappen finnes ikke ennå.\n"
-                              "Start appen på nytt etter å ha\n"
-                              "godtatt tillatelser.",
+                        mklbl("Music folder does not exist yet.\n"
+                              "Restart the app after\n"
+                              "granting permissions.",
                               color=DIM, size=11, wrap=True))
                     return
                 fl = sorted([f for f in os.listdir(MUSIC_DIR)
@@ -2826,7 +2826,7 @@ try:
                         mklbl("Ingen musikkfiler funnet.\n\n"
                               "Legg lydfiler i:\n"
                               "Dokumenter/EldritchPortal/music/\n\n"
-                              "Støttede formater:\n"
+                              "Supported formats:\n"
                               ".mp3  .ogg  .wav  .flac",
                               color=DIM, size=11, wrap=True))
                     return
@@ -2878,7 +2878,7 @@ try:
         # ---------- AMBIENT ----------
         def _mk_amb(self):
             p = BoxLayout(orientation='vertical', spacing=dp(6))
-            p.add_widget(mklbl("Egen ambient – sømløs loop", color=GDIM,
+            p.add_widget(mklbl("Custom ambient – seamless loop", color=GDIM,
                                size=11, bold=True, h=24))
             custom_ctrl = BoxLayout(size_hint_y=None, height=dp(44),
                                     spacing=dp(6))
@@ -2890,16 +2890,16 @@ try:
                                          small=True)
             custom_ctrl.add_widget(self._amb_toggle_btn)
             custom_ctrl.add_widget(
-                mkbtn("Stopp ambient", self._sa, danger=True, small=True))
+                mkbtn("Stop ambient", self._sa, danger=True, small=True))
             p.add_widget(custom_ctrl)
             self.amb_custom_lbl = mklbl(
                 "Select a local audio file to loop it seamlessly.",
                 color=DIM, size=10, wrap=True, h=34)
             p.add_widget(self.amb_custom_lbl)
             p.add_widget(mklbl(
-                "Støtter .mp3, .ogg, .wav og .flac via Android-filvelgeren.",
+                "Supports .mp3, .ogg, .wav and .flac via Android file picker.",
                 color=DIM, size=10, wrap=True, h=28))
-            p.add_widget(mklbl("Nettlyder", color=GDIM,
+            p.add_widget(mklbl("Online Sounds", color=GDIM,
                                size=11, bold=True, h=22))
             scroll = ScrollView()
             g = GridLayout(cols=1, spacing=dp(4), padding=dp(6), size_hint_y=None)
@@ -2925,18 +2925,18 @@ try:
             if not hasattr(self, '_amb_toggle_btn'):
                 return
             if self._ambient_source == 'custom' and self.streamer.is_playing:
-                self._amb_toggle_btn.text = "Stopp valgt lyd"
+                self._amb_toggle_btn.text = "Stop selected sound"
             elif self._ambient_custom_uri:
-                self._amb_toggle_btn.text = "Loop valgt lyd"
+                self._amb_toggle_btn.text = "Loop selected sound"
             else:
                 self._amb_toggle_btn.text = "Choose sound first"
 
         def _amb_pick_custom(self, *_):
             if platform != 'android':
-                self.amb_lbl.text = "Egen ambient-opplasting støttes på Android"
+                self.amb_lbl.text = "Custom ambient upload is supported on Android"
                 self.amb_lbl.color = RED
                 return
-            self.amb_lbl.text = "Åpner filvelger for ambientlyd..."
+            self.amb_lbl.text = "Opening file picker for ambient sound..."
             self.amb_lbl.color = DIM
             Clock.schedule_once(
                 lambda dt: self.file_picker.pick_uri(
@@ -2956,7 +2956,7 @@ try:
                 data_or_err.get('name') or CUSTOM_AMBIENT_NAME)
             self.amb_custom_lbl.text = f"Valgt: {self._ambient_custom_name}"
             self.amb_custom_lbl.color = GOLD
-            self.amb_lbl.text = "Trykk for å starte sømløs loop"
+            self.amb_lbl.text = "Tap to start seamless loop"
             self.amb_lbl.color = DIM
             if self._ambient_source == 'custom' and self.streamer.is_playing:
                 self.streamer.stop()
@@ -2979,7 +2979,7 @@ try:
                 self.amb_lbl.text = f"Looper: {self._ambient_name}"
                 self.amb_lbl.color = GRN
             else:
-                self.amb_lbl.text = "Egen ambient-opplasting støttes på Android"
+                self.amb_lbl.text = "Custom ambient upload is supported on Android"
                 self.amb_lbl.color = RED
                 self._ambient_source = None
             self._amb_refresh_custom_btn()
@@ -3027,25 +3027,25 @@ try:
             p.add_widget(hdr)
             p.add_widget(mksep(2))
 
-            # Mappe-liste
+            # Folder list
             scroll = ScrollView()
             self._rules_tree = GridLayout(cols=1, spacing=dp(2), padding=dp(4), size_hint_y=None)
             self._rules_tree.bind(minimum_height=self._rules_tree.setter('height'))
             scroll.add_widget(self._rules_tree)
             p.add_widget(scroll)
 
-            # Overlay-container (usynlig til innhold åpnes)
+            # Overlay container (invisible until content opens)
             self._rules_main = p
             self._rules_build_tree()
             return p
 
         def _rules_build_tree(self):
-            """Bygg mappetreet med åpne/lukkede mapper."""
+            """Build folder tree with open/closed folders."""
             self._rules_tree.clear_widgets()
             for i, (cat_name, icon, subs) in enumerate(RULES):
                 expanded = i in self._rules_expanded
                 arrow = "[-]" if expanded else "[+]"
-                # Mappe-knapp
+                # Folder button
                 fbtn = RBtn(
                     text=f"  {arrow}  {cat_name}",
                     bg_color=BTNH if expanded else BTN,
@@ -3067,7 +3067,7 @@ try:
                         self._rules_tree.add_widget(sbtn)
 
         def _rules_toggle(self, cat_idx):
-            """Åpne/lukke en mappe."""
+            """Open/close a folder."""
             if cat_idx in self._rules_expanded:
                 self._rules_expanded.discard(cat_idx)
             else:
@@ -3142,7 +3142,7 @@ try:
             scroll.add_widget(g)
             overlay.add_widget(scroll)
 
-            # Legg overlay over hele content-området
+            # Add overlay over the entire content area
             # Bruk FloatLayout-wrapperen (root)
             root = self._rules_main
             while root.parent and not isinstance(root.parent, FloatLayout):
@@ -3217,13 +3217,13 @@ try:
             self.cast.disconnect()
             self.cast_lbl.text = "Frakoblet"
 
-        # ---------- KARAKTERER / VERKTØY ----------
+        # ---------- CHARACTERS / TOOLS ----------
         def _mk_tool(self):
-            """Verktøy-fane med sub-tabs: Karakterer, Våpen, Scenario, Galskap.
+            """Tools tab with sub-tabs: Characters, Weapons, Scenario, Madness.
 
-            Sub-fanene bygges nå i det globale tab-panelet av
+            Sub-tabs are now built in the global tab panel by
             _build_tool_subtabs(). Denne metoden returnerer bare
-            handlings-raden + innholdsområdet.
+            the action bar + content area.
             """
             self._scen_init()
             # Migrer bort fra gammel 'init'-sub-tab hvis det ligger igjen
@@ -3241,7 +3241,7 @@ try:
             self.tool_area = BoxLayout()
             p.add_widget(self.tool_area)
 
-            # Når vi er i Verktøy-fanen skal init-tracker (hvis den kalles)
+            # When we are in the Tools tab the init-tracker (if called)
             # bruke denne tool_area — men siden init-sub-tab er fjernet,
             # skal det ikke skje. Sett target til None for sikkerhets skyld.
             self._init_target_area = None
@@ -3250,7 +3250,7 @@ try:
             return p
 
         def _tool_switch(self, which):
-            """Bytt mellom karakterer, våpen, scenario og galskap."""
+            """Switch between characters, weapons, scenario and madness."""
             self._tool_sub = which
             for key, btn in (('chars', self._sub_btn_chars),
                              ('weap',  self._sub_btn_weap),
@@ -3311,12 +3311,12 @@ try:
             wrap.add_widget(row)
             wrap.add_widget(mksep(6))
 
-            # Resultat-område (fylles av _roll_madness)
+            # Result area (filled by _roll_madness)
             self._mad_result = RBox(orientation='vertical',
                                     bg_color=INPUT, radius=dp(10),
                                     padding=dp(12), spacing=dp(6))
             placeholder = mklbl(
-                "Trykk på en knapp for å trille…",
+                "Tap a button to roll…",
                 color=DIM, size=12, h=30)
             self._mad_result.add_widget(placeholder)
             wrap.add_widget(self._mad_result)
@@ -3324,7 +3324,7 @@ try:
             self.tool_area.add_widget(wrap)
 
         def _roll_madness(self, kind):
-            """Trill 1d10 på riktig tabell og vis resultatet."""
+            """Roll 1d10 on the correct table and show the result."""
             table = PULP_MADNESS_RT if kind == 'rt' else PULP_MADNESS_SUM
             label = "Real-Time" if kind == 'rt' else "Summary"
             roll = random.randint(1, 10)
@@ -3340,7 +3340,7 @@ try:
                 mklbl(desc, color=TXT, size=13, wrap=True))
 
             # Trill-igjen knapp
-            again = mkbtn(f"Trill {label} på nytt",
+            again = mkbtn(f"Roll {label} again",
                           lambda: self._roll_madness(kind),
                           small=True, size_hint_y=None, height=dp(38))
             self._mad_result.add_widget(mksep(6))
@@ -3352,7 +3352,7 @@ try:
             g = GridLayout(cols=1, spacing=dp(6), padding=dp(6), size_hint_y=None)
             g.bind(minimum_height=g.setter('height'))
             if not self.chars:
-                g.add_widget(mklbl("Ingen karakterer ennå.\nTrykk '+ Ny' for å lage en.",
+                g.add_widget(mklbl("No characters yet.\nTap '+ New' to create one.",
                                    color=DIM, size=12, h=50))
             else:
                 for i, ch in enumerate(self.chars):
@@ -3635,7 +3635,7 @@ try:
                     spec_grid.add_widget(r)
                 outer.add_widget(spec_grid)
 
-            # Litt ekstra plass under så tastaturet kan skroll opp
+            # A little extra space below so keyboard can scroll up
             outer.add_widget(Widget(size_hint_y=None, height=dp(80)))
 
             scroll.add_widget(outer)
@@ -3668,15 +3668,15 @@ try:
         # ---------- KARAKTER-IMPORT ----------
 
         def _chars_do_pick_file(self):
-            """Åpne Android filvelger for karakterimport."""
+            """Open Android file picker for character import."""
             if platform != 'android':
                 self._chars_show_message(
-                    "Ikke støttet",
-                    "Filvelger er kun tilgjengelig på Android.",
+                    "Not supported",
+                    "File picker is only available on Android.",
                     is_error=True)
                 return
             self._chars_show_message(
-                "Åpner filvelger...",
+                "Opening file picker...",
                 "Velg en .json-fil med karakterer. Du kan bla til "
                 "Documents, Downloads, Drive, eller hvor som helst "
                 "du har fila.",
@@ -3690,7 +3690,7 @@ try:
                 1.0)
 
         def _chars_on_file_picked(self, ok, text_or_err):
-            """Callback når filvelgeren er ferdig."""
+            """Callback when file picker is done."""
             if not ok:
                 if text_or_err != "Avbrutt":
                     self._chars_show_message(
@@ -3714,7 +3714,7 @@ try:
             else:
                 self._chars_show_message(
                     "Feil format",
-                    "Fila må inneholde enten en liste [...] eller et "
+                    "File must contain either a list [...] or an "
                     "objekt med en \"characters\"-array "
                     "{ \"characters\": [...] }.",
                     is_error=True)
@@ -3733,14 +3733,14 @@ try:
             if not normalized:
                 self._chars_show_message(
                     "Ingen karakterer funnet",
-                    "Fila inneholdt ingen gyldige karakteroppføringer "
+                    "File contained no valid character entries "
                     "med navn.",
                     is_error=True)
                 return
             self._chars_show_import_preview(normalized, skipped)
 
         def _chars_normalize_entry(self, entry):
-            """Normaliser en rå karakter-dict til appens interne format."""
+            """Normalise a raw character dict to the app's internal format."""
             all_str_fields = (
                 [k for k, _ in CHAR_INFO]
                 + [k for k, _ in CHAR_STATS]
@@ -3774,14 +3774,14 @@ try:
             return result
 
         def _chars_show_import_preview(self, chars, skipped):
-            """Vis forhåndsvisning-overlay før import."""
+            """Show preview overlay before import."""
             count = len(chars)
             preview_names = [ch.get('name', '?') for ch in chars[:5]]
             names_text = "\n".join(f"• {n}" for n in preview_names)
             if count > 5:
                 names_text += f"\n… og {count - 5} til"
             skip_text = (
-                f"\n\n({skipped} oppføring"
+                f"\n\n({skipped} entr"
                 f"{'er' if skipped != 1 else ''} uten navn ble "
                 "hoppet over)"
             ) if skipped else ""
@@ -3816,7 +3816,7 @@ try:
                 "Cancel", self._chars_close_overlay,
                 small=True, size_hint_x=0.3))
             btns.add_widget(mkbtn(
-                "Slå sammen",
+                "Merge",
                 lambda: self._chars_do_import(chars, replace=False),
                 accent=True, size_hint_x=0.35))
             btns.add_widget(mkbtn(
@@ -3847,7 +3847,7 @@ try:
             fl.add_widget(overlay)
 
         def _chars_do_import(self, chars, replace):
-            """Utfør import — erstatt eksisterende eller slå sammen."""
+            """Execute import — replace existing or merge."""
             self._chars_close_overlay()
             if replace:
                 self.chars = list(chars)
@@ -3962,7 +3962,7 @@ try:
             p.add_widget(top)
 
             p.add_widget(mklbl(
-                "DEX avgjør rekkefølgen. +50 hvis skyter med håndvåpen.",
+                "DEX determines order. +50 if shooting with a handgun.",
                 color=DIM, size=10, h=18))
 
             scroll = ScrollView()
@@ -4057,7 +4057,7 @@ try:
             bottom = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
             bottom.add_widget(mkbtn("Kart", self._bm_open,
                                     small=True, size_hint_x=0.4))
-            bottom.add_widget(mkbtn("Fullfør", self._init_finish,
+            bottom.add_widget(mkbtn("Finish", self._init_finish,
                                     accent=True, size_hint_x=0.6))
             p.add_widget(bottom)
 
@@ -4133,7 +4133,7 @@ try:
             if not pcs and not npcs and not fiender:
                 g.add_widget(mklbl(
                     "Ingen tilgjengelige karakterer.\n"
-                    "Legg til karakterer under 'Verktøy > Karakterer' først.",
+                    "Add characters under 'Tools > Characters' first.",
                     color=DIM, size=11, h=60))
 
             scroll.add_widget(g)
@@ -4190,14 +4190,14 @@ try:
             # --- Normale dyr ---
             ("Hund (vakt)", 60, 8),
             ("Ulv", 75, 11),
-            ("Bjørn", 50, 19),
+            ("Bjorn", 50, 19),
             ("Puma", 85, 12),
             ("Slange (giftig)", 85, 4),
             ("Rotte (stor)", 60, 2),
             ("Rotte-svamp", 90, 35),
             ("Krokodille", 50, 14),
             ("Hai", 80, 18),
-            # --- Udøde ---
+            # --- Undead ---
             ("Zombie", 45, 12),
             ("Ghoul", 65, 13),
             ("Mumie", 50, 18),
@@ -4373,13 +4373,13 @@ try:
             self._mk_init_tracker()
 
         def _init_finish(self):
-            """Gå fra setup til aktiv: sorter etter effektiv DEX."""
+            """Go from setup to active: sort by effective DEX."""
             # Effektiv DEX = DEX + 50 hvis firearms
             for entry in self._init_list:
                 base = entry.get('dex', 0)
                 entry['effective'] = base + (50 if entry.get('firearms') else 0)
-            # Sorter høyest først (CoC-regel: høy DEX går først)
-            # Tiebreak: høyere base DEX, så alfabetisk navn
+            # Sort highest first (CoC rule: high DEX goes first)
+            # Tiebreak: higher base DEX, then alphabetical name
             self._init_list.sort(
                 key=lambda e: (e.get('effective', 0),
                                e.get('base_dex', 0),
@@ -4389,7 +4389,7 @@ try:
             self._mk_init_tracker()
 
         def _init_build_active(self, p):
-            """Aktiv fase: vis sortert rekkefølge."""
+            """Active phase: show sorted order."""
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn("Ny runde", self._init_new_encounter,
                                  danger=True, small=True, size_hint_x=0.3))
@@ -4401,7 +4401,7 @@ try:
             p.add_widget(top)
 
             p.add_widget(mklbl(
-                "Trykk på aktiv (øverst) for å avslutte turen.",
+                "Tap active (top) to end their turn.",
                 color=DIM, size=10, h=18))
 
             scroll = ScrollView()
@@ -4474,7 +4474,7 @@ try:
             p.add_widget(scroll)
 
         def _init_on_card_touch(self, widget, touch, idx):
-            """Trykk på øverste kort = dens tur er ferdig."""
+            """Tap top card = their turn is done."""
             if not widget.collide_point(*touch.pos):
                 return False
             if idx == 0:
@@ -4485,13 +4485,13 @@ try:
             return False
 
         def _init_new_encounter(self):
-            """Tøm listen og gå tilbake til setup."""
+            """Clear the list and return to setup."""
             self._init_list = []
             self._init_phase = 'setup'
             self._mk_init_tracker()
 
         def _init_back_to_setup(self):
-            """Gå tilbake til setup - behold listen."""
+            """Return to setup - keep the list."""
             self._init_phase = 'setup'
             self._mk_init_tracker()
 
@@ -4500,9 +4500,9 @@ try:
         BM_SIZE = 15  # 15x15 rutenett
 
         def _bm_open(self):
-            """Åpne battlemap som overlay. Sync tokens fra init-lista."""
+            """Open battlemap as overlay. Sync tokens from init list."""
             if not self._init_list:
-                # Ingen deltakere ennå
+                # No participants yet
                 return
             self._bm_tokens = {}       # (x, y) -> token dict
             self._bm_unplaced = []     # tokens som ikke er plassert
@@ -4618,7 +4618,7 @@ try:
 
             # Status og bunn-knapper
             self._bm_status = mklbl(
-                "Trykk på en token i 'Å plassere' for å begynne.",
+                "Tap a token in 'To place' to start.",
                 color=DIM, size=10, h=22, wrap=True)
             overlay.add_widget(self._bm_status)
 
@@ -4628,11 +4628,11 @@ try:
                 "Til plassering", self._bm_unplace_selected,
                 small=True, size_hint_x=0.5))
             btm.add_widget(mkbtn(
-                "Tøm kart", self._bm_clear,
+                "Clear map", self._bm_clear,
                 danger=True, small=True, size_hint_x=0.5))
             overlay.add_widget(btm)
 
-            # Legg overlay på FloatLayout-root
+            # Add overlay to FloatLayout root
             root = self.content
             while root.parent and not isinstance(root.parent, FloatLayout):
                 root = root.parent
@@ -4674,13 +4674,13 @@ try:
 
         def _bm_token_color(self, tp, is_selected=False,
                             is_active_turn=False):
-            """Farge for en token basert på type og tilstand."""
+            """Colour for a token based on type and state."""
             if tp == 'PC':
                 base = [0.25, 0.58, 0.32, 1]  # GRN
             elif tp == 'NPC':
                 base = [0.78, 0.60, 0.18, 1]  # dempet gull
             else:
-                base = [0.60, 0.18, 0.20, 1]  # mørk rød
+                base = [0.60, 0.18, 0.20, 1]  # dark red
             if is_selected:
                 base = [min(1, c * 1.5) for c in base[:3]] + [1]
             elif is_active_turn:
@@ -4688,13 +4688,13 @@ try:
             return base
 
         def _bm_active_name(self):
-            """Hvem har tur akkurat nå (første i init-lista)?"""
+            """Who has the current turn (first in init list)?"""
             if self._init_list:
                 return self._init_list[0].get('name', '')
             return ''
 
         def _bm_render(self):
-            """Tegn opp hele kartet basert på state."""
+            """Draw the entire map based on state."""
             # Oppdater aktiv-label
             act = self._bm_active_name()
             if act:
@@ -4728,10 +4728,10 @@ try:
             elif placing_label:
                 self._bm_unp_label.text = (
                     f"Holder: {placing_label} — "
-                    f"trykk på ledig rute for å plassere.")
+                    f"tap a free cell to place.")
             else:
                 self._bm_unp_label.text = (
-                    f"Å plassere ({n_unp}): trykk for å velge.")
+                    f"To place ({n_unp}): tap to select.")
 
             # Beregn gyldig move-ruter om token er valgt
             valid_moves = set()
@@ -4808,7 +4808,7 @@ try:
                     self._bm_status.text = ""
             else:
                 self._bm_status.text = (
-                    "Trykk på en token for å velge og flytte.")
+                    "Tap a token to select and move.")
 
         def _bm_hold_for_place(self, tok):
             """Velg token for plassering (fra unplaced-raden)."""
@@ -4822,16 +4822,16 @@ try:
             self._bm_render()
 
         def _bm_tap(self, x, y):
-            """Håndter trykk på en rute."""
+            """Handle tap on a cell."""
             cell = (x, y)
             tok_here = self._bm_tokens.get(cell)
 
-            # Modus 1: plasserer token fra unplaced
+            # Mode 1: placing token from unplaced
             if self._bm_placing:
                 if tok_here:
                     # Rute opptatt — ikke flytt, bare gi beskjed
                     self._bm_status.text = (
-                        "Ruten er opptatt. Velg en ledig rute.")
+                        "Cell is occupied. Choose a free cell.")
                     return
                 # Plasser tokenen her
                 self._bm_tokens[cell] = self._bm_placing
@@ -4843,28 +4843,28 @@ try:
                 self._bm_render()
                 return
 
-            # Modus 2: ingen aktiv valgt — velg token her
+            # Mode 2: none selected — select token here
             if self._bm_selected is None:
                 if tok_here:
                     self._bm_selected = cell
                     self._bm_render()
                 return
 
-            # Modus 3: token valgt fra før
+            # Mode 3: token previously selected
             sel = self._bm_selected
             if cell == sel:
-                # Trykk på valgt = dropp valg
+                # Tap on selected = deselect
                 self._bm_selected = None
                 self._bm_render()
                 return
 
             if tok_here:
-                # Bytt valg til annen token
+                # Switch selection to other token
                 self._bm_selected = cell
                 self._bm_render()
                 return
 
-            # Flytt valgt token hit hvis innenfor gjenværende MOV
+            # Move selected token here if within remaining MOV
             sel_tok = self._bm_tokens.get(sel)
             if not sel_tok:
                 self._bm_selected = None
@@ -4877,13 +4877,13 @@ try:
             dist = max(abs(x - sx), abs(y - sy))
             if remaining <= 0:
                 self._bm_status.text = (
-                    f"MOV brukt opp ({used}/{mov}).")
+                    f"MOV used up ({used}/{mov}).")
                 return
             if dist > remaining:
                 self._bm_status.text = (
-                    f"For langt ({dist} > {remaining} igjen).")
+                    f"Too far ({dist} > {remaining} remaining).")
                 return
-            # Utfør flytt — og tell bruk
+            # Execute move — and count usage
             sel_tok['used_mov'] = used + dist
             del self._bm_tokens[sel]
             self._bm_tokens[cell] = sel_tok
@@ -4891,7 +4891,7 @@ try:
             self._bm_render()
 
         def _bm_unplace_selected(self):
-            """Flytt valgt token tilbake til 'Å plassere'."""
+            """Move selected token back to 'To place'."""
             sel = self._bm_selected
             if sel is None:
                 return
@@ -4904,7 +4904,7 @@ try:
             self._bm_render()
 
         def _bm_clear(self):
-            """Tøm kartet — alle tokens tilbake til unplaced."""
+            """Clear the map — all tokens back to unplaced."""
             for tok in self._bm_tokens.values():
                 self._bm_unplaced.append(tok)
             self._bm_tokens = {}
@@ -4913,18 +4913,18 @@ try:
             self._bm_render()
 
         def _bm_next_turn(self):
-            """Flytt øverste init-entry til bunn + nullstill brukt MOV.
-            Autovelg neste deltakers token hvis den er på kartet.
-            CoC: hver ny runde får alle full bevegelse igjen."""
+            """Move top init-entry to bottom + reset used MOV.
+            Auto-select next participant's token if on map.
+            CoC: each new round everyone gets full movement again."""
             if self._init_list:
                 top = self._init_list.pop(0)
                 self._init_list.append(top)
-            # Nullstill brukt MOV for alle tokens (plasserte + å plassere)
+            # Reset used MOV for all tokens (placed + to place)
             for tok in self._bm_tokens.values():
                 tok['used_mov'] = 0
             for tok in self._bm_unplaced:
                 tok['used_mov'] = 0
-            # Autovelg tokenen som tilhører neste aktive deltaker
+            # Auto-select token belonging to next active participant
             self._bm_selected = None
             self._bm_placing = None
             next_name = self._bm_active_name()
@@ -4984,66 +4984,66 @@ try:
                     json.dump(self._scen_data, f,
                               ensure_ascii=False, indent=2)
             except Exception as e:
-                log(f"Scenario-lagring feilet: {e}")
+                log(f"Scenario save failed: {e}")
 
         def _scen_try_import(self):
-            """Prøv å kopiere scenario.json fra Documents-mappen til
-            app-private storage. Returner (ok, melding)."""
-            # Sjekk All Files Access-status
+            """Try to copy scenario.json from the Documents folder to
+            app-private storage. Return (ok, message)."""
+            # Check All Files Access status
             has_access = has_all_files_access()
             if not os.path.exists(EXTERNAL_SCENARIO):
                 hint = ""
                 if has_access is False:
-                    hint = ("\n\nHint: appen har ikke 'Tilgang til alle "
-                            "filer' ennå. Trykk 'Gi tilgang' for å åpne "
-                            "innstillingene og slå det på.")
+                    hint = ("\n\nHint: the app does not yet have 'Access to all "
+                            "files'. Tap 'Grant access' to open "
+                            "settings and enable it.")
                 return False, (
-                    f"Ingen fil funnet i Documents.\n\n"
-                    f"Forventet sti:\n{EXTERNAL_SCENARIO}{hint}")
+                    f"No file found in Documents.\n\n"
+                    f"Expected path:\n{EXTERNAL_SCENARIO}{hint}")
             try:
                 with open(EXTERNAL_SCENARIO, 'r',
                           encoding='utf-8') as f:
                     data = json.load(f)
                 # Valider at det faktisk er et scenario
                 if not isinstance(data, dict):
-                    return False, "Filen er ikke et JSON-objekt."
+                    return False, "File is not a JSON object."
                 # Skriv til app-private
                 os.makedirs(os.path.dirname(self.SCENARIO_FILE),
                             exist_ok=True)
                 with open(self.SCENARIO_FILE, 'w',
                           encoding='utf-8') as f:
                     json.dump(data, f, ensure_ascii=False, indent=2)
-                log(f"Scenario importert: {data.get('title', '?')}")
-                return True, f"Importert: {data.get('title', '(uten tittel)')}"
+                log(f"Scenario imported: {data.get('title', '?')}")
+                return True, f"Imported: {data.get('title', '(untitled)')}"
             except PermissionError:
                 hint = ""
                 if has_access is False:
-                    hint = ("\n\nLøsning: trykk 'Gi tilgang' nedenfor "
-                            "og slå på 'Tillat administrering av "
-                            "alle filer' for Eldritch Portal.")
+                    hint = ("\n\nSolution: tap 'Grant access' below "
+                            "and enable 'Allow management of "
+                            "all files' for Eldritch Portal.")
                 return False, (
-                    "Ingen tilgang til Documents-mappen."
+                    "No access to Documents folder."
                     + hint)
             except json.JSONDecodeError as e:
-                return False, f"Ugyldig JSON i filen:\n{e}"
+                return False, f"Invalid JSON in file:\n{e}"
             except Exception as e:
-                return False, f"Feil: {type(e).__name__}: {e}"
+                return False, f"Error: {type(e).__name__}: {e}"
 
         def _mk_scenario(self):
-            """Bygg scenario-sub-tab UI."""
+            """Build scenario sub-tab UI."""
             self._scen_init()
-            # Les inn fra disk hvis vi ikke har data ennå
+            # Load from disk if we have no data yet
             if self._scen_data is None:
                 self._scen_load()
 
             self._tool_action_bar.add_widget(
-                mkbtn("Velg fil", self._scen_do_pick_file,
+                mkbtn("Choose file", self._scen_do_pick_file,
                       accent=True, small=True, size_hint_x=0.3))
             self._tool_action_bar.add_widget(
-                mkbtn("Last inn", self._scen_reload,
+                mkbtn("Reload", self._scen_reload,
                       small=True, size_hint_x=0.25))
             self._tool_action_bar.add_widget(
-                mkbtn("Nullstill", self._scen_confirm_reset,
+                mkbtn("Reset", self._scen_confirm_reset,
                       danger=True, small=True, size_hint_x=0.25))
             title_text = "Scenario"
             if self._scen_data and '_error' not in self._scen_data:
@@ -5069,12 +5069,12 @@ try:
 
             # View-selector
             sel = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(4))
-            for key, txt in [('clues', 'Ledetråder'),
-                             ('timeline', 'Tidslinje'),
+            for key, txt in [('clues', 'Clues'),
+                             ('timeline', 'Timeline'),
                              ('beats', 'Plot'),
-                             ('notes', 'Notater'),
+                             ('notes', 'Notes'),
                              ('pcs', 'PCs'),
-                             ('sessions', 'Sesjoner')]:
+                             ('sessions', 'Sessions')]:
                 active = (key == self._scen_view)
                 b = RBtn(
                     text=txt,
@@ -5103,19 +5103,19 @@ try:
                     content,
                     self._scen_data.get('clues', []),
                     'where', 'found',
-                    "Ingen ledetråder i denne scenarioet.")
+                    "No clues in this scenario.")
             elif self._scen_view == 'timeline':
                 self._scen_build_list(
                     content,
                     self._scen_data.get('timeline', []),
                     'when', 'triggered',
-                    "Ingen tidslinje-hendelser.")
+                    "No timeline events.")
             elif self._scen_view == 'beats':
                 self._scen_build_list(
                     content,
                     self._scen_data.get('beats', []),
                     None, 'done',
-                    "Ingen plot-punkter.")
+                    "No plot points.")
             elif self._scen_view == 'pcs':
                 self._scen_build_pcs(content)
             elif self._scen_view == 'sessions':
@@ -5127,7 +5127,7 @@ try:
             self.tool_area.add_widget(p)
 
         def _scen_show_empty(self):
-            """Vis melding når scenario.json ikke finnes."""
+            """Show message when scenario.json is not found."""
             scroll = ScrollView()
             box = BoxLayout(orientation='vertical',
                             spacing=dp(8), padding=dp(16),
@@ -5138,17 +5138,16 @@ try:
                 "Ingen scenario lastet.",
                 color=GOLD, size=14, bold=True, h=28))
 
-            # PRIMÆR METODE: SAF-filvelger (ingen tillatelser kreves)
+            # PRIMARY METHOD: SAF file picker (no permissions required)
             box.add_widget(mksep(8))
             box.add_widget(mklbl(
                 "ENKLEST — Velg fil",
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
-                "Trykk 'Velg fil' for å åpne Android sin "
-                "filvelger. Bla til scenario.json hvor enn "
-                "du har den — Documents, Downloads, Google "
-                "Drive, minnekort. Krever ingen ekstra "
-                "tillatelser.",
+                "Tap 'Choose file' to open Android's "
+                "file picker. Browse to scenario.json wherever "
+                "you have it — Documents, Downloads, Google "
+                "Drive, SD card. No extra permissions required.",
                 color=TXT, size=11, wrap=True))
             box.add_widget(mkbtn(
                 "Velg fil",
@@ -5164,11 +5163,11 @@ try:
 
             if access is True:
                 box.add_widget(mklbl(
-                    "Tilgang til alle filer: PÅ",
+                    "Access to all files: ON",
                     color=GRN, size=11, bold=True, h=20))
                 box.add_widget(mklbl(
-                    f"Legg scenario.json i:\n{EXTERNAL_SCENARIO}\n\n"
-                    "Trykk deretter 'Importer' nedenfor.",
+                    f"Place scenario.json in:\n{EXTERNAL_SCENARIO}\n\n"
+                    "Then tap 'Import' below.",
                     color=TXT, size=11, wrap=True))
                 box.add_widget(mkbtn(
                     "Importer fra Documents",
@@ -5176,21 +5175,21 @@ try:
                     size_hint_y=None, height=dp(44)))
             elif access is False:
                 box.add_widget(mklbl(
-                    "Tilgang til alle filer: AV",
+                    "Access to all files: OFF",
                     color=RED, size=11, bold=True, h=20))
                 box.add_widget(mklbl(
-                    "For å bruke Importer-knappen må du slå "
-                    "på 'Tilgang til alle filer' for appen. "
-                    "Engangsjobb — men 'Velg fil' over er "
-                    "enklere og trenger ikke dette.",
+                    "To use the Import button you need to enable "
+                    "'Access to all files' for the app. "
+                    "One-time job — but 'Choose file' above is "
+                    "simpler and does not need this.",
                     color=TXT, size=11, wrap=True))
                 box.add_widget(mkbtn(
-                    "Gi tilgang (åpner innstillinger)",
+                    "Grant access (opens settings)",
                     self._scen_request_access,
                     size_hint_y=None, height=dp(44)))
             else:
                 box.add_widget(mklbl(
-                    "Kun tilgjengelig på Android 11+.",
+                    "Only available on Android 11+.",
                     color=DIM, size=10, wrap=True))
 
             # MANUELL KOPI: siste fallback
@@ -5202,12 +5201,12 @@ try:
                 self.SCENARIO_FILE,
                 color=GDIM, size=10, wrap=True))
             box.add_widget(mklbl(
-                "Trykk 'Last inn' etterpå.",
+                "Then tap 'Reload'.",
                 color=DIM, size=10, wrap=True))
 
             box.add_widget(mksep(8))
             box.add_widget(mkbtn(
-                "Last inn på nytt",
+                "Reload",
                 self._scen_reload,
                 size_hint_y=None, height=dp(40)))
 
@@ -5215,31 +5214,31 @@ try:
             self.tool_area.add_widget(scroll)
 
         def _scen_request_access(self):
-            """Åpne Android-innstillinger for All Files Access."""
+            """Open Android settings for All Files Access."""
             ok = request_all_files_access()
             if not ok:
                 self._scen_show_message(
-                    "Kunne ikke åpne innstillinger",
-                    "Prøv å gå manuelt til:\n"
+                    "Could not open settings",
+                    "Try going manually to:\n"
                     "Innstillinger > Apper > Eldritch Portal > "
                     "Tillatelser > Alle filer",
                     is_error=True)
 
         def _scen_do_pick_file(self):
-            """Åpne Android filvelger og la brukeren velge scenario.json."""
+            """Open Android file picker and let user select scenario.json."""
             if platform != 'android':
                 self._scen_show_message(
-                    "Ikke støttet",
-                    "Filvelger er kun tilgjengelig på Android.",
+                    "Not supported",
+                    "File picker is only available on Android.",
                     is_error=True)
                 return
             self._scen_show_message(
-                "Åpner filvelger...",
+                "Opening file picker...",
                 "Velg en scenario.json-fil. Du kan bla til "
                 "Documents, Downloads, Drive, eller hvor som "
                 "helst du har fila.",
                 is_error=False)
-            # Lukk meldingen etter kort tid så filvelgeren vises ren
+            # Close message after short time so file picker shows cleanly
             Clock.schedule_once(
                 lambda dt: self._scen_close_overlay(), 0.8)
             Clock.schedule_once(
@@ -5249,14 +5248,14 @@ try:
                 1.0)
 
         def _scen_on_file_picked(self, ok, text_or_err):
-            """Callback når filvelgeren er ferdig."""
+            """Callback when file picker is done."""
             if not ok:
                 if text_or_err != "Avbrutt":
                     self._scen_show_message(
                         "Kunne ikke lese fil",
                         text_or_err, is_error=True)
                 return
-            # Prøv å parse JSON-innhold
+            # Try to parse JSON content
             try:
                 data = json.loads(text_or_err)
             except json.JSONDecodeError as e:
@@ -5297,7 +5296,7 @@ try:
                 is_error=False)
 
         def _scen_do_import(self):
-            """Forsøk å importere scenario fra Documents-mappen."""
+            """Try to import scenario from Documents folder."""
             ok, msg = self._scen_try_import()
             if ok:
                 # Last inn den nyimporterte fila
@@ -5372,11 +5371,11 @@ try:
 
             box.add_widget(mksep(8))
             box.add_widget(mklbl(
-                "Mulige årsaker:",
+                "Possible causes:",
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
                 "• Filen er ikke gyldig JSON "
-                "(sjekk på jsonlint.com)\n"
+                "(check at jsonlint.com)\n"
                 "• Manglende skriverettigheter\n"
                 "• Filen er tom eller korrupt",
                 color=TXT, size=11, wrap=True))
@@ -5391,7 +5390,7 @@ try:
 
             box.add_widget(mksep(10))
             box.add_widget(mkbtn(
-                "Last inn på nytt",
+                "Reload",
                 self._scen_reload, accent=True,
                 size_hint_y=None, height=dp(44)))
             box.add_widget(mkbtn(
@@ -5403,14 +5402,14 @@ try:
             self.tool_area.add_widget(scroll)
 
         def _scen_reload(self):
-            """Last scenario.json på nytt fra disk."""
+            """Reload scenario.json from disk."""
             self._scen_data = None
             self._scen_load()
             self._tool_render_sub()
 
         def _scen_switch_view(self, view):
             self._scen_view = view
-            # Reset til liste-modus når vi bytter til Sesjoner
+            # Reset to list mode when switching to Sessions
             if view == 'sessions':
                 self._scen_sess_mode = 'list'
                 self._scen_sess_idx = None
@@ -5456,7 +5455,7 @@ try:
                      self._scen_toggle(it, fk))
             row.add_widget(tog)
 
-            # Tekst-område (midten)
+            # Text area (centre)
             mid = BoxLayout(orientation='vertical', spacing=dp(2))
             title_lb = Label(
                 text=item.get('title', '?'),
@@ -5483,7 +5482,7 @@ try:
 
             row.add_widget(mid)
 
-            # Info-knapp (høyre)
+            # Info button (right)
             desc = item.get('description', '')
             if desc:
                 info_btn = RBtn(
@@ -5526,7 +5525,7 @@ try:
             scroll.add_widget(body)
             overlay.add_widget(scroll)
 
-            # Legg på FloatLayout-roten
+            # Add to FloatLayout root
             root = self.tool_area
             while root.parent and not isinstance(root.parent, FloatLayout):
                 root = root.parent
@@ -5587,7 +5586,7 @@ try:
                    if ch.get('type', 'PC') == 'PC']
             if not pcs:
                 container.add_widget(mklbl(
-                    "Ingen PC-karakterer ennå.\n"
+                    "No PC characters yet.\n"
                     "Legg til karakterer under 'Karakterer'.",
                     color=DIM, size=11, wrap=True))
                 return
@@ -5647,8 +5646,8 @@ try:
 
             if not sessions:
                 wrap.add_widget(mklbl(
-                    "Ingen sesjoner ennå.\n"
-                    "Trykk '+ Ny sesjon' for å logge første økt.",
+                    "No sessions yet.\n"
+                    "Tap '+ New session' to log the first session.",
                     color=DIM, size=12, wrap=True))
                 container.add_widget(wrap)
                 return
@@ -5728,7 +5727,7 @@ try:
             for key, label in [
                 ('players',     'Deltakere'),
                 ('summary',     'Sammendrag'),
-                ('clues_found', 'Ledetråder funnet'),
+                ('clues_found', 'Clues Found'),
                 ('sanity',      'Sanity-tap'),
                 ('rolls',       'XP / Forbedringssjekker'),
                 ('cliffhanger', 'Cliffhanger / til neste gang'),
@@ -5808,7 +5807,7 @@ try:
             _add_field('title',       'Tittel',            False, 44)
             _add_field('players',     'Deltakere',         False, 44)
             _add_field('summary',     'Sammendrag',        True, 180)
-            _add_field('clues_found', 'Ledetråder funnet', True, 120)
+            _add_field('clues_found', 'Clues Found', True, 120)
             _add_field('sanity',      'Sanity-tap',        True, 100)
             _add_field('rolls',       'XP / Forbedringssjekker',
                                                            True, 100)
@@ -5968,7 +5967,7 @@ try:
                 for key, label in [
                     ('players',     'Deltakere'),
                     ('summary',     'Sammendrag'),
-                    ('clues_found', 'Ledetråder funnet'),
+                    ('clues_found', 'Clues Found'),
                     ('sanity',      'Sanity-tap'),
                     ('rolls',       'XP / Forbedringssjekker'),
                     ('cliffhanger', 'Cliffhanger / til neste gang'),
@@ -6026,7 +6025,7 @@ try:
             fl.add_widget(overlay)
 
         def _scen_confirm_reset(self):
-            """Spør om bekreftelse før nullstilling av alle flagg."""
+            """Ask for confirmation before resetting all flags."""
             if not self._scen_data or '_error' in self._scen_data:
                 return
             overlay = RBox(
@@ -6039,7 +6038,7 @@ try:
                 "Nullstill fremdrift?",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
-                "Alle avkryssinger i ledetråder, tidslinje og "
+                "All checkboxes in clues, timeline and "
                 "plot-punkter blir nullstilt. Notater beholdes.",
                 color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44),
@@ -6086,20 +6085,20 @@ try:
             self._scen_close_overlay()
             self._tool_render_sub()
 
-        # ---------- VÅPEN ----------
+        # ---------- WEAPONS ----------
         def _mk_weapons(self):
-            """Hovedvisning for våpentabellen."""
+            """Main view for the weapons table."""
             data = self.weapons_data
             cats = data.get("categories", {})
 
             if not data.get("weapons"):
                 self._tool_action_bar.add_widget(
-                    mklbl("Våpen", color=GOLD, size=14, bold=True))
+                    mklbl("Weapons", color=GOLD, size=14, bold=True))
                 self.tool_area.clear_widgets()
                 msg_box = BoxLayout(orientation='vertical',
                                     spacing=dp(8), padding=dp(20))
                 msg_box.add_widget(mklbl(
-                    "Ingen våpendata funnet.",
+                    "No weapon data found.",
                     color=GOLD, size=14, bold=True, h=28))
 
                 # Vis siste feilmelding hvis vi har en
@@ -6120,17 +6119,17 @@ try:
                     color=DIM, size=10, wrap=True))
 
                 msg_box.add_widget(mkbtn(
-                    "Last inn på nytt",
+                    "Reload",
                     self._weap_reload, accent=True,
                     size_hint_y=None, height=dp(42)))
                 msg_box.add_widget(Widget())
                 self.tool_area.add_widget(msg_box)
                 return
 
-            # Action-bar: søk + epoke + favoritt-toggle
+            # Action bar: search + era + favourite toggle
             search_inp = TextInput(
                 text=self._weap_search,
-                hint_text='Søk…',
+                hint_text='Search…',
                 font_size=sp(12), multiline=False,
                 background_color=INPUT, foreground_color=TXT,
                 cursor_color=GOLD,
@@ -6162,7 +6161,7 @@ try:
             fav_tog.bind(on_release=self._weap_toggle_fav_filter)
             self._tool_action_bar.add_widget(fav_tog)
 
-            # Hovedområde
+            # Main area
             self.tool_area.clear_widgets()
             p = BoxLayout(orientation='vertical',
                           spacing=dp(4), padding=[dp(4), dp(4)])
@@ -6195,7 +6194,7 @@ try:
             cat_scroll.add_widget(cat_row)
             p.add_widget(cat_scroll)
 
-            # Karakter-velger: vis hvilken karakter våpen legges til
+            # Character selector: shows which character weapons are added to
             if self.chars:
                 char_names = [ch.get('name', f'#{i}')
                               for i, ch in enumerate(self.chars)]
@@ -6232,7 +6231,7 @@ try:
                 char_row.add_widget(char_sp)
                 p.add_widget(char_row)
 
-            # Våpenliste
+            # Weapons list
             scroll = ScrollView()
             self._weap_list_grid = GridLayout(
                 cols=1, spacing=dp(4),
@@ -6247,7 +6246,7 @@ try:
             self._weap_render_list()
 
         def _weap_reload(self):
-            """Les inn weapons.json på nytt."""
+            """Reload weapons.json."""
             self._weap_do_load()
             self._tool_render_sub()
 
@@ -6271,7 +6270,7 @@ try:
 
         def _weap_cat_switch(self, cat):
             self._weap_cat = cat
-            # Rebuild fordi kategori-knapper må re-styles
+            # Rebuild because category buttons need re-styling
             self._tool_render_sub()
 
         def _weap_toggle_fav_filter(self, inst):
@@ -6284,7 +6283,7 @@ try:
             self._weap_render_list()
 
         def _weap_filter(self):
-            """Returner filtrert våpenliste."""
+            """Return filtered weapons list."""
             weapons = self.weapons_data.get("weapons", [])
             out = []
             for w in weapons:
@@ -6301,7 +6300,7 @@ try:
                 if self._weap_fav_only:
                     if w.get('id') not in self.weap_favorites:
                         continue
-                # Søk
+                # Search
                 if self._weap_search:
                     s = self._weap_search
                     hay = (w.get('name', '') + ' ' +
@@ -6313,7 +6312,7 @@ try:
             return out
 
         def _weap_render_list(self):
-            """Bygg våpen-rad-listen basert på filter."""
+            """Build weapon row list based on filter."""
             if not hasattr(self, '_weap_list_grid'):
                 return
             self._weap_list_grid.clear_widgets()
@@ -6331,7 +6330,7 @@ try:
                     self._weap_make_row(w, subs))
 
         def _weap_make_row(self, w, subs):
-            """Bygg en kompakt våpen-rad (78dp høy, klikkbar)."""
+            """Build a compact weapon row (78dp high, clickable)."""
             wid = w.get('id', '')
             is_fav = wid in self.weap_favorites
 
@@ -6404,7 +6403,7 @@ try:
 
             row.add_widget(left)
 
-            # Høyre: legg-til-knapp + favoritt-knapp
+            # Right: add button + favourite button
             add_btn = RBtn(
                 text='+',
                 bg_color=BTNH if 0 <= self._weap_char_target < len(self.chars) else BTN,
@@ -6429,7 +6428,7 @@ try:
                          self._weap_toggle_fav(_id))
             row.add_widget(fav_btn)
 
-            # Hele raden (unntatt fav-knapp og add-knapp) klikkbar = åpne detalj
+            # Whole row (except fav-button and add-button) clickable = open detail
             def _on_touch(widget, touch, weap=w):
                 if not widget.collide_point(*touch.pos):
                     return False
@@ -6454,7 +6453,7 @@ try:
             self._weap_render_list()
 
         def _weap_add_to_char(self, w):
-            """Legg til våpen i valgt karakters våpenfelt og lagre."""
+            """Add weapon to selected character's weapon field and save."""
             idx = self._weap_char_target
             if idx < 0 or idx >= len(self.chars):
                 return
@@ -6472,7 +6471,7 @@ try:
             save_json(CHAR_FILE, self.chars)
 
         def _weap_show_detail(self, w):
-            """Vis detalj-overlay for ett våpen."""
+            """Show detail overlay for one weapon."""
             self._weap_close_overlay()
             labels = self.weapons_data.get("field_labels", {})
             subs = self.weapons_data.get("subcategories", {})
@@ -6530,7 +6529,7 @@ try:
                            padding=[dp(4), dp(4)], size_hint_y=None)
             g.bind(minimum_height=g.setter('height'))
 
-            # Nøkkel-stats i rutenett
+            # Key stats in grid
             g.add_widget(mksep(4))
             stats_box = GridLayout(cols=2, spacing=dp(4),
                                    size_hint_y=None, height=dp(180))
@@ -6627,7 +6626,7 @@ try:
             scroll.add_widget(g)
             overlay.add_widget(scroll)
 
-            # Legg overlay på FloatLayout-root (samme mønster som rules)
+            # Add overlay to FloatLayout root (same pattern as rules)
             root = self.content
             while root.parent and not isinstance(root.parent, FloatLayout):
                 root = root.parent
@@ -6654,7 +6653,7 @@ try:
             fl.add_widget(overlay)
 
         def _weap_close_overlay(self):
-            """Lukk våpen-detalj-overlay."""
+            """Close weapon detail overlay."""
             if self._weap_overlay and self._weap_overlay.parent:
                 parent = self._weap_overlay.parent
                 parent.remove_widget(self._weap_overlay)
