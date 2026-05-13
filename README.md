@@ -105,8 +105,8 @@ Sub-tabs for session prep and quick reference:
     <td><a href="screenshots/Screenshot_20260513_195521_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195521_Eldritch Portals.jpg" width="180"></a></td>
   </tr>
   <tr>
-    <td><a href="screenshots/Screenshot_20260423_195459_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195459_Eldritch Portal.jpg" width="180"></a></td>
-    <td><a href="screenshots/Screenshot_20260423_195506_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195506_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260513_195525_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195525_Eldritch Portals.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260513_195532_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195532_Eldritch Portals.jpg" width="180"></a></td>
     <td><a href="screenshots/Screenshot_20260423_195522_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195522_Eldritch Portal.jpg" width="180"></a></td>
     <td><a href="screenshots/Screenshot_20260423_195531_Eldritch Portal.jpg"><img src="screenshots/Screenshot_20260423_195531_Eldritch Portal.jpg" width="180"></a></td>
   </tr>
