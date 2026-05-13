@@ -107,7 +107,7 @@ Sub-tabs for session prep and quick reference:
   <tr>
     <td><a href="screenshots/Screenshot_20260513_195525_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195525_Eldritch Portals.jpg" width="180"></a></td>
     <td><a href="screenshots/Screenshot_20260513_195532_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195532_Eldritch Portals.jpg" width="180"></a></td>
-    <td><a href="screenshots/Screenshot_20260513_195551_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260423_195522_Eldritch Portal.jpg" width="180"></a></td>
+    <td><a href="screenshots/Screenshot_20260513_195551_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195551_Eldritch Portals.jpg" width="180"></a></td>
     <td><a href="screenshots/Screenshot_20260513_195551_Eldritch Portals.jpg"><img src="screenshots/Screenshot_20260513_195551_Eldritch Portals.jpg" width="180"></a></td>
   </tr>
   <tr>
