@@ -6,15 +6,18 @@ package.domain = org.rpg
 icon.filename = %(source.dir)s/icon.png
 
 source.dir = .
-source.include_exts = py,png,jpg,jpeg,webp,kv,atlas,ttf,otf,json 
+source.include_exts = py,png,jpg,jpeg,webp,kv,atlas,ttf,otf,json
+source.include_patterns = weapons.json
 
-version = 0.3.3
+version = 0.4.5
 
-requirements = python3,kivy,pillow,android,pychromecast,zeroconf,ifaddr,protobuf
+requirements = python3,kivy==2.3.0,pillow,android,pyjnius,pychromecast,zeroconf,ifaddr,protobuf,cython<3.0
 
-android.api = 35
+android.api = 34
 android.minapi = 21
+android.ndk = 25b
 android.archs = arm64-v8a
+android.enable_androidx = True
 
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE,CHANGE_WIFI_MULTICAST_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,MANAGE_EXTERNAL_STORAGE,READ_MEDIA_IMAGES,READ_MEDIA_AUDIO,READ_MEDIA_VIDEO
 
@@ -25,6 +28,7 @@ android.accept_sdk_license = True
 android.private_storage = True
 
 p4a.bootstrap = sdl2
+p4a.branch = v2024.01.21
 
 log_level = 2
 

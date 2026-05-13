@@ -122,16 +122,16 @@ try:
     # straight from the Pulp Cthulhu book if you wish.
     PULP_MADNESS_RT = [
         ("Memory Loss",
-         "Karakteren mister hukommelsen for de siste hendelsene "
-         "(siste 1d10 minutter)."),
+         "The character loses memory of recent events "
+         "(last 1d10 minutes)."),
         ("Psychosomatic Disability",
          "Suddenly blind, deaf, or lame for 1d10 rounds "
-         "(keeper bestemmer)."),
+         "(keeper decides)."),
         ("Violence",
          "Attacks nearest target — friend or foe — for 1d10 rounds."),
         ("Paranoia",
-         "Mistenker alle og alt; ser konspirasjoner overalt "
-         "i 1d10 runder."),
+         "Suspects everyone and everything; sees conspiracies "
+         "everywhere for 1d10 rounds."),
         ("Significant Person",
          "Mistakes someone present for an important person from "
          "the past; behaves accordingly for 1d10 rounds."),
@@ -170,9 +170,9 @@ try:
          "Wakes in a hospital, asylum, or prison without knowing "
          "how; 1d10 days' stay."),
         ("Flight Home",
-         "Drar instinktivt mot hjemmet eller barndomstedet; reisen "
-         "tar 1d10 dager."),
-        ("Hysteriaa",
+         "Instinctively heads for home or childhood place; the "
+         "journey takes 1d10 days."),
+        ("Hysteria",
          "Overwhelming emotional state for 1d10 days; must "
          "be stabilised by others."),
         ("Phobia",
@@ -828,26 +828,26 @@ try:
 
     # === LYDKILDER ===
     AMBIENT_SOUNDS = [
-        {"name":"--- Natur ---"},
-        {"name":"Regn og torden","url":"https://archive.org/download/RainSound13/Gentle%20Rain%20and%20Thunder.mp3"},
+        {"name":"--- Nature ---"},
+        {"name":"Rain and Thunder","url":"https://archive.org/download/RainSound13/Gentle%20Rain%20and%20Thunder.mp3"},
         {"name":"Ocean Waves","url":"https://archive.org/download/naturesounds-soundtheraphy/Birds%20With%20Ocean%20Waves%20on%20the%20Beach.mp3"},
-        {"name":"Nattregn","url":"https://archive.org/download/RainSound13/Night%20Rain%20Sound.mp3"},
-        {"name":"Vind og storm","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/epic-storm-thunder-rainwindwaves-no-loops-106800.mp3"},
-        {"name":"Nattlyder","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/ambience-crickets-chirping-in-very-light-rain-followed-by-gentle-rolling-thunder-10577.mp3"},
-        {"name":"Havstorm","url":"https://archive.org/download/naturesounds-soundtheraphy/Sound%20Therapy%20-%20Sea%20Storm.mp3"},
-        {"name":"Lett regn","url":"https://archive.org/download/naturesounds-soundtheraphy/Light%20Gentle%20Rain.mp3"},
-        {"name":"Tordenstorm","url":"https://archive.org/download/RainSound13/Rain%20Sound%20with%20Thunderstorm.mp3"},
-        {"name":"Urolig hav","url":"https://archive.org/download/RelaxingRainAndLoudThunderFreeFieldRecordingOfNatureSoundsForSleepOrMeditation/Relaxing%20Rain%20and%20Loud%20Thunder%20%28Free%20Field%20Recording%20of%20Nature%20Sounds%20for%20Sleep%20or%20Meditation%20Mp3%29.mp3"},
+        {"name":"Night Rain","url":"https://archive.org/download/RainSound13/Night%20Rain%20Sound.mp3"},
+        {"name":"Wind and Storm","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/epic-storm-thunder-rainwindwaves-no-loops-106800.mp3"},
+        {"name":"Night Sounds","url":"https://archive.org/download/rain-sounds-gentle-rain-thunderstorms/ambience-crickets-chirping-in-very-light-rain-followed-by-gentle-rolling-thunder-10577.mp3"},
+        {"name":"Sea Storm","url":"https://archive.org/download/naturesounds-soundtheraphy/Sound%20Therapy%20-%20Sea%20Storm.mp3"},
+        {"name":"Light Rain","url":"https://archive.org/download/naturesounds-soundtheraphy/Light%20Gentle%20Rain.mp3"},
+        {"name":"Thunderstorm","url":"https://archive.org/download/RainSound13/Rain%20Sound%20with%20Thunderstorm.mp3"},
+        {"name":"Restless Sea","url":"https://archive.org/download/RelaxingRainAndLoudThunderFreeFieldRecordingOfNatureSoundsForSleepOrMeditation/Relaxing%20Rain%20and%20Loud%20Thunder%20%28Free%20Field%20Recording%20of%20Nature%20Sounds%20for%20Sleep%20or%20Meditation%20Mp3%29.mp3"},
         {"name":"--- Horror ---"},
         {"name":"Eerie Atmosphere","url":"https://archive.org/download/creepy-music-sounds/Creepy%20music%20%26%20sounds.mp3"},
-        {"name":"Uhyggelig drone","url":"https://archive.org/download/scary-sound-effects-8/Evil%20Demon%20Drone%20Movie%20Halloween%20Sounds.mp3"},
+        {"name":"Eerie Drone","url":"https://archive.org/download/scary-sound-effects-8/Evil%20Demon%20Drone%20Movie%20Halloween%20Sounds.mp3"},
         {"name":"Dark Tension","url":"https://archive.org/download/scary-sound-effects-8/Dramatic%20Suspense%20Sound%20Effects.mp3"},
-        {"name":"Horrorlyder","url":"https://archive.org/download/creepy-music-sounds/Horror%20Sound%20Effects.mp3"},
+        {"name":"Horror Sounds","url":"https://archive.org/download/creepy-music-sounds/Horror%20Sound%20Effects.mp3"},
     ]
 
     # === KARAKTERFELT ===
     CHAR_INFO = [
-        ("name","Navn"), ("type","Type"), ("occ","Yrke"), ("archetype","Arketype"),
+        ("name","Name"), ("type","Type"), ("occ","Yrke"), ("archetype","Arketype"),
         ("age","Age"), ("residence","Residence"), ("birthplace","Birthplace"),
     ]
     CHAR_STATS = [
@@ -860,7 +860,7 @@ try:
     ]
     CHAR_TEXT = [
         ("weapons","Weapons"), ("talents","Pulp Talents"),
-        ("backstory","Bakgrunn"), ("notes","Notater"),
+        ("backstory","Backstory"), ("notes","Notes"),
     ]
     SKILLS = [
         ("Accounting","05"), ("Appraise","05"), ("Archaeology","01"),
@@ -891,22 +891,22 @@ try:
     # === REGLER & REFERANSE ===
     # Komplett CoC 7e + Pulp Cthulhu keeper-referanse.
     RULES = [
-      ("Grunnregler", "", [
-        ("Ferdighetskast", [
-          "Rull d100 (percentile) mot skill-verdi.",
-          "Lik eller under = suksess.",
+      ("Core Rules", "", [
+        ("Skill Rolls", [
+          "Roll d100 (percentile) against skill value.",
+          "Equal to or under = success.",
           "",
           "Success levels:",
-          "  Critical: resultat = 01",
-          "  Extreme: resultat \u2264 skill / 5",
-          "  Hard: resultat \u2264 skill / 2",
-          "  Regular: resultat \u2264 skill",
-          "  Failure: resultat > skill",
+          "  Critical: result = 01",
+          "  Extreme: result \u2264 skill / 5",
+          "  Hard: result \u2264 skill / 2",
+          "  Regular: result \u2264 skill",
+          "  Failure: result > skill",
           "",
           "Automatic success: 01 always succeeds.",
           "Fumble (based on THRESHOLD, not base skill):",
-          "  Krav \u2265 50: kun 100 er fumble",
-          "  Krav < 50: 96\u2013100 er fumble",
+          "  Threshold \u2265 50: only 100 is a fumble",
+          "  Threshold < 50: 96\u2013100 is a fumble",
           "  E.g.: skill 60, Hard diff (threshold 30)",
           "    -> fumble on 96\u2013100",
         ]),
@@ -918,8 +918,8 @@ try:
           "",
           "Against living opponents:",
           "  Opponent's skill < 50: Regular",
-          "  Motstanders skill \u2265 50: Hard",
-          "  Motstanders skill \u2265 90: Extreme",
+          "  Opponent's skill \u2265 50: Hard",
+          "  Opponent's skill \u2265 90: Extreme",
         ]),
         ("Bonus & Penalty", [
           "Bonus die: roll 2 tens dice,",
@@ -964,7 +964,7 @@ try:
         ]),
         ("Luck", [
           "Luck value: 3d6 x 5 (at creation).",
-          "Luck-sjekk: d100 \u2264 Luck.",
+          "Luck check: d100 \u2264 Luck.",
           "",
           "Spending Luck:",
           "  After a skill roll: spend Luck points",
@@ -1002,7 +1002,7 @@ try:
           "",
           "3. Defender chooses reaction:",
           "   - Dodge (avoid)",
-          "   - Fight Back (motangrep, kun melee)",
+          "   - Fight Back (counter, melee only)",
           "   - Nothing (takes full damage)",
           "",
           "4. Repeat until combat ends.",
@@ -1019,7 +1019,7 @@ try:
           "FIGHT BACK (opposed vs Fighting):",
           "  Attacker wins -> full damage",
           "  Defender wins -> defender deals damage",
-          "  Begge feiler -> ingenting skjer",
+          "  Both fail -> nothing happens",
           "",
           "Dodge: 1 free per round,",
           "  extra dodge costs an action next round.",
@@ -1101,7 +1101,7 @@ try:
           "",
           "HEALING:",
           "  First Aid: +1 HP (1 attempt/wound)",
-          "  Medicine: +1d3 HP (etter First Aid)",
+          "  Medicine: +1d3 HP (after First Aid)",
           "  Natural: 1 HP/week (minor)",
           "  Major wound: 1d3 HP/week with care",
         ]),
@@ -1127,7 +1127,7 @@ try:
           "  E.g.: '1/1d6' = success loses 1,",
           "    failure loses 1d6 SAN.",
           "",
-          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
+          "Max SAN = 99 \u2013 Cthulhu Mythos skill.",
           "",
           "SAN fumble: automatic max SAN loss.",
         ]),
@@ -1176,28 +1176,28 @@ try:
         ("Phobias (selection)", [
           "Acrophobia \u2013 heights",
           "Agoraphobia \u2013 open spaces",
-          "Arachnophobia \u2013 edderkopper",
-          "Claustrophobia \u2013 trange rom",
-          "Demophobia \u2013 folkemengder",
-          "Hemophobia \u2013 blod",
-          "Hydrophobia \u2013 vann",
-          "Mysophobia \u2013 smitte/skitt",
+          "Arachnophobia \u2013 spiders",
+          "Claustrophobia \u2013 confined spaces",
+          "Demophobia \u2013 crowds",
+          "Hemophobia \u2013 blood",
+          "Hydrophobia \u2013 water",
+          "Mysophobia \u2013 infection/dirt",
           "Necrophobia \u2013 the dead/corpses",
           "Nyctophobia \u2013 darkness",
-          "Pyrophobia \u2013 ild",
-          "Thalassophobia \u2013 havet/dypt vann",
-          "Xenophobia \u2013 fremmede/ukjente",
-          "Zoophobia \u2013 dyr",
+          "Pyrophobia \u2013 fire",
+          "Thalassophobia \u2013 the sea/deep water",
+          "Xenophobia \u2013 strangers/unknown",
+          "Zoophobia \u2013 animals",
         ]),
         ("Manias (selection)", [
-          "Dipsomania \u2013 trang til alkohol",
+          "Dipsomania \u2013 craving for alcohol",
           "Kleptomania \u2013 urge to steal",
-          "Megalomania \u2013 storhetstanker",
+          "Megalomania \u2013 delusions of grandeur",
           "Mythomania \u2013 compulsive lying",
           "Necromania \u2013 obsession with death",
-          "Pyromania \u2013 brannstifting",
+          "Pyromania \u2013 arson",
           "Thanatomania \u2013 death wish",
-          "Xenomania \u2013 besettelse med fremmede",
+          "Xenomania \u2013 obsession with strangers",
         ]),
         ("Indefinite Insanity", [
           "Triggered when investigator has lost",
@@ -1220,7 +1220,7 @@ try:
           "Self-help: improve skill = +1d3 SAN",
           "Complete scenario: Keeper reward",
           "",
-          "Maks SAN = 99 \u2013 Cthulhu Mythos skill.",
+          "Max SAN = 99 \u2013 Cthulhu Mythos skill.",
           "Permanent SAN loss cannot be recovered",
           "  beyond this limit.",
         ]),
@@ -1228,7 +1228,7 @@ try:
       ("Chase", "", [
         ("Setup", [
           "1. Type: on foot or vehicle.",
-          "2. Antall locations: 5\u201310 (Keeper velger).",
+          "2. Number of locations: 5\u201310 (Keeper chooses).",
           "3. Participants:",
           "   On foot: MOV based on DEX, STR, SIZ.",
           "   Vehicle: speed rating.",
@@ -1245,9 +1245,9 @@ try:
           "MOV (Movement Rate):",
           "  If DEX & STR both > SIZ: MOV 9",
           "  If either DEX or STR > SIZ: MOV 8",
-          "  Hvis begge \u2264 SIZ: MOV 7",
-          "  Alder 40\u201349: MOV -1",
-          "  Alder 50\u201359: MOV -2 (etc.)",
+          "  If both \u2264 SIZ: MOV 7",
+          "  Age 40\u201349: MOV -1",
+          "  Age 50\u201359: MOV -2 (etc.)",
         ]),
         ("Movement & Actions", [
           "Rounds in DEX order (high first).",
@@ -1347,12 +1347,12 @@ try:
           "  Great Old Ones:",
           "  Cthulhu: 1d10/1d100",
           "  Hastur: 1d10/1d100",
-          "  Nyarlathotep: 0/1d10 (varierer)",
+          "  Nyarlathotep: 0/1d10 (varies)",
           "  Yog-Sothoth: 1d10/1d100",
         ]),
       ]),
       ("Pulp Cthulhu", "", [
-        ("Pulp-regler", [
+        ("Pulp Rules", [
           "Heroes are TOUGHER than standard CoC.",
           "",
           "HP: (CON + SIZ) / 5 (rounded down)",
@@ -1397,12 +1397,12 @@ try:
           "  Outsider: lone, self-taught",
           "  Reckless: daredevil, risk-taker",
           "  Sidekick: loyal, supportive",
-          "  Swashbuckler: akrobatisk fighter",
+          "  Swashbuckler: acrobatic fighter",
           "  Thrill Seeker: adrenaline-junkie",
-          "  Two-Fisted: nevekamp-spesialist",
+          "  Two-Fisted: fistfight specialist",
         ]),
         ("Pulp Talents (selection)", [
-          "FYSISK:",
+          "PHYSICAL:",
           "  Brawler: +1d6 melee damage",
           "  Iron Jaw: ignore 1 K.O. per session",
           "  Quick Healer: double healing",
@@ -1414,7 +1414,7 @@ try:
           "  Photographic Memory: remember everything",
           "  Psychic Power: sixth sense",
           "",
-          "SOSIAL:",
+          "SOCIAL:",
           "  Smooth Talker: re-roll 1 social check",
           "  Master of Disguise: +1 bonus Disguise",
           "  Lucky: +1d10 extra Luck regen",
@@ -1422,10 +1422,10 @@ try:
           "COMBAT:",
           "  Rapid Fire: extra shots without penalty",
           "  Outmaneuver: +1 bonus on manoeuvres",
-          "  Fleet Footed: +1 MOV i chase",
+          "  Fleet Footed: +1 MOV in chase",
         ]),
       ]),
-      ("Tabeller", "", [
+      ("Tables", "", [
         ("Weapon Table \u2013 melee", [
           "Weapon: damage / attacks",
           "",
@@ -1436,10 +1436,10 @@ try:
           "  Knife (small): 1d4+DB / 1",
           "  Knife (large): 1d6+DB / 1",
           "  Club/mace: 1d8+DB / 1",
-          "  Sverd/sabel: 1d8+DB / 1",
+          "  Sword/sabre: 1d8+DB / 1",
           "  Axe (large): 1d8+2+DB / 1",
-          "  Spyd: 1d8+1+DB / 1",
-          "  Motorsag: 2d8 / 1",
+          "  Spear: 1d8+1+DB / 1",
+          "  Chainsaw: 2d8 / 1",
         ]),
         ("Weapon Table \u2013 firearms", [
           "Weapon: damage / range / shots",
@@ -1454,7 +1454,7 @@ try:
           "  Shotgun (12g): 4d6/2d6/1d6",
           "    (range: 10/20/50 yard)",
           "  Thompson SMG: 1d10+2 / 20y / 20",
-          "  Dynamitt: 5d6 / thrown / 1",
+          "  Dynamite: 5d6 / thrown / 1",
           "    (radius 5 yard)",
         ]),
         ("SAN Loss Overview", [
@@ -1477,16 +1477,16 @@ try:
           "",
           "  15\u201319: -5 SIZ/STR, -5 EDU,",
           "    Luck: roll 2x, use best",
-          "  20\u201339: EDU-forbedring: +1",
-          "  40\u201349: EDU +2, -5 fritt STR/CON/DEX,",
+          "  20\u201339: EDU improvement: +1",
+          "  40\u201349: EDU +2, -5 freely STR/CON/DEX,",
           "    APP -5, MOV -1",
-          "  50\u201359: EDU +3, -10 fritt STR/CON/DEX,",
+          "  50\u201359: EDU +3, -10 freely STR/CON/DEX,",
           "    APP -10, MOV -2",
-          "  60\u201369: EDU +4, -20 fritt STR/CON/DEX,",
+          "  60\u201369: EDU +4, -20 freely STR/CON/DEX,",
           "    APP -15, MOV -3",
-          "  70\u201379: EDU +4, -40 fritt STR/CON/DEX,",
+          "  70\u201379: EDU +4, -40 freely STR/CON/DEX,",
           "    APP -20, MOV -4",
-          "  80\u201389: EDU +4, -80 fritt STR/CON/DEX,",
+          "  80\u201389: EDU +4, -80 freely STR/CON/DEX,",
           "    APP -25, MOV -5",
         ]),
         ("Credit Rating", [
@@ -1494,12 +1494,12 @@ try:
           "",
           "  0: poor, homeless",
           "  1\u20139: poor, necessities only",
-          "  10\u201349: gjennomsnittlig",
+          "  10\u201349: average",
           "  50\u201389: wealthy",
-          "  90\u201398: rik",
-          "  99: enormt rik",
+          "  90\u201398: rich",
+          "  99: enormously rich",
           "",
-          "Spending level (per dag):",
+          "Spending level (per day):",
           "  CR 0: $0.50",
           "  CR 1\u20139: $2",
           "  CR 10\u201349: $10",
@@ -1821,7 +1821,7 @@ try:
             # RESULT_OK = -1, RESULT_CANCELED = 0
             if result_code != -1 or intent is None:
                 Clock.schedule_once(
-                    lambda dt: cb(False, "Avbrutt"), 0)
+                    lambda dt: cb(False, "Cancelled"), 0)
                 return
             try:
                 from jnius import autoclass
@@ -1829,7 +1829,7 @@ try:
                 uri = intent.getData()
                 if uri is None:
                     Clock.schedule_once(
-                        lambda dt: cb(False, "Ingen fil valgt"), 0)
+                        lambda dt: cb(False, "No file selected"), 0)
                     return
                 resolver = self._activity.getContentResolver()
                 if self._return_mode == 'uri':
@@ -2127,7 +2127,7 @@ try:
                 min(max_cutout_gap, Window.width * cutout_width_ratio)
             )
             tab_specs = [
-                ('img', 'Bilder'),
+                ('img', 'Images'),
                 ('snd', 'Sound'),
                 ('cmb', 'Combat'),
                 None,
@@ -2180,7 +2180,7 @@ try:
             mp = RBox(size_hint_y=None, height=dp(48), spacing=dp(6),
                       padding=[dp(10), dp(4)], bg_color=BTN)
             mp.add_widget(Widget(size_hint_x=None, width=dp(4)))
-            self.mp_lbl = Label(text="Ingen musikk", font_size=sp(11),
+            self.mp_lbl = Label(text="No music", font_size=sp(11),
                                 color=DIM, size_hint_x=0.45, halign='left')
             self.mp_lbl.bind(size=self.mp_lbl.setter('text_size'))
             mp.add_widget(self.mp_lbl)
@@ -2409,12 +2409,12 @@ try:
                           duration=0.18, t='in_quad').start(self.tab_panel)
 
         def _build_snd_subtabs(self, row):
-            """Bygg Musikk/Ambient-toggle-knapper inn i sub-fane-raden."""
+            """Build Music/Ambient toggle buttons into the sub-tab row."""
             if not hasattr(self, '_sound_sub'):
                 self._sound_sub = 'mus'
 
             b_mus = RToggle(
-                text='Musikk', group='sound_sub',
+                text='Music', group='sound_sub',
                 state='down' if self._sound_sub == 'mus' else 'normal',
                 bg_color=BTNH if self._sound_sub == 'mus' else BTN,
                 color=GOLD if self._sound_sub == 'mus' else DIM,
@@ -2440,13 +2440,13 @@ try:
             self._snd_btn_amb = b_amb
 
         def _build_cmb_subtabs(self, row):
-            """Bygg Initiativ/Kart-toggle-knapper inn i sub-fane-raden."""
+            """Build Initiative/Map toggle buttons into the sub-tab row."""
             self._init_tracker_init()
             if not hasattr(self, '_cmb_sub'):
                 self._cmb_sub = 'init'
 
             b_init = RToggle(
-                text='Initiativ', group='cmb_sub',
+                text='Initiative', group='cmb_sub',
                 state='down' if self._cmb_sub == 'init' else 'normal',
                 bg_color=BTNH if self._cmb_sub == 'init' else BTN,
                 color=GOLD if self._cmb_sub == 'init' else DIM,
@@ -2459,7 +2459,7 @@ try:
             self._cmb_btn_init = b_init
 
             b_map = RToggle(
-                text='Kart', group='cmb_sub',
+                text='Map', group='cmb_sub',
                 state='down' if self._cmb_sub == 'map' else 'normal',
                 bg_color=BTNH if self._cmb_sub == 'map' else BTN,
                 color=GOLD if self._cmb_sub == 'map' else DIM,
@@ -2514,7 +2514,7 @@ try:
             row.add_widget(self._sub_btn_scen)
 
             self._sub_btn_mad = RToggle(
-                text='Galskap', group='tool_sub',
+                text='Madness', group='tool_sub',
                 state='down' if self._tool_sub == 'mad' else 'normal',
                 bg_color=BTNH if self._tool_sub == 'mad' else BTN,
                 color=GOLD if self._tool_sub == 'mad' else DIM,
@@ -2546,10 +2546,10 @@ try:
                             padding=[dp(6), dp(3)])
             self.path_lbl = Label(text="", font_size=sp(10), color=DIM, size_hint_x=0.35)
             nav.add_widget(self.path_lbl)
-            nav.add_widget(mkbtn("Opp", self.folder_up, small=True, size_hint_x=0.2))
-            self.ac_btn = mkbtn("AC:PA", self._toggle_ac, accent=True, small=True, size_hint_x=0.25)
+            nav.add_widget(mkbtn("Up", self.folder_up, small=True, size_hint_x=0.2))
+            self.ac_btn = mkbtn("AC:ON", self._toggle_ac, accent=True, small=True, size_hint_x=0.25)
             nav.add_widget(self.ac_btn)
-            nav.add_widget(mkbtn("Oppdater", self._load_imgs, small=True, size_hint_x=0.2))
+            nav.add_widget(mkbtn("Refresh", self._load_imgs, small=True, size_hint_x=0.2))
             p.add_widget(nav)
             scroll = ScrollView(size_hint_y=0.4)
             self.img_grid = GridLayout(cols=3, spacing=dp(6), padding=dp(6), size_hint_y=None)
@@ -2568,7 +2568,7 @@ try:
             self.path_lbl.text = f"/{rel}" if rel else "/"
             try:
                 if not os.path.exists(f):
-                    self.img_lbl.text = "Mappe ikke funnet"
+                    self.img_lbl.text = "Folder not found"
                     self.img_grid.add_widget(
                         mklbl("Folder does not exist yet.\n"
                               "Restart the app after\n"
@@ -2630,17 +2630,17 @@ try:
                 self.preview.source = path
                 Animation(opacity=1, duration=0.4).start(self.preview)
                 if self.auto_cast and self.cast.mc:
-                    self.img_lbl.text = "Caster..."
+                    self.img_lbl.text = "Casting..."
                     self.cast.cast_img(self.server.url(path),
                                        cb=lambda ok: setattr(self.img_lbl, 'text',
-                                                             "Castet!" if ok else "Feilet"))
+                                                             "Cast!" if ok else "Failed"))
             fade_out.bind(on_complete=_swap)
             self.preview.color = [1, 1, 1, 1]
             fade_out.start(self.preview)
 
         def _toggle_ac(self):
             self.auto_cast = not self.auto_cast
-            self.ac_btn.text = f"AC:{'PA' if self.auto_cast else 'AV'}"
+            self.ac_btn.text = f"AC:{'ON' if self.auto_cast else 'OFF'}"
 
         # ---------- KAMP (Initiativ + Kart i sub-tabs) ----------
         def _mk_combat(self):
@@ -2691,7 +2691,7 @@ try:
             if not self._init_list:
                 p.add_widget(Widget())
                 p.add_widget(mklbl(
-                    "Legg til deltakere i Initiativ-fanen\n"
+                    "Add participants in the Initiative tab\n"
                     "to use the map.",
                     color=DIM, size=13, wrap=True))
                 p.add_widget(Widget())
@@ -2704,7 +2704,7 @@ try:
             n_npc = sum(1 for e in self._init_list
                         if e.get('type') == 'NPC')
             n_fiende = sum(1 for e in self._init_list
-                           if e.get('type') == 'Fiende')
+                           if e.get('type') == 'Enemy')
             n_s = sum(1 for e in self._init_list
                       if e.get('type') == 'S')
 
@@ -2713,18 +2713,18 @@ try:
                             padding=dp(12), spacing=dp(4),
                             radius=dp(10))
             info_box.add_widget(mklbl(
-                "KLAR FOR KART", color=GOLD, size=13, bold=True, h=22))
+                "READY FOR MAP", color=GOLD, size=13, bold=True, h=22))
             summary = []
             if n_pc:
-                summary.append(f"{n_pc} investigator(er)")
+                summary.append(f"{n_pc} investigator(s)")
             if n_npc:
                 summary.append(f"{n_npc} NPC")
             if n_fiende:
-                summary.append(f"{n_fiende} fiende(r)")
+                summary.append(f"{n_fiende} enem{'ies' if n_fiende != 1 else 'y'}")
             if n_s:
-                summary.append(f"{n_s} skapning(er)")
+                summary.append(f"{n_s} creature(s)")
             info_box.add_widget(mklbl(
-                "  •  ".join(summary) if summary else "Ingen deltakere",
+                "  •  ".join(summary) if summary else "No participants",
                 color=TXT, size=12, wrap=True))
 
             act_name = (self._init_list[0].get('name', '')
@@ -2799,7 +2799,7 @@ try:
             ctrl.add_widget(mkbtn("<<", self.prev_track, small=True))
             ctrl.add_widget(mkbtn("Play", self.toggle_play, accent=True))
             ctrl.add_widget(mkbtn(">>", self.next_track, small=True))
-            ctrl.add_widget(mkbtn("Stopp", self.stop_music, danger=True, small=True))
+            ctrl.add_widget(mkbtn("Stop", self.stop_music, danger=True, small=True))
             p.add_widget(ctrl)
             p.add_widget(mkvol(self.player.vol, 0.7))
             scroll = ScrollView()
@@ -2826,12 +2826,12 @@ try:
                     return
                 fl = sorted([f for f in os.listdir(MUSIC_DIR)
                              if f.lower().endswith(('.mp3','.ogg','.wav','.flac'))])
-                self.trk_lbl.text = f"{len(fl)} spor"
+                self.trk_lbl.text = f"{len(fl)} tracks"
                 if not fl:
                     self.trk_grid.add_widget(
-                        mklbl("Ingen musikkfiler funnet.\n\n"
-                              "Legg lydfiler i:\n"
-                              "Dokumenter/EldritchPortal/music/\n\n"
+                        mklbl("No music files found.\n\n"
+                              "Place audio files in:\n"
+                              "Documents/EldritchPortals/music/\n\n"
                               "Supported formats:\n"
                               ".mp3  .ogg  .wav  .flac",
                               color=DIM, size=11, wrap=True))
@@ -2850,7 +2850,7 @@ try:
             self.ct = idx
             self.player.play(self.tracks[idx])
             n = os.path.basename(self.tracks[idx])
-            self.trk_lbl.text = f"Spiller: {n}"
+            self.trk_lbl.text = f"Playing: {n}"
             self.trk_lbl.color = GOLD
             self.mp_lbl.text = n
             self.mp_btn.text = "Pause"
@@ -2870,8 +2870,8 @@ try:
         def stop_music(self):
             self.player.stop()
             self.mp_btn.text = "Play"
-            self.mp_lbl.text = "Stoppet"
-            self.trk_lbl.text = "Stoppet"
+            self.mp_lbl.text = "Stopped"
+            self.trk_lbl.text = "Stopped"
 
         def next_track(self):
             if self.tracks:
@@ -2952,7 +2952,7 @@ try:
 
         def _amb_on_custom_picked(self, ok, data_or_err):
             if not ok:
-                if data_or_err != "Avbrutt":
+                if data_or_err != "Cancelled":
                     self.amb_lbl.text = data_or_err
                     self.amb_lbl.color = RED
                 self._amb_refresh_custom_btn()
@@ -2960,7 +2960,7 @@ try:
             self._ambient_custom_uri = data_or_err.get('uri')
             self._ambient_custom_name = (
                 data_or_err.get('name') or CUSTOM_AMBIENT_NAME)
-            self.amb_custom_lbl.text = f"Valgt: {self._ambient_custom_name}"
+            self.amb_custom_lbl.text = f"Selected: {self._ambient_custom_name}"
             self.amb_custom_lbl.color = GOLD
             self.amb_lbl.text = "Tap to start seamless loop"
             self.amb_lbl.color = DIM
@@ -2979,10 +2979,10 @@ try:
             self._ambient_name = (
                 self._ambient_custom_name or CUSTOM_AMBIENT_NAME)
             self._ambient_source = 'custom'
-            self.amb_lbl.text = f"Starter loop: {self._ambient_name}"
+            self.amb_lbl.text = f"Starting loop: {self._ambient_name}"
             self.amb_lbl.color = DIM
             if self.streamer.play_uri(self._ambient_custom_uri, loop=True):
-                self.amb_lbl.text = f"Looper: {self._ambient_name}"
+                self.amb_lbl.text = f"Looping: {self._ambient_name}"
                 self.amb_lbl.color = GRN
             else:
                 self.amb_lbl.text = "Custom ambient upload is supported on Android"
@@ -2994,7 +2994,7 @@ try:
             self._ambient_name = name
             self._ac = 0
             self._ambient_source = 'stream'
-            self.amb_lbl.text = f"Laster: {name}..."
+            self.amb_lbl.text = f"Loading: {name}..."
             self.amb_lbl.color = DIM
             self._amb_refresh_custom_btn()
             if self.streamer.play_url(url):
@@ -3003,20 +3003,20 @@ try:
         def _poll(self, dt):
             self._ac += 1
             if self.streamer.is_playing:
-                self.amb_lbl.text = f"Spiller: {self._ambient_name}"
+                self.amb_lbl.text = f"Playing: {self._ambient_name}"
                 self.amb_lbl.color = GRN
                 return False
             if self._ac >= 10:
-                self.amb_lbl.text = f"Feilet: {self._ambient_name}"
+                self.amb_lbl.text = f"Failed: {self._ambient_name}"
                 self.amb_lbl.color = RED
                 return False
-            self.amb_lbl.text = f"Laster: {self._ambient_name} ({self._ac*2}s)..."
+            self.amb_lbl.text = f"Loading: {self._ambient_name} ({self._ac*2}s)..."
             return True
 
         def _sa(self):
             self.streamer.stop()
             self._ambient_source = None
-            self.amb_lbl.text = "Stoppet"
+            self.amb_lbl.text = "Stopped"
             self.amb_lbl.color = DIM
             self._amb_refresh_custom_btn()
 
@@ -3187,7 +3187,7 @@ try:
             if not CAST_AVAILABLE:
                 p.add_widget(mklbl("Casting utilgjengelig\npychromecast mangler", color=DIM, size=13))
                 return p
-            self.cast_lbl = mklbl("Ikke tilkoblet", color=DIM, size=13, h=30)
+            self.cast_lbl = mklbl("Not connected", color=DIM, size=13, h=30)
             p.add_widget(self.cast_lbl)
             p.add_widget(mkbtn("Sok etter enheter", self._scan, accent=True,
                                size_hint_y=None, height=dp(46)))
@@ -3210,18 +3210,18 @@ try:
             if n:
                 self.cast_sp.values = n
                 self.cast_sp.text = n[0]
-            self.cast_lbl.text = f"Fant {len(n)}" if n else "Ingen"
+            self.cast_lbl.text = f"Found {len(n)}" if n else "None"
 
         def _cn(self):
             n = self.cast_sp.text
             if not n or n == "Select device...":
                 return
             self.cast.connect(n, cb=lambda ok: setattr(
-                self.cast_lbl, 'text', "Tilkoblet!" if ok else "Feilet"))
+                self.cast_lbl, 'text', "Connected!" if ok else "Failed"))
 
         def _dc(self):
             self.cast.disconnect()
-            self.cast_lbl.text = "Frakoblet"
+            self.cast_lbl.text = "Disconnected"
 
         # ---------- CHARACTERS / TOOLS ----------
         def _mk_tool(self):
@@ -3276,16 +3276,16 @@ try:
             self._tool_action_bar.clear_widgets()
             if self._tool_sub == 'chars':
                 self._tool_action_bar.add_widget(
-                    mkbtn("+ Ny", self._new_char, accent=True,
+                    mkbtn("+ New", self._new_char, accent=True,
                           size_hint_x=0.28))
                 self._tool_action_bar.add_widget(
-                    mkbtn("Importer", self._chars_do_pick_file,
+                    mkbtn("Import", self._chars_do_pick_file,
                           small=True, size_hint_x=0.28))
                 self._tool_action_bar.add_widget(
-                    mkbtn("Oppdater", self._show_list,
+                    mkbtn("Refresh", self._show_list,
                           small=True, size_hint_x=0.22))
                 self._tool_action_bar.add_widget(
-                    mklbl("Karakterer", color=GOLD, size=14, bold=True))
+                    mklbl("Characters", color=GOLD, size=14, bold=True))
                 self._show_list()
             elif self._tool_sub == 'scen':
                 self._mk_scenario()
@@ -3322,7 +3322,7 @@ try:
                                     bg_color=INPUT, radius=dp(10),
                                     padding=dp(12), spacing=dp(6))
             placeholder = mklbl(
-                "Tap a button to roll…",
+                "Tap a button to roll...",
                 color=DIM, size=12, h=30)
             self._mad_result.add_widget(placeholder)
             wrap.add_widget(self._mad_result)
@@ -3337,7 +3337,7 @@ try:
             title, desc = table[roll - 1]
 
             self._mad_result.clear_widgets()
-            header = mklbl(f"{label}  —  trill: {roll}",
+            header = mklbl(f"{label}  —  roll: {roll}",
                            color=DIM, size=11, h=22)
             self._mad_result.add_widget(header)
             self._mad_result.add_widget(
@@ -3371,7 +3371,7 @@ try:
                     b.color = c
                     b.halign = 'left'
                     row.add_widget(b)
-                    row.add_widget(mkbtn("Rediger", lambda idx=i: self._edit_char(idx),
+                    row.add_widget(mkbtn("Edit", lambda idx=i: self._edit_char(idx),
                                         accent=True, small=True, size_hint_x=0.28))
                     g.add_widget(row)
             scroll.add_widget(g)
@@ -3385,11 +3385,11 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(4), padding=dp(6))
             top = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
             _back = back_fn if back_fn is not None else self._show_list
-            top.add_widget(mkbtn("Tilbake", _back, small=True, size_hint_x=0.3))
+            top.add_widget(mkbtn("Back", _back, small=True, size_hint_x=0.3))
             if back_fn is None:
-                top.add_widget(mkbtn("Rediger", lambda: self._edit_char(idx),
+                top.add_widget(mkbtn("Edit", lambda: self._edit_char(idx),
                                      accent=True, small=True, size_hint_x=0.3))
-                top.add_widget(mkbtn("Slett", lambda: self._del_char(idx),
+                top.add_widget(mkbtn("Delete", lambda: self._del_char(idx),
                                      danger=True, small=True, size_hint_x=0.3))
             p.add_widget(top)
             scroll = ScrollView()
@@ -3405,7 +3405,7 @@ try:
             stats_list = [(lbl, ch[key]) for key, lbl in CHAR_STATS if ch.get(key)]
             if stats_list:
                 g.add_widget(mksep(4))
-                g.add_widget(mklbl("KARAKTERISTIKKER", color=GOLD, size=13, bold=True, h=24))
+                g.add_widget(mklbl("CHARACTERISTICS", color=GOLD, size=13, bold=True, h=24))
                 stats_row = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(4))
                 for lbl, val in stats_list:
                     framed = FramedBox(orientation='vertical', size_hint_x=1, padding=dp(4), spacing=dp(2))
@@ -3429,7 +3429,7 @@ try:
             if not isinstance(sk, dict):
                 sk = {}
             g.add_widget(mksep(4))
-            g.add_widget(mklbl("FERDIGHETER", color=GOLD, size=13,
+            g.add_widget(mklbl("SKILLS", color=GOLD, size=13,
                                bold=True, h=24))
             # 3-kolonners grid for skills
             sk_grid = GridLayout(cols=3, spacing=dp(4),
@@ -3470,7 +3470,7 @@ try:
             self.tool_area.add_widget(p)
 
         def _new_char(self):
-            self.chars.append({"name": "Ny karakter", "type": "PC", "skills": {}})
+            self.chars.append({"name": "New character", "type": "PC", "skills": {}})
             save_json(CHAR_FILE, self.chars)
             self._edit_char(len(self.chars) - 1)
 
@@ -3491,13 +3491,13 @@ try:
             g = GridLayout(cols=1, spacing=dp(4), padding=dp(6), size_hint_y=None)
             g.bind(minimum_height=g.setter('height'))
             self._ei = {}
-            g.add_widget(mklbl("GRUNNINFO", color=GOLD, size=12, bold=True, h=24))
+            g.add_widget(mklbl("BASIC INFO", color=GOLD, size=12, bold=True, h=24))
             for key, lbl in CHAR_INFO:
                 row = BoxLayout(size_hint_y=None, height=dp(36), spacing=dp(6))
                 row.add_widget(Label(text=lbl, font_size=sp(10), color=DIM,
                                      size_hint_x=0.3, halign='right'))
                 if key == 'type':
-                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC', 'Fiende'],
+                    w = Spinner(text=ch.get(key, 'PC'), values=['PC', 'NPC', 'Enemy'],
                                 background_color=BTN, color=GOLD, font_size=sp(11), size_hint_x=0.7)
                 else:
                     w = TextInput(text=str(ch.get(key, '')), font_size=sp(12), multiline=False,
@@ -3507,7 +3507,7 @@ try:
                 row.add_widget(w)
                 g.add_widget(row)
             g.add_widget(mksep(4))
-            g.add_widget(mklbl("KARAKTERISTIKKER", color=GOLD, size=12, bold=True, h=24))
+            g.add_widget(mklbl("CHARACTERISTICS", color=GOLD, size=12, bold=True, h=24))
             for i in range(0, len(CHAR_STATS), 2):
                 row = BoxLayout(size_hint_y=None, height=dp(36), spacing=dp(6))
                 for j in range(2):
@@ -3537,7 +3537,7 @@ try:
                         row.add_widget(w)
                 g.add_widget(row)
             g.add_widget(mksep(4))
-            g.add_widget(mklbl("NOTATER / UTSTYR", color=GOLD, size=12, bold=True, h=24))
+            g.add_widget(mklbl("NOTES / EQUIPMENT", color=GOLD, size=12, bold=True, h=24))
             for key, lbl in CHAR_TEXT:
                 g.add_widget(Label(text=lbl, font_size=sp(10), color=DIM,
                                    size_hint_y=None, height=dp(20), halign='left'))
@@ -3562,7 +3562,7 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
             top.add_widget(mkbtn("Save skills", lambda: self._save_skills(idx),
                                  accent=True, small=True, size_hint_x=0.5))
-            top.add_widget(mkbtn("Tilbake", lambda: self._edit_char(idx),
+            top.add_widget(mkbtn("Back", lambda: self._edit_char(idx),
                                  small=True, size_hint_x=0.5))
             p.add_widget(top)
             p.add_widget(mklbl(f"Skills: {ch.get('name', '?')}",
@@ -3591,7 +3591,7 @@ try:
                                          color=GDIM, size_hint_x=0.35,
                                          halign='right'))
                     w = TextInput(text=str(sk.get(sname, '')),
-                                  hint_text="Spesifiser + verdi",
+                                  hint_text="Specify + value",
                                   font_size=sp(11), multiline=False,
                                   background_color=BTN, foreground_color=TXT,
                                   size_hint_x=0.65, padding=[dp(6), dp(4)])
@@ -3632,7 +3632,7 @@ try:
 
             if spec_rows:
                 outer.add_widget(mksep(8))
-                outer.add_widget(mklbl("Spesifiserte ferdigheter:",
+                outer.add_widget(mklbl("Specified skills:",
                                        color=GOLD, size=11, bold=True, h=22))
                 spec_grid = GridLayout(cols=1, spacing=dp(4),
                                        size_hint_y=None)
@@ -3683,9 +3683,9 @@ try:
                 return
             self._chars_show_message(
                 "Opening file picker...",
-                "Velg en .json-fil med karakterer. Du kan bla til "
-                "Documents, Downloads, Drive, eller hvor som helst "
-                "du har fila.",
+                "Choose a .json file with characters. You can browse to "
+                "Documents, Downloads, Drive, or anywhere "
+                "you have the file.",
                 is_error=False)
             Clock.schedule_once(
                 lambda dt: self._chars_close_overlay(), 0.8)
@@ -3698,17 +3698,17 @@ try:
         def _chars_on_file_picked(self, ok, text_or_err):
             """Callback when file picker is done."""
             if not ok:
-                if text_or_err != "Avbrutt":
+                if text_or_err != "Cancelled":
                     self._chars_show_message(
-                        "Kunne ikke lese fil",
+                        "Could not read file",
                         text_or_err, is_error=True)
                 return
             try:
                 data = json.loads(text_or_err)
             except json.JSONDecodeError as e:
                 self._chars_show_message(
-                    "Ugyldig JSON",
-                    f"Fila er ikke gyldig JSON:\n{e}",
+                    "Invalid JSON",
+                    f"The file is not valid JSON:\n{e}",
                     is_error=True)
                 return
             # Support both bare array and wrapped { "characters": [...] }
@@ -3719,7 +3719,7 @@ try:
                 raw_chars = data['characters']
             else:
                 self._chars_show_message(
-                    "Feil format",
+                    "Wrong format",
                     "File must contain either a list [...] or an "
                     "objekt med en \"characters\"-array "
                     "{ \"characters\": [...] }.",
@@ -3738,9 +3738,9 @@ try:
                 normalized.append(self._chars_normalize_entry(entry))
             if not normalized:
                 self._chars_show_message(
-                    "Ingen karakterer funnet",
+                    "No characters found",
                     "File contained no valid character entries "
-                    "med navn.",
+                    "with a name.",
                     is_error=True)
                 return
             self._chars_show_import_preview(normalized, skipped)
@@ -3757,7 +3757,7 @@ try:
             for field in all_str_fields:
                 val = entry.get(field, '')
                 result[field] = str(val) if val != '' else ''
-            # Normalize type to one of 'PC', 'NPC', 'Fiende'
+            # Normalize type to one of 'PC', 'NPC', 'Enemy'
             raw_type = result.get('type', '').strip()
             if raw_type.lower() == 'pc':
                 result['type'] = 'PC'
@@ -3765,9 +3765,9 @@ try:
                 result['type'] = 'NPC'
             elif raw_type.lower() in ('fiende', 'enemy', 'fiend', 'foe',
                                       'villain', 'monster', 'creature'):
-                result['type'] = 'Fiende'
+                result['type'] = 'Enemy'
             else:
-                result['type'] = raw_type if raw_type in ('PC', 'NPC', 'Fiende') else 'PC'
+                result['type'] = raw_type if raw_type in ('PC', 'NPC', 'Enemy') else 'PC'
             # skills must be a dict
             sk = entry.get('skills', {})
             if not isinstance(sk, dict):
@@ -3785,11 +3785,11 @@ try:
             preview_names = [ch.get('name', '?') for ch in chars[:5]]
             names_text = "\n".join(f"• {n}" for n in preview_names)
             if count > 5:
-                names_text += f"\n… og {count - 5} til"
+                names_text += f"\n... and {count - 5} more"
             skip_text = (
                 f"\n\n({skipped} entr"
-                f"{'er' if skipped != 1 else ''} uten navn ble "
-                "hoppet over)"
+                f"{'ies' if skipped != 1 else 'y'} without name "
+                "were skipped)"
             ) if skipped else ""
 
             overlay = RBox(
@@ -3799,11 +3799,11 @@ try:
                 size_hint=(0.9, 0.65),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Importer karakterer",
+                "Import characters",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
-                f"{count} karakter"
-                f"{'er' if count != 1 else ''} funnet:"
+                f"{count} character"
+                f"{'s' if count != 1 else ''} found:"
                 f"{skip_text}",
                 color=TXT, size=11, wrap=True))
 
@@ -3813,7 +3813,7 @@ try:
             overlay.add_widget(scroll)
 
             overlay.add_widget(mklbl(
-                "Hvordan vil du importere?",
+                "How do you want to import?",
                 color=GOLD, size=12, bold=True, h=22))
 
             btns = BoxLayout(
@@ -3826,7 +3826,7 @@ try:
                 lambda: self._chars_do_import(chars, replace=False),
                 accent=True, size_hint_x=0.35))
             btns.add_widget(mkbtn(
-                "Erstatt",
+                "Replace",
                 lambda: self._chars_do_import(chars, replace=True),
                 danger=True, size_hint_x=0.35))
             overlay.add_widget(btns)
@@ -3862,11 +3862,11 @@ try:
             save_json(CHAR_FILE, self.chars)
             self._show_list()
             count = len(chars)
-            mode = "Erstattet med" if replace else "La til"
+            mode = "Replaced with" if replace else "Added"
             self._chars_show_message(
-                "Import vellykket",
-                f"{mode} {count} karakter"
-                f"{'er' if count != 1 else ''}.",
+                "Import successful",
+                f"{mode} {count} character"
+                f"{'s' if count != 1 else ''}.",
                 is_error=False)
 
         def _chars_show_message(self, title, msg, is_error=False):
@@ -3961,9 +3961,9 @@ try:
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn("+ Investigator", self._init_show_char_picker,
                                  accent=True, small=True, size_hint_x=0.37))
-            top.add_widget(mkbtn("+ Skapning", self._init_show_enemy_picker,
+            top.add_widget(mkbtn("+ Creature", self._init_show_enemy_picker,
                                  small=True, size_hint_x=0.33))
-            top.add_widget(mkbtn("Tom", self._init_clear_list,
+            top.add_widget(mkbtn("Clear", self._init_clear_list,
                                  danger=True, small=True, size_hint_x=0.3))
             p.add_widget(top)
 
@@ -3978,13 +3978,13 @@ try:
 
             if not self._init_list:
                 g.add_widget(mklbl(
-                    "Ingen deltakere. Bruk knappene over.",
+                    "No participants. Use the buttons above.",
                     color=DIM, size=12, h=60))
             else:
                 # Header
                 hdr = BoxLayout(size_hint_y=None, height=dp(22),
                                 spacing=dp(4))
-                hdr.add_widget(mklbl("Navn", color=GDIM, size=9, h=20))
+                hdr.add_widget(mklbl("Name", color=GDIM, size=9, h=20))
                 hdr.add_widget(Label(text="DEX", font_size=sp(9),
                                      color=GDIM, size_hint_x=None,
                                      width=dp(50)))
@@ -4061,7 +4061,7 @@ try:
             p.add_widget(scroll)
 
             bottom = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
-            bottom.add_widget(mkbtn("Kart", self._bm_open,
+            bottom.add_widget(mkbtn("Map", self._bm_open,
                                     small=True, size_hint_x=0.4))
             bottom.add_widget(mkbtn("Finish", self._init_finish,
                                     accent=True, size_hint_x=0.6))
@@ -4099,7 +4099,7 @@ try:
                     if ch.get('type', 'PC') == 'NPC'
                     and ch.get('name', '') not in already_in]
             fiender = [ch for ch in self.chars
-                       if ch.get('type', 'PC') == 'Fiende'
+                       if ch.get('type', 'PC') == 'Enemy'
                        and ch.get('name', '') not in already_in]
 
             area = self._init_area()
@@ -4107,9 +4107,9 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
-            top.add_widget(mkbtn("Tilbake", self._mk_init_tracker,
+            top.add_widget(mkbtn("Back", self._mk_init_tracker,
                                  small=True, size_hint_x=0.3))
-            top.add_widget(mklbl("Velg karakter", color=GOLD, size=13,
+            top.add_widget(mklbl("Choose character", color=GOLD, size=13,
                                  bold=True))
             p.add_widget(top)
 
@@ -4119,26 +4119,26 @@ try:
             g.bind(minimum_height=g.setter('height'))
 
             if pcs:
-                g.add_widget(mklbl("INVESTIGATORER (PC)",
+                g.add_widget(mklbl("INVESTIGATORS (PC)",
                                    color=GRN, size=11, bold=True, h=22))
                 for ch in pcs:
                     g.add_widget(self._init_make_char_btn(ch))
 
             if npcs:
-                g.add_widget(mklbl("NPC-ER",
+                g.add_widget(mklbl("NPCs",
                                    color=GOLD, size=11, bold=True, h=22))
                 for ch in npcs:
                     g.add_widget(self._init_make_char_btn(ch))
 
             if fiender:
-                g.add_widget(mklbl("FIENDER",
+                g.add_widget(mklbl("ENEMIES",
                                    color=RED, size=11, bold=True, h=22))
                 for ch in fiender:
                     g.add_widget(self._init_make_char_btn(ch))
 
             if not pcs and not npcs and not fiender:
                 g.add_widget(mklbl(
-                    "Ingen tilgjengelige karakterer.\n"
+                    "No available characters.\n"
                     "Add characters under 'Tools > Characters' first.",
                     color=DIM, size=11, h=60))
 
@@ -4178,38 +4178,38 @@ try:
         # (navn, DEX, HP)
         COMMON_ENEMIES = [
             # --- Mennesker ---
-            ("Kultist", 55, 11),
-            ("Kult-leder", 65, 12),
-            ("Leiesoldat", 65, 13),
+            ("Cultist", 55, 11),
+            ("Cult Leader", 65, 12),
+            ("Mercenary", 65, 13),
             ("Bandit", 50, 10),
-            ("Politimann", 55, 12),
-            ("Detektiv", 60, 12),
-            ("Soldat", 60, 13),
-            ("Offiser", 65, 14),
-            ("Gal vitenskapsmann", 50, 10),
-            ("Prestinne", 55, 11),
-            ("Tyv", 70, 10),
-            ("Brutal slager", 55, 14),
-            ("Mystiker", 60, 10),
-            ("Nekromantiker", 55, 11),
-            ("Spion", 70, 11),
+            ("Police Officer", 55, 12),
+            ("Detective", 60, 12),
+            ("Soldier", 60, 13),
+            ("Officer", 65, 14),
+            ("Mad Scientist", 50, 10),
+            ("Priestess", 55, 11),
+            ("Thief", 70, 10),
+            ("Brutal Slugger", 55, 14),
+            ("Mystic", 60, 10),
+            ("Necromancer", 55, 11),
+            ("Spy", 70, 11),
             # --- Normale dyr ---
-            ("Hund (vakt)", 60, 8),
-            ("Ulv", 75, 11),
-            ("Bjorn", 50, 19),
+            ("Dog (guard)", 60, 8),
+            ("Wolf", 75, 11),
+            ("Bear", 50, 19),
             ("Puma", 85, 12),
-            ("Slange (giftig)", 85, 4),
-            ("Rotte (stor)", 60, 2),
-            ("Rotte-svamp", 90, 35),
-            ("Krokodille", 50, 14),
-            ("Hai", 80, 18),
+            ("Snake (venomous)", 85, 4),
+            ("Rat (large)", 60, 2),
+            ("Rat Swarm", 90, 35),
+            ("Crocodile", 50, 14),
+            ("Shark", 80, 18),
             # --- Undead ---
             ("Zombie", 45, 12),
             ("Ghoul", 65, 13),
-            ("Mumie", 50, 18),
-            ("Vampyr", 80, 15),
-            ("Skjelett", 55, 10),
-            ("Gjenferd (spectre)", 70, 0),
+            ("Mummy", 50, 18),
+            ("Vampire", 80, 15),
+            ("Skeleton", 55, 10),
+            ("Spectre", 70, 0),
             # --- Mindre mytos-skapninger ---
             ("Byakhee", 50, 11),
             ("Chthonian (ung)", 20, 42),
@@ -4223,7 +4223,7 @@ try:
             ("Flying Polyp", 70, 55),
             ("Formless Spawn", 60, 30),
             ("Ghast", 75, 18),
-            ("Ghoul (Mytos)", 65, 13),
+            ("Ghoul (Mythos)", 65, 13),
             ("Gnorri", 40, 15),
             ("Hound of Tindalos", 90, 34),
             ("Hunting Horror", 75, 46),
@@ -4237,14 +4237,14 @@ try:
             ("Serpent Person", 65, 12),
             ("Shantak", 45, 40),
             ("Shoggoth", 25, 100),
-            ("Shoggoth (mindre)", 25, 65),
+            ("Shoggoth (lesser)", 25, 65),
             ("Spawn of Cthulhu", 40, 60),
             ("Star Vampire", 75, 36),
             ("Star Spawn of Cthulhu", 30, 135),
             ("Tcho-Tcho", 70, 11),
             ("Wendigo", 60, 65),
-            ("Winged One (av Yuggoth)", 55, 14),
-            ("Y'm-bhi (aktivert ghoul)", 55, 14),
+            ("Winged One (of Yuggoth)", 55, 14),
+            ("Y'm-bhi (activated ghoul)", 55, 14),
             # --- Uavhengige vesener ---
             ("Elder Thing", 45, 28),
             ("Great Race of Yith", 25, 25),
@@ -4267,9 +4267,9 @@ try:
             p = BoxLayout(orientation='vertical', spacing=dp(6), padding=dp(6))
 
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
-            top.add_widget(mkbtn("Tilbake", self._mk_init_tracker,
+            top.add_widget(mkbtn("Back", self._mk_init_tracker,
                                  small=True, size_hint_x=0.3))
-            top.add_widget(mklbl("Velg skapning", color=GOLD, size=13,
+            top.add_widget(mklbl("Choose creature", color=GOLD, size=13,
                                  bold=True))
             p.add_widget(top)
 
@@ -4277,11 +4277,11 @@ try:
             cust_box = RBox(orientation='vertical', bg_color=BG2,
                             size_hint_y=None, height=dp(110),
                             padding=dp(10), spacing=dp(6), radius=dp(10))
-            cust_box.add_widget(mklbl("Egendefinert skapning",
+            cust_box.add_widget(mklbl("Custom creature",
                                       color=GOLD, size=11, bold=True, h=18))
 
             name_row = BoxLayout(size_hint_y=None, height=dp(34), spacing=dp(6))
-            name_row.add_widget(Label(text="Navn:", font_size=sp(11),
+            name_row.add_widget(Label(text="Name:", font_size=sp(11),
                                       color=DIM, size_hint_x=0.2,
                                       halign='right', valign='middle'))
             self._init_custom_name = TextInput(
@@ -4304,14 +4304,14 @@ try:
             stat_row.add_widget(self._init_custom_dex)
 
             stat_row.add_widget(Widget(size_hint_x=0.1))
-            add_btn = mkbtn("Legg til", self._init_add_custom,
+            add_btn = mkbtn("Add", self._init_add_custom,
                             accent=True, small=True, size_hint_x=0.5)
             stat_row.add_widget(add_btn)
             cust_box.add_widget(stat_row)
 
             p.add_widget(cust_box)
 
-            p.add_widget(mklbl("CoC & Pulp Cthulhu-skapninger",
+            p.add_widget(mklbl("CoC & Pulp Cthulhu creatures",
                                color=GOLD, size=11, bold=True, h=22))
 
             scroll = ScrollView()
@@ -4397,11 +4397,11 @@ try:
         def _init_build_active(self, p):
             """Active phase: show sorted order."""
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
-            top.add_widget(mkbtn("Ny runde", self._init_new_encounter,
+            top.add_widget(mkbtn("New Round", self._init_new_encounter,
                                  danger=True, small=True, size_hint_x=0.3))
-            top.add_widget(mkbtn("Rediger", self._init_back_to_setup,
+            top.add_widget(mkbtn("Edit", self._init_back_to_setup,
                                  small=True, size_hint_x=0.25))
-            top.add_widget(mkbtn("Kart", self._bm_open,
+            top.add_widget(mkbtn("Map", self._bm_open,
                                  accent=True, small=True, size_hint_x=0.25))
             top.add_widget(mklbl("Tur", color=GOLD, size=12, bold=True))
             p.add_widget(top)
@@ -4521,7 +4521,7 @@ try:
 
         def _bm_find_mov(self, name, tp):
             """Finn MOV for en karakter, default 8."""
-            if tp in ('PC', 'NPC', 'Fiende'):
+            if tp in ('PC', 'NPC', 'Enemy'):
                 for ch in self.chars:
                     if ch.get('name') == name:
                         try:
@@ -4576,7 +4576,7 @@ try:
             self._bm_active_lbl = mklbl(
                 "", color=GOLD, size=12, bold=True)
             hdr.add_widget(self._bm_active_lbl)
-            hdr.add_widget(mkbtn("Neste", self._bm_next_turn,
+            hdr.add_widget(mkbtn("Next", self._bm_next_turn,
                                  accent=True, small=True,
                                  size_hint_x=0.25))
             overlay.add_widget(hdr)
@@ -4631,7 +4631,7 @@ try:
             btm = BoxLayout(size_hint_y=None, height=dp(38),
                             spacing=dp(4))
             btm.add_widget(mkbtn(
-                "Til plassering", self._bm_unplace_selected,
+                "To placement", self._bm_unplace_selected,
                 small=True, size_hint_x=0.5))
             btm.add_widget(mkbtn(
                 "Clear map", self._bm_clear,
@@ -4730,10 +4730,10 @@ try:
 
             n_unp = len(self._bm_unplaced)
             if n_unp == 0 and not self._bm_placing:
-                self._bm_unp_label.text = "Alle plassert."
+                self._bm_unp_label.text = "All placed."
             elif placing_label:
                 self._bm_unp_label.text = (
-                    f"Holder: {placing_label} — "
+                    f"Holding: {placing_label} — "
                     f"tap a free cell to place.")
             else:
                 self._bm_unp_label.text = (
@@ -4785,12 +4785,12 @@ try:
                     else:
                         btn.background_color = BG2
 
-            # Status-tekst
+            # Status text
             if self._bm_placing:
                 lb = self._bm_placing.get('label', '?')
                 nm = self._bm_placing.get('name', '?')
                 self._bm_status.text = (
-                    f"Plasserer {lb} ({nm}) — trykk en ledig rute.")
+                    f"Placing {lb} ({nm}) — tap a free cell.")
             elif sel is not None:
                 tok = self._bm_tokens.get(sel)
                 if tok:
@@ -4803,13 +4803,13 @@ try:
                     hp_s = f" HP {hp}" if hp else ""
                     if remaining <= 0:
                         self._bm_status.text = (
-                            f"Valgt: {lb} ({nm}) — MOV brukt opp "
-                            f"({used}/{mv}). Trykk «Neste» for ny runde."
+                            f"Selected: {lb} ({nm}) — MOV used up "
+                            f"({used}/{mv}). Tap 'Next' for new round."
                             f"{hp_s}")
                     else:
                         self._bm_status.text = (
-                            f"Valgt: {lb} ({nm}) — MOV {remaining} igjen "
-                            f"({used}/{mv} brukt).{hp_s}")
+                            f"Selected: {lb} ({nm}) — MOV {remaining} left "
+                            f"({used}/{mv} used).{hp_s}")
                 else:
                     self._bm_status.text = ""
             else:
@@ -5141,13 +5141,13 @@ try:
             box.bind(minimum_height=box.setter('height'))
 
             box.add_widget(mklbl(
-                "Ingen scenario lastet.",
+                "No scenario loaded.",
                 color=GOLD, size=14, bold=True, h=28))
 
             # PRIMARY METHOD: SAF file picker (no permissions required)
             box.add_widget(mksep(8))
             box.add_widget(mklbl(
-                "ENKLEST — Velg fil",
+                "EASIEST — Choose file",
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
                 "Tap 'Choose file' to open Android's "
@@ -5156,7 +5156,7 @@ try:
                 "Drive, SD card. No extra permissions required.",
                 color=TXT, size=11, wrap=True))
             box.add_widget(mkbtn(
-                "Velg fil",
+                "Choose file",
                 self._scen_do_pick_file, accent=True,
                 size_hint_y=None, height=dp(52)))
 
@@ -5164,7 +5164,7 @@ try:
             access = has_all_files_access()
             box.add_widget(mksep(10))
             box.add_widget(mklbl(
-                "ALTERNATIV — Importer fra Documents",
+                "ALTERNATIVE — Import from Documents",
                 color=GOLD, size=12, bold=True, h=22))
 
             if access is True:
@@ -5176,7 +5176,7 @@ try:
                     "Then tap 'Import' below.",
                     color=TXT, size=11, wrap=True))
                 box.add_widget(mkbtn(
-                    "Importer fra Documents",
+                    "Import from Documents",
                     self._scen_do_import,
                     size_hint_y=None, height=dp(44)))
             elif access is False:
@@ -5201,7 +5201,7 @@ try:
             # MANUELL KOPI: siste fallback
             box.add_widget(mksep(10))
             box.add_widget(mklbl(
-                "MANUELT — Kopier hit",
+                "MANUAL — Copy here",
                 color=GDIM, size=11, bold=True, h=20))
             box.add_widget(mklbl(
                 self.SCENARIO_FILE,
@@ -5226,8 +5226,8 @@ try:
                 self._scen_show_message(
                     "Could not open settings",
                     "Try going manually to:\n"
-                    "Innstillinger > Apper > Eldritch Portal > "
-                    "Tillatelser > Alle filer",
+                    "Settings > Apps > Eldritch Portals > "
+                    "Permissions > All files",
                     is_error=True)
 
         def _scen_do_pick_file(self):
@@ -5240,9 +5240,9 @@ try:
                 return
             self._scen_show_message(
                 "Opening file picker...",
-                "Velg en scenario.json-fil. Du kan bla til "
-                "Documents, Downloads, Drive, eller hvor som "
-                "helst du har fila.",
+                "Choose a scenario.json file. You can browse to "
+                "Documents, Downloads, Drive, or anywhere "
+                "you have the file.",
                 is_error=False)
             # Close message after short time so file picker shows cleanly
             Clock.schedule_once(
@@ -5256,9 +5256,9 @@ try:
         def _scen_on_file_picked(self, ok, text_or_err):
             """Callback when file picker is done."""
             if not ok:
-                if text_or_err != "Avbrutt":
+                if text_or_err != "Cancelled":
                     self._scen_show_message(
-                        "Kunne ikke lese fil",
+                        "Could not read file",
                         text_or_err, is_error=True)
                 return
             # Try to parse JSON content
@@ -5266,15 +5266,15 @@ try:
                 data = json.loads(text_or_err)
             except json.JSONDecodeError as e:
                 self._scen_show_message(
-                    "Ugyldig JSON",
-                    f"Fila er ikke gyldig JSON:\n{e}",
+                    "Invalid JSON",
+                    f"The file is not valid JSON:\n{e}",
                     is_error=True)
                 return
             if not isinstance(data, dict):
                 self._scen_show_message(
-                    "Feil format",
-                    "Fila inneholder ikke et JSON-objekt "
-                    "(trenger { ... }).",
+                    "Wrong format",
+                    "The file does not contain a JSON object "
+                    "(needs { ... }).",
                     is_error=True)
                 return
             # Skriv til app-private sti
@@ -5288,8 +5288,8 @@ try:
                     f"{data.get('title', '?')}")
             except Exception as e:
                 self._scen_show_message(
-                    "Kunne ikke lagre",
-                    f"Feil ved lagring:\n{e}",
+                    "Could not save",
+                    f"Error while saving:\n{e}",
                     is_error=True)
                 return
             # Last og rendre
@@ -5297,8 +5297,8 @@ try:
             self._scen_load()
             self._tool_render_sub()
             self._scen_show_message(
-                "Scenario lastet",
-                f"Valgt: {data.get('title', '(uten tittel)')}",
+                "Scenario loaded",
+                f"Selected: {data.get('title', '(untitled)')}",
                 is_error=False)
 
         def _scen_do_import(self):
@@ -5311,10 +5311,10 @@ try:
                 self._tool_render_sub()
                 # Vis suksessmelding som overlay
                 self._scen_show_message(
-                    "Import vellykket", msg, is_error=False)
+                    "Import successful", msg, is_error=False)
             else:
                 self._scen_show_message(
-                    "Import feilet", msg, is_error=True)
+                    "Import failed", msg, is_error=True)
 
         def _scen_show_message(self, title, msg, is_error=False):
             """Vis en melding som overlay."""
@@ -5370,7 +5370,7 @@ try:
             box.bind(minimum_height=box.setter('height'))
 
             box.add_widget(mklbl(
-                "Feil ved lesing av scenario.json",
+                "Error reading scenario.json",
                 color=RED, size=14, bold=True, h=28))
             box.add_widget(mklbl(
                 str(err), color=TXT, size=11, wrap=True))
@@ -5380,15 +5380,15 @@ try:
                 "Possible causes:",
                 color=GOLD, size=12, bold=True, h=22))
             box.add_widget(mklbl(
-                "• Filen er ikke gyldig JSON "
+                "• The file is not valid JSON "
                 "(check at jsonlint.com)\n"
-                "• Manglende skriverettigheter\n"
-                "• Filen er tom eller korrupt",
+                "• Missing write permissions\n"
+                "• The file is empty or corrupt",
                 color=TXT, size=11, wrap=True))
 
             box.add_widget(mksep(6))
             box.add_widget(mklbl(
-                "Filsti som brukes:",
+                "File path used:",
                 color=GOLD, size=11, bold=True, h=20))
             box.add_widget(mklbl(
                 self.SCENARIO_FILE,
@@ -5400,7 +5400,7 @@ try:
                 self._scen_reload, accent=True,
                 size_hint_y=None, height=dp(44)))
             box.add_widget(mkbtn(
-                "Importer fra Documents",
+                "Import from Documents",
                 self._scen_do_import,
                 size_hint_y=None, height=dp(40)))
 
@@ -5575,7 +5575,7 @@ try:
                 padding=[dp(8), dp(8)])
             box.add_widget(self._scen_notes_input)
             box.add_widget(mkbtn(
-                "Lagre notater", self._scen_save_notes,
+                "Save notes", self._scen_save_notes,
                 accent=True, size_hint_y=None, height=dp(44)))
             container.add_widget(box)
 
@@ -5593,7 +5593,7 @@ try:
             if not pcs:
                 container.add_widget(mklbl(
                     "No PC characters yet.\n"
-                    "Legg til karakterer under 'Karakterer'.",
+                    "Add characters under 'Characters'.",
                     color=DIM, size=11, wrap=True))
                 return
             scroll = ScrollView()
@@ -5612,7 +5612,7 @@ try:
                 b.halign = 'left'
                 row.add_widget(b)
                 row.add_widget(mkbtn(
-                    "Vis",
+                    "View",
                     lambda idx=i: self._view_char(
                         idx, back_fn=lambda: self._scen_switch_view('pcs')),
                     accent=True, small=True, size_hint_x=0.28))
@@ -5641,11 +5641,11 @@ try:
             # Handlings-rad
             row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(6))
             row.add_widget(mkbtn(
-                "+ Ny sesjon", self._scen_session_new,
+                "+ New session", self._scen_session_new,
                 accent=True, size_hint_x=0.4))
             if sessions:
                 row.add_widget(mkbtn(
-                    "Eksporter til tekst",
+                    "Export to text",
                     self._scen_session_export,
                     small=True, size_hint_x=0.6))
             wrap.add_widget(row)
@@ -5666,7 +5666,7 @@ try:
             for i, s in enumerate(sessions):
                 num = s.get('num', i + 1)
                 date = s.get('date', '?')
-                title = s.get('title', '').strip() or '(uten tittel)'
+                title = s.get('title', '').strip() or '(untitled)'
                 btn_txt = f"S{num}  •  {date}  •  {title}"
                 rrow = BoxLayout(size_hint_y=None, height=dp(46),
                                  spacing=dp(6))
@@ -5677,7 +5677,7 @@ try:
                 b.halign = 'left'
                 rrow.add_widget(b)
                 rrow.add_widget(mkbtn(
-                    "Slett",
+                    "Delete",
                     lambda idx=i: self._scen_session_confirm_delete(idx),
                     danger=True, small=True, size_hint_x=0.22))
                 g.add_widget(rrow)
@@ -5701,14 +5701,14 @@ try:
             # Topp-rad
             top = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(6))
             top.add_widget(mkbtn(
-                "< Tilbake", self._scen_session_back,
+                "< Back", self._scen_session_back,
                 small=True, size_hint_x=0.32))
             top.add_widget(mkbtn(
-                "Rediger",
+                "Edit",
                 lambda: self._scen_session_edit(idx),
                 accent=True, small=True, size_hint_x=0.34))
             top.add_widget(mkbtn(
-                "Slett",
+                "Delete",
                 lambda: self._scen_session_confirm_delete(idx),
                 danger=True, small=True, size_hint_x=0.34))
             wrap.add_widget(top)
@@ -5716,10 +5716,10 @@ try:
             # Header
             num = s.get('num', idx + 1)
             wrap.add_widget(mklbl(
-                f"Sesjon {num}", color=GOLD, size=18,
+                f"Session {num}", color=GOLD, size=18,
                 bold=True, h=30))
             wrap.add_widget(mklbl(
-                f"Dato: {s.get('date', '?')}", color=DIM, size=11, h=18))
+                f"Date: {s.get('date', '?')}", color=DIM, size=11, h=18))
             t = s.get('title', '').strip()
             if t:
                 wrap.add_widget(mklbl(
@@ -5731,12 +5731,12 @@ try:
             g.bind(minimum_height=g.setter('height'))
 
             for key, label in [
-                ('players',     'Deltakere'),
-                ('summary',     'Sammendrag'),
+                ('players',     'Participants'),
+                ('summary',     'Summary'),
                 ('clues_found', 'Clues Found'),
-                ('sanity',      'Sanity-tap'),
-                ('rolls',       'XP / Forbedringssjekker'),
-                ('cliffhanger', 'Cliffhanger / til neste gang'),
+                ('sanity',      'Sanity Loss'),
+                ('rolls',       'XP / Improvement Rolls'),
+                ('cliffhanger', 'Cliffhanger / Next Time'),
             ]:
                 v = s.get(key, '').strip()
                 if not v:
@@ -5785,7 +5785,7 @@ try:
             wrap.add_widget(top)
 
             wrap.add_widget(mklbl(
-                f"Sesjon {s['num']}",
+                f"Session {s['num']}",
                 color=GOLD, size=16, bold=True, h=28))
 
             scroll = ScrollView()
@@ -5809,15 +5809,15 @@ try:
                 g.add_widget(ti)
                 self._scen_sess_inputs[key] = ti
 
-            _add_field('date',        'Dato (YYYY-MM-DD)', False, 44)
-            _add_field('title',       'Tittel',            False, 44)
-            _add_field('players',     'Deltakere',         False, 44)
-            _add_field('summary',     'Sammendrag',        True, 180)
+            _add_field('date',        'Date (YYYY-MM-DD)', False, 44)
+            _add_field('title',       'Title',             False, 44)
+            _add_field('players',     'Participants',      False, 44)
+            _add_field('summary',     'Summary',           True, 180)
             _add_field('clues_found', 'Clues Found', True, 120)
-            _add_field('sanity',      'Sanity-tap',        True, 100)
-            _add_field('rolls',       'XP / Forbedringssjekker',
+            _add_field('sanity',      'Sanity Loss',       True, 100)
+            _add_field('rolls',       'XP / Improvement Rolls',
                                                            True, 100)
-            _add_field('cliffhanger', 'Cliffhanger / til neste gang',
+            _add_field('cliffhanger', 'Cliffhanger / Next Time',
                                                            True, 100)
 
             scroll.add_widget(g)
@@ -5886,7 +5886,7 @@ try:
                 return
             s = sessions[idx]
             num = s.get('num', idx + 1)
-            title = s.get('title', '').strip() or '(uten tittel)'
+            title = s.get('title', '').strip() or '(untitled)'
 
             overlay = RBox(
                 bg_color=BG, radius=dp(16),
@@ -5895,10 +5895,10 @@ try:
                 size_hint=(0.8, 0.4),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Slette sesjon?",
+                "Delete session?",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
-                f"S{num} — {title}\n\nDette kan ikke angres.",
+                f"S{num} — {title}\n\nThis cannot be undone.",
                 color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44),
                              spacing=dp(6))
@@ -5906,7 +5906,7 @@ try:
                 "Cancel", self._scen_close_overlay,
                 small=True, size_hint_x=0.5))
             btns.add_widget(mkbtn(
-                "Slett",
+                "Delete",
                 lambda: self._scen_session_do_delete(idx),
                 danger=True, size_hint_x=0.5))
             overlay.add_widget(btns)
@@ -5951,11 +5951,11 @@ try:
                            else '_' for c in scen_title).strip()
             safe = safe.replace(' ', '_') or 'scenario'
             out_path = os.path.join(BASE_DIR,
-                                    f"sesjoner_{safe}.txt")
+                                    f"sessions_{safe}.txt")
 
             lines = []
             lines.append("=" * 60)
-            lines.append(f"SESJONSJOURNAL — {scen_title}")
+            lines.append(f"SESSION JOURNAL — {scen_title}")
             sys_txt = self._scen_data.get('system', '')
             if sys_txt:
                 lines.append(f"System: {sys_txt}")
@@ -5965,9 +5965,9 @@ try:
             for s in sessions:
                 num = s.get('num', '?')
                 date = s.get('date', '?')
-                title = s.get('title', '').strip() or '(uten tittel)'
+                title = s.get('title', '').strip() or '(untitled)'
                 lines.append("-" * 60)
-                lines.append(f"SESJON {num}  —  {date}  —  {title}")
+                lines.append(f"SESSION {num}  —  {date}  —  {title}")
                 lines.append("-" * 60)
 
                 for key, label in [
@@ -5990,10 +5990,10 @@ try:
                 os.makedirs(BASE_DIR, exist_ok=True)
                 with open(out_path, 'w', encoding='utf-8') as f:
                     f.write("\n".join(lines))
-                msg = f"Eksportert til:\n{out_path}"
+                msg = f"Exported to:\n{out_path}"
                 log(f"Sesjons-eksport OK: {out_path}")
             except Exception as e:
-                msg = f"Eksport feilet:\n{type(e).__name__}: {e}"
+                msg = f"Export failed:\n{type(e).__name__}: {e}"
                 log(f"Sesjons-eksport feilet: {e}")
 
             # Vis bekreftelse som overlay
@@ -6004,7 +6004,7 @@ try:
                 size_hint=(0.85, 0.35),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Eksport", color=GOLD, size=14, bold=True, h=28))
+                "Export", color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(msg, color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44))
             btns.add_widget(mkbtn(
@@ -6041,11 +6041,11 @@ try:
                 size_hint=(0.8, 0.4),
                 pos_hint={'center_x': 0.5, 'center_y': 0.5})
             overlay.add_widget(mklbl(
-                "Nullstill fremdrift?",
+                "Reset progress?",
                 color=GOLD, size=14, bold=True, h=28))
             overlay.add_widget(mklbl(
                 "All checkboxes in clues, timeline and "
-                "plot-punkter blir nullstilt. Notater beholdes.",
+                "plot beats will be reset. Notes are kept.",
                 color=TXT, size=11, wrap=True))
             btns = BoxLayout(size_hint_y=None, height=dp(44),
                              spacing=dp(6))
@@ -6053,7 +6053,7 @@ try:
                 "Cancel", self._scen_close_overlay,
                 small=True, size_hint_x=0.5))
             btns.add_widget(mkbtn(
-                "Nullstill", self._scen_reset_flags,
+                "Reset", self._scen_reset_flags,
                 danger=True, size_hint_x=0.5))
             overlay.add_widget(btns)
 
@@ -6111,17 +6111,17 @@ try:
                 err = getattr(self, '_weap_last_error', None)
                 if err:
                     msg_box.add_widget(mklbl(
-                        "Feil:", color=RED, size=12, bold=True, h=22))
+                        "Error:", color=RED, size=12, bold=True, h=22))
                     msg_box.add_widget(mklbl(
                         err, color=TXT, size=11, wrap=True))
                 else:
                     msg_box.add_widget(mklbl(
-                        "Legg weapons.json i:\n"
-                        "/sdcard/Documents/EldritchPortal/",
+                        "Place weapons.json in:\n"
+                        "/sdcard/Documents/EldritchPortals/",
                         color=DIM, size=11, wrap=True))
 
                 msg_box.add_widget(mklbl(
-                    f"Sti som sjekkes:\n{WEAPONS_FILE}",
+                    f"Path checked:\n{WEAPONS_FILE}",
                     color=DIM, size=10, wrap=True))
 
                 msg_box.add_widget(mkbtn(
@@ -6146,8 +6146,8 @@ try:
 
             era_sp = Spinner(
                 text=self._weap_era_label(self._weap_era),
-                values=['Alle epoker', '1920-tallet',
-                        'Moderne', 'Gaslight'],
+                values=['All eras', '1920s',
+                        'Modern', 'Gaslight'],
                 size_hint_x=0.35,
                 background_color=BTN, color=TXT,
                 font_size=sp(11))
@@ -6179,7 +6179,7 @@ try:
                                 padding=[dp(2), 0])
             cat_row.bind(minimum_width=cat_row.setter('width'))
 
-            cat_items = [('all', 'Alle')]
+            cat_items = [('all', 'All')]
             cat_items += [(k, v) for k, v in cats.items()]
             for key, lbl in cat_items:
                 active = (key == self._weap_cat)
@@ -6204,18 +6204,18 @@ try:
             if self.chars:
                 char_names = [ch.get('name', f'#{i}')
                               for i, ch in enumerate(self.chars)]
-                picker_vals = ['-- Ingen --'] + char_names
+                picker_vals = ['-- None --'] + char_names
                 if 0 <= self._weap_char_target < len(self.chars):
                     target_text = self.chars[self._weap_char_target].get(
                         'name', f'#{self._weap_char_target}')
                 else:
-                    target_text = '-- Ingen --'
+                    target_text = '-- None --'
 
                 char_row = BoxLayout(
                     size_hint_y=None, height=dp(36),
                     spacing=dp(6), padding=[dp(2), 0])
                 char_row.add_widget(Label(
-                    text='+ Til:', font_size=sp(10), color=DIM,
+                    text='+ To:', font_size=sp(10), color=DIM,
                     size_hint_x=None, width=dp(36),
                     halign='right', valign='middle'))
                 char_sp = Spinner(
@@ -6226,7 +6226,7 @@ try:
                     font_size=sp(11))
 
                 def _on_char_pick(sp_inst, val):
-                    if val == '-- Ingen --':
+                    if val == '-- None --':
                         self._weap_char_target = -1
                     else:
                         for _i, _ch in enumerate(self.chars):
@@ -6257,15 +6257,15 @@ try:
             self._tool_render_sub()
 
         def _weap_era_label(self, key):
-            return {'all': 'Alle epoker',
-                    '1920s': '1920-tallet',
-                    'modern': 'Moderne',
-                    'gaslight': 'Gaslight'}.get(key, 'Alle epoker')
+            return {'all': 'All eras',
+                    '1920s': '1920s',
+                    'modern': 'Modern',
+                    'gaslight': 'Gaslight'}.get(key, 'All eras')
 
         def _weap_era_change(self, inst, val):
-            rev = {'Alle epoker': 'all',
-                   '1920-tallet': '1920s',
-                   'Moderne': 'modern',
+            rev = {'All eras': 'all',
+                   '1920s': '1920s',
+                   'Modern': 'modern',
                    'Gaslight': 'gaslight'}
             self._weap_era = rev.get(val, 'all')
             self._weap_render_list()
@@ -6327,7 +6327,7 @@ try:
 
             if not filtered:
                 self._weap_list_grid.add_widget(mklbl(
-                    "Ingen treff med gjeldende filter.",
+                    "No matches with the current filter.",
                     color=DIM, size=12, h=40))
                 return
 
@@ -6387,7 +6387,7 @@ try:
             parts = []
             dmg = w.get('damage', '')
             if dmg:
-                parts.append(f"Sk: {dmg}")
+                parts.append(f"Dmg: {dmg}")
             rng = w.get('range', '')
             if rng and rng != 'touch':
                 parts.append(f"R: {rng}")
@@ -6470,7 +6470,7 @@ try:
             if skill:
                 entry += f' ({skill})'
             if damage:
-                entry += f' skade {damage}'
+                entry += f' damage {damage}'
             ch = self.chars[idx]
             existing = ch.get('weapons', '').strip()
             ch['weapons'] = f'{existing}; {entry}' if existing else entry
@@ -6554,29 +6554,29 @@ try:
                     color=TXT, bold=True))
                 stats_box.add_widget(framed)
 
-            _stat(labels.get('skill', 'Ferdighet'),
+            _stat(labels.get('skill', 'Skill'),
                   w.get('skill', '—'))
-            _stat(labels.get('damage', 'Skade'),
+            _stat(labels.get('damage', 'Damage'),
                   w.get('damage', '—'))
 
             db = w.get('uses_db')
             if db is True:
-                db_text = 'Ja'
+                db_text = 'Yes'
             elif db == 'half':
-                db_text = 'Halv'
+                db_text = 'Half'
             else:
-                db_text = 'Nei'
-            _stat(labels.get('uses_db', 'Bruker DB'), db_text)
+                db_text = 'No'
+            _stat(labels.get('uses_db', 'Uses DB'), db_text)
 
-            _stat(labels.get('can_impale', 'Kan spidde'),
-                  'Ja' if w.get('can_impale') else 'Nei')
-            _stat(labels.get('range', 'Rekkevidde'),
+            _stat(labels.get('can_impale', 'Can impale'),
+                  'Yes' if w.get('can_impale') else 'No')
+            _stat(labels.get('range', 'Range'),
                   w.get('range', '—'))
-            _stat(labels.get('attacks', 'Angrep / runde'),
+            _stat(labels.get('attacks', 'Attacks / round'),
                   w.get('attacks', '—'))
-            _stat(labels.get('ammo', 'Magasin'),
+            _stat(labels.get('ammo', 'Magazine'),
                   w.get('ammo', '—'))
-            _stat(labels.get('malfunction', 'Feiling'),
+            _stat(labels.get('malfunction', 'Malfunction'),
                   w.get('malfunction', '—'))
 
             g.add_widget(stats_box)
@@ -6586,17 +6586,17 @@ try:
             meta = []
             eras = w.get('era', [])
             if eras:
-                era_map = {'all': 'Alle', 'gaslight': 'Gaslight',
-                           '1920s': '1920-tallet',
-                           'modern': 'Moderne'}
+                era_map = {'all': 'All', 'gaslight': 'Gaslight',
+                           '1920s': '1920s',
+                           'modern': 'Modern'}
                 era_txt = ', '.join(era_map.get(e, e) for e in eras)
-                meta.append(f"Epoke: {era_txt}")
+                meta.append(f"Era: {era_txt}")
             cost = w.get('cost_1920s')
             if cost:
-                meta.append(f"Pris (1920): {cost}")
+                meta.append(f"Price (1920s): {cost}")
             avail = w.get('availability')
             if avail:
-                meta.append(f"Tilgjengelighet: {avail}")
+                meta.append(f"Availability: {avail}")
             if meta:
                 g.add_widget(mklbl(
                     '   •   '.join(meta),
@@ -6607,7 +6607,7 @@ try:
             if desc:
                 g.add_widget(mksep(6))
                 g.add_widget(mklbl(
-                    labels.get('description', 'Beskrivelse'),
+                    labels.get('description', 'Description'),
                     color=GOLD, size=12, bold=True, h=22))
                 g.add_widget(mklbl(desc, color=TXT, size=12, wrap=True))
 
@@ -6616,7 +6616,7 @@ try:
             if pulp:
                 g.add_widget(mksep(6))
                 g.add_widget(mklbl(
-                    labels.get('pulp_notes', 'Pulp-notater'),
+                    labels.get('pulp_notes', 'Pulp Notes'),
                     color=GOLD, size=12, bold=True, h=22))
                 g.add_widget(mklbl(pulp, color=TXT, size=12, wrap=True))
 
@@ -6625,7 +6625,7 @@ try:
             if tags:
                 g.add_widget(mksep(6))
                 g.add_widget(mklbl(
-                    'Tagger:  ' + ', '.join(tags),
+                    'Tags:  ' + ', '.join(tags),
                     color=DIM, size=10, wrap=True))
 
             g.add_widget(mksep(30))
