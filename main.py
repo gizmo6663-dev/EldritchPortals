@@ -3185,25 +3185,25 @@ try:
         def _mk_cast(self):
             p = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
             if not CAST_AVAILABLE:
-                p.add_widget(mklbl("Casting utilgjengelig\npychromecast mangler", color=DIM, size=13))
+                p.add_widget(mklbl("Casting unavailable\npychromecast missing", color=DIM, size=13))
                 return p
             self.cast_lbl = mklbl("Not connected", color=DIM, size=13, h=30)
             p.add_widget(self.cast_lbl)
-            p.add_widget(mkbtn("Sok etter enheter", self._scan, accent=True,
+            p.add_widget(mkbtn("Search", self._scan, accent=True,
                                size_hint_y=None, height=dp(46)))
             self.cast_sp = Spinner(text="Select device...", values=[],
                                    size_hint_y=None, height=dp(46),
                                    background_color=BTN, color=TXT)
             p.add_widget(self.cast_sp)
             r = BoxLayout(size_hint_y=None, height=dp(46), spacing=dp(10))
-            r.add_widget(mkbtn("Koble til", self._cn, accent=True))
-            r.add_widget(mkbtn("Koble fra", self._dc, danger=True))
+            r.add_widget(mkbtn("Connect", self._cn, accent=True))
+            r.add_widget(mkbtn("Disconnect", self._dc, danger=True))
             p.add_widget(r)
             p.add_widget(Widget(size_hint_y=1))
             return p
 
         def _scan(self):
-            self.cast_lbl.text = "Soker..."
+            self.cast_lbl.text = "Searching..."
             self.cast.scan(cb=self._od)
 
         def _od(self, n):
